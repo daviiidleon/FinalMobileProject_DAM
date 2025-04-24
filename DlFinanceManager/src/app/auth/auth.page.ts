@@ -11,6 +11,7 @@ import {
   IonButton,
   IonLabel
 } from '@ionic/angular/standalone';
+import { Router } from '@angular/router';  // ① Importa Router
 
 @Component({
   selector: 'app-auth',
@@ -40,7 +41,8 @@ export class AuthPage implements OnInit {
     password: ''
   };
 
-  constructor() {}
+  // ② Inyecta Router
+  constructor(private router: Router) {}
 
   ngOnInit() {}
 
@@ -56,7 +58,9 @@ export class AuthPage implements OnInit {
   onSubmit() {
     if (this.isLogin) {
       console.log('Iniciar sesión con:', this.formData);
-      // lógica de inicio de sesión
+      // Aquí iría tu llamada al servicio de autenticación...
+      // Simulamos éxito:
+      this.router.navigate(['home']);  // ③ Redirige a Home
     } else {
       console.log('Registrar con:', this.formData);
       // lógica de registro
