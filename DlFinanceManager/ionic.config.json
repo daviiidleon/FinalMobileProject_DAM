@@ -1,0 +1,7 @@
+{
+  "name": "DlFinanceManager",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
