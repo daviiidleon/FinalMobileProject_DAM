@@ -1,0 +1,58 @@
+<ion-content [fullscreen]="true" class="auth-background">
+  <div class="auth-container">
+    <div class="card">
+      <img src="../../assets/icon/Header.png" alt="Logo" class="logo" />
+      <h2>{{ isLogin ? 'Inicio de sesión' : 'Crear cuenta' }}</h2>
+
+      <form (ngSubmit)="onSubmit()">
+        <!-- Nombre (solo en registro) -->
+        <div class="input-group" *ngIf="!isLogin">
+          <label class="custom-label">Nombre</label>
+          <input
+            class="custom-input"
+            type="text"
+            placeholder="Tu nombre"
+            [(ngModel)]="formData.name"
+            name="name" />
+        </div>
+
+        <!-- Email -->
+        <div class="input-group">
+          <label class="custom-label">Correo electrónico</label>
+          <input
+            class="custom-input"
+            type="email"
+            placeholder="Correo electrónico"
+            [(ngModel)]="formData.email"
+            name="email"
+            required />
+        </div>
+
+        <!-- Contraseña -->
+        <div class="input-group">
+          <label class="custom-label">Contraseña</label>
+          <input
+            class="custom-input"
+            type="password"
+            placeholder="Contraseña"
+            [(ngModel)]="formData.password"
+            name="password"
+            required />
+        </div>
+
+        <!-- Botón -->
+        <ion-button class="boton" expand="block" type="submit" color="dark">
+          {{ isLogin ? 'Iniciar Sesión' : 'Registrarse' }}
+        </ion-button>
+      </form>
+
+      <!-- Cambiar entre login / registro -->
+      <p class="toggle-text">
+        {{ isLogin ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?' }}
+        <a (click)="toggleAuth()">
+          {{ isLogin ? 'Regístrate' : 'Inicia sesión' }}
+        </a>
+      </p>
+    </div>
+  </div>
+</ion-content>
