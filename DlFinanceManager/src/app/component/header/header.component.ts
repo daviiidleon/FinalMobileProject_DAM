@@ -1,7 +1,7 @@
 // header.component.ts
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CommonModule }                         from '@angular/common';
-import { Router }                               from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import {
   IonHeader,
   IonToolbar,

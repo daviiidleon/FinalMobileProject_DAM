@@ -9,8 +9,8 @@ import {
   IonItem,
   IonIcon, IonLabel
 } from '@ionic/angular/standalone';
-import {HeaderComponent} from "../header/header.component";
-import {SideMenuComponent} from "../side-menu/side-menu.component";
+import {HeaderComponent} from "../../component/header/header.component";
+import {SideMenuComponent} from "../../component/side-menu/side-menu.component";
 
 @Component({
   selector: 'app-home',

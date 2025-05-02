@@ -1,0 +1,36 @@
+.header-toolbar {
+  --background: #fff;
+  padding: 0 12px;
+  height: 70px; // Más bajo
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.logo img {
+  height: 73px; // Mucho más compacto
+}
+
+.spacer {
+  flex: 1;
+}
+
+.user-controls {
+  display: flex;
+  align-items: center;
+
+  ion-icon {
+    font-size: 28px; // Antes 65px
+    margin: 0 12px;
+    color: #333;
+  }
+
+  .nickname {
+    font-size: 16px; // Antes 25px
+    color: #333;
+  }
+}
