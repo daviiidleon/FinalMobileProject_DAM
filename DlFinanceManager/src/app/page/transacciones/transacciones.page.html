@@ -3,5 +3,22 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <app-side-menu></app-side-menu>
+
+  <div class="dashboard-layout">
+    <!-- Columna izquierda: menú lateral -->
+    <div class="first-content">
+      <app-side-menu></app-side-menu>
+    </div>
+
+    <!-- Columna derecha: contenido principal -->
+    <div class="main-content">
+      <div class="page-title">Transacciones</div>
+
+      <div class="chart-section">
+        <div class="chart-placeholder">
+          <ion-icon name="pie-chart-outline" size="large"></ion-icon>
+        </div>
+      </div>
+    </div>
+  </div>
 </ion-content>

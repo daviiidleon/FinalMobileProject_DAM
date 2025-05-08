@@ -1,0 +1,46 @@
+.dashboard-layout {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+.first-content {
+  width: 15%;
+}
+
+.main-content {
+  flex-grow: 1;
+  padding: 20px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+/* Mantén tus estilos de contenido como ya los tenías */
+.page-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  margin-left: 6%;
+  margin-top: 3%;
+  color: #333;
+}
+
+.chart-section h2 {
+  margin-bottom: 10px;
+  margin-left: 6%;
+}
+
+.chart-placeholder {
+  border: 1px solid #ddd;
+  height: 300px;
+  width: 84%;
+  background: #fff;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 23%;
+  margin-left: 6%;
+
+}
+

@@ -3,5 +3,38 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <app-side-menu></app-side-menu>
+
+  <div class="dashboard-layout">
+    <!-- Columna izquierda: menú lateral -->
+    <div class="first-content">
+      <app-side-menu></app-side-menu>
+    </div>
+
+    <!-- Columna derecha: contenido principal -->
+    <div class="main-content">
+      <div class="page-title">Dashboard</div>
+
+      <div class="summary-cards">
+        <div class="card">
+          <div class="card-title">Saldo total</div>
+          <div class="card-value">5.000,00 €</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Gastos de este mes</div>
+          <div class="card-value">1.200,00 €</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Objetivo de ahorro</div>
+          <div class="card-value">10.200,00 €</div>
+        </div>
+      </div>
+
+      <div class="chart-section">
+        <div class="chart-placeholder">
+          <div class="card-title2">Gastos por categoría</div>
+          <ion-icon name="pie-chart-outline" size="large"></ion-icon>
+        </div>
+      </div>
+    </div>
+  </div>
 </ion-content>
