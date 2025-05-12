@@ -15,8 +15,33 @@
       <div class="page-title">Configuración</div>
 
       <div class="chart-section">
-        <div class="chart-placeholder">
-          <ion-icon name="pie-chart-outline" size="large"></ion-icon>
+        <div class="input-group">
+          <label>Nombre:</label>
+          <div class="chart-placeholder">
+            <ion-icon name="person-outline" size="large"></ion-icon>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Correo electrónico:</label>
+          <div class="chart-placeholder2">
+            <ion-icon name="mail-outline" size="large"></ion-icon>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Tema:</label>
+          <div class="chart-placeholder3">
+            <ion-select
+              interface="popover"
+              placeholder="Selecciona tema"
+              value="claro"
+              (ionChange)="onThemeChange($event.detail.value)"
+            >
+              <ion-select-option value="claro">Claro</ion-select-option>
+              <ion-select-option value="oscuro">Oscuro</ion-select-option>
+            </ion-select>
+          </div>
         </div>
       </div>
     </div>

@@ -32,7 +32,7 @@
 
 .chart-placeholder {
   border: 1px solid #ddd;
-  height: 300px;
+  height: 100px;
   width: 84%;
   background: #fff;
   border-radius: 8px;
@@ -41,6 +41,40 @@
   align-items: center;
   margin-right: 23%;
   margin-left: 6%;
+  margin-top: 4%;
+}
 
+.chart-placeholder2 {
+  border: 1px solid #ddd;
+  height: 100px;  width: 84%;
+  background: #fff;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 23%;
+  margin-left: 6%;
+  margin-top: 2%;
+}
+
+.chart-placeholder3 {
+  border: 1px solid #ddd;
+  height: 100px;
+  width: 84%;
+  background: #fff;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 23%;
+  margin-left: 6%;
+  margin-top: 2%;
+}
+
+ion-button {
+  font-size: 18px;
+  color: black;
+  --background: transparent;
+  --box-shadow: none;
 }
 
