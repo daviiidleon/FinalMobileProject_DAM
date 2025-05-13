@@ -15,7 +15,6 @@
   box-sizing: border-box;
 }
 
-/* Mantén tus estilos de contenido como ya los tenías */
 .page-title {
   font-size: 24px;
   font-weight: bold;
@@ -30,32 +29,8 @@
   margin-left: 6%;
 }
 
-.chart-placeholder {
-  border: 1px solid #ddd;
-  height: 60px;
-  width: 90%;
-  background: #fff;
-  border-radius: 8px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-right: 23%;
-  margin-top: 4%;
-}
-
-.chart-placeholder2 {
-  border: 1px solid #ddd;
-  height: 60px;
-  width: 90%;
-  background: #fff;
-  border-radius: 8px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-right: 23%;
-  margin-top: 2%;
-}
-
+.chart-placeholder,
+.chart-placeholder2,
 .chart-placeholder3 {
   border: 1px solid #ddd;
   height: 60px;
@@ -70,10 +45,54 @@
   padding: 0 10px;
 }
 
-.chart-placeholder3 ion-select {
-  width: 100%;
+.chart-placeholder {
+  margin-top: 4%;
 }
 
+.chart-placeholder3 {
+  position: relative;
+}
+
+.chart-placeholder3 ion-select {
+  width: 100%;
+  --padding-start: 12px;
+  --padding-end: 40px;
+  --placeholder-color: #666;
+  --color: #000;
+  --background: transparent;
+  --border: none;
+  --box-shadow: none;
+  --highlight-color-focused: transparent;
+  --highlight-color-valid: transparent;
+  --highlight-color-invalid: transparent;
+  --border-radius: 0;
+  font-size: 16px;
+}
+
+.chart-placeholder3 ion-select:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.chart-placeholder3:focus-within {
+  outline: none;
+  box-shadow: none;
+  border: 1px solid #ddd;
+}
+
+ion-select::part(icon) {
+  position: absolute;
+  right: 12px;
+  color: #333;
+  font-size: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+ion-select::part(text) {
+  color: #000;
+}
 
 .input-group {
   margin-left: 6%;
@@ -87,4 +106,3 @@
   margin-bottom: 8px;
   color: #333;
 }
-
