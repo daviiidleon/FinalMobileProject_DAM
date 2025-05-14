@@ -15,7 +15,6 @@
   box-sizing: border-box;
 }
 
-/* Mantén tus estilos de contenido como ya los tenías */
 .page-title {
   font-size: 24px;
   font-weight: bold;
@@ -34,7 +33,7 @@
 }
 
 .button-transacciones:hover {
-  --background: black; /* Color cuando el usuario pasa el ratón por encima */
+  --background: black;
 }
 
 .chart-section h2 {
@@ -44,16 +43,15 @@
 
 .chart-placeholder {
   border: 1px solid #ddd;
-  height: 300px;
+  height: auto;
   width: 84%;
   background: #fff;
   border-radius: 8px;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
+  padding: 10px;
   margin-right: 23%;
   margin-left: 6%;
-
 }
 
 .summary-cards {
@@ -68,3 +66,22 @@
   width: 20%;
 }
 
+.transacciones-grid {
+  width: 100%;
+  font-size: 14px;
+}
+
+.header-row {
+  background-color: #f0f0f0;
+  font-weight: bold;
+  border-bottom: 1px solid #ccc;
+}
+
+ion-row {
+  border-bottom: 1px solid #e0e0e0;
+  padding: 8px 0;
+}
+
+ion-col {
+  text-align: left;
+}
