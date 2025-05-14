@@ -3,8 +3,8 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-
   <div class="dashboard-layout">
+
     <!-- Columna izquierda: menú lateral -->
     <div class="first-content">
       <app-side-menu></app-side-menu>
@@ -18,15 +18,28 @@
           <div class="page-title">Cuentas</div>
         </div>
         <div class="card">
-          <ion-button class="button-transacciones" >+ Añadir cuenta</ion-button>
+          <ion-button class="button-transacciones">+ Añadir cuenta</ion-button>
         </div>
       </div>
 
       <div class="chart-section">
         <div class="chart-placeholder">
-          <ion-icon name="pie-chart-outline" size="large"></ion-icon>
+          <ion-grid class="cuentas-grid">
+            <ion-row class="header-row">
+              <ion-col><strong>Cuenta</strong></ion-col>
+              <ion-col><strong>Saldo</strong></ion-col>
+              <ion-col><strong>Fecha de creación</strong></ion-col>
+            </ion-row>
+
+            <ion-row *ngFor="let cuenta of cuentas">
+              <ion-col>{{ cuenta.nombre }}</ion-col>
+              <ion-col>{{ cuenta.saldo }}</ion-col>
+              <ion-col>{{ cuenta.fechaCreacion }}</ion-col>
+            </ion-row>
+          </ion-grid>
         </div>
       </div>
+
     </div>
   </div>
 </ion-content>

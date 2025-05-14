@@ -3,8 +3,8 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-
   <div class="dashboard-layout">
+
     <!-- Columna izquierda: menú lateral -->
     <div class="first-content">
       <app-side-menu></app-side-menu>
@@ -18,15 +18,35 @@
           <div class="page-title">Ahorro</div>
         </div>
         <div class="card">
-          <ion-button class="button-transacciones" >+ Añadir objetivo</ion-button>
+          <ion-button class="button-transacciones">+ Añadir objetivo</ion-button>
         </div>
       </div>
 
       <div class="chart-section">
         <div class="chart-placeholder">
-          <ion-icon name="pie-chart-outline" size="large"></ion-icon>
+          <ion-grid class="ahorro-grid">
+            <ion-row class="header-row">
+              <ion-col><strong>Objetivo</strong></ion-col>
+              <ion-col><strong>Monto</strong></ion-col>
+              <ion-col><strong>Ahorrado</strong></ion-col>
+              <ion-col><strong>Progreso</strong></ion-col>
+            </ion-row>
+
+            <ion-row *ngFor="let objetivo of objetivos">
+              <ion-col>{{ objetivo.nombre }}</ion-col>
+              <ion-col>{{ objetivo.monto | currency }}</ion-col>
+              <ion-col>{{ objetivo.ahorrado | currency }}</ion-col>
+              <ion-col>
+                <div class="progress-container">
+                  <ion-progress-bar [value]="objetivo.progreso / 100"></ion-progress-bar>
+                  <span class="progress-percentage">{{ objetivo.progreso }}%</span>
+                </div>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
         </div>
       </div>
+
     </div>
   </div>
 </ion-content>

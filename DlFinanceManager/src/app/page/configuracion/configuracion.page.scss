@@ -1,108 +1,230 @@
+:host {
+  --page-background: #ffffff; // Fondo blanco para la página
+  --card-background: #ffffff; // Fondo blanco para las tarjetas
+  --text-color: #333333;
+  --label-color: #555555;
+  --input-border-color: #e0e0e0;
+  --button-text-color: #ffffff;
+  --small-text-color: #666666;
+  --hint-text-color: #777777;
+  --card-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  --border-radius: 12px;
+}
+
+// Si tienes un tema oscuro, puedes mantenerlo o eliminarlo si no lo necesitas
+body.dark-theme {
+  --page-background: #121212; // Fondo oscuro
+  --card-background: #1e1e1e;
+  --text-color: #e0e0e0;
+  --label-color: #bbbbbb;
+  --input-border-color: #444444;
+  --small-text-color: #aaaaaa;
+  --hint-text-color: #999999;
+  --card-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+
 .dashboard-layout {
   display: flex;
   height: 100%;
   width: 100%;
+  background-color: var(--page-background);
 }
 
 .first-content {
-  width: 15%;
+  width: 240px; // Adjust as needed for your side menu
+  flex-shrink: 0;
+  // background-color: #2c3e50; // Example side menu background
+  // color: white;
+  // Add more specific styles for your app-side-menu if needed
+  @media (max-width: 991px) { // For tablet and mobile, you might hide or change the side menu
+    width: 0; // Example: hide on smaller screens or make it collapsible
+    display: none; // Or use a different approach for a hamburger menu
+  }
 }
 
 .main-content {
   flex-grow: 1;
-  padding: 20px;
+  padding: 24px;
   overflow-y: auto;
   box-sizing: border-box;
+  background-color: var(--page-background);
+}
+
+.page-header {
+  margin-bottom: 24px;
 }
 
 .page-title {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: bold;
-  margin-bottom: 20px;
-  margin-left: 6%;
-  margin-top: 3%;
-  color: #333;
+  color: var(--text-color);
+  margin: 0 0 8px 0;
 }
 
-.chart-section h2 {
-  margin-bottom: 10px;
-  margin-left: 6%;
-}
-
-.chart-placeholder,
-.chart-placeholder2,
-.chart-placeholder3 {
-  border: 1px solid #ddd;
-  height: 60px;
-  width: 90%;
-  background: #fff;
-  border-radius: 8px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-right: 23%;
-  margin-top: 2%;
-  padding: 0 10px;
-}
-
-.chart-placeholder {
-  margin-top: 4%;
-}
-
-.chart-placeholder3 {
-  position: relative;
-}
-
-.chart-placeholder3 ion-select {
-  width: 100%;
-  --padding-start: 12px;
-  --padding-end: 40px;
-  --placeholder-color: #666;
-  --color: #000;
-  --background: transparent;
-  --border: none;
-  --box-shadow: none;
-  --highlight-color-focused: transparent;
-  --highlight-color-valid: transparent;
-  --highlight-color-invalid: transparent;
-  --border-radius: 0;
+.page-subtitle {
   font-size: 16px;
+  color: var(--small-text-color);
+  margin: 0;
 }
 
-.chart-placeholder3 ion-select:focus {
-  outline: none !important;
-  box-shadow: none !important;
+.settings-card {
+  background: var(--card-background);
+  border-radius: var(--border-radius);
+  margin-bottom: 20px;
+  box-shadow: var(--card-shadow);
+  color: var(--text-color);
+
+  ion-card-header {
+    padding-bottom: 8px;
+  }
+
+  ion-card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    &.card-title-icon ion-icon {
+      margin-right: 10px;
+      font-size: 22px;
+      color: var(--ion-color-primary); // Or a specific color
+    }
+  }
+
+  ion-card-subtitle {
+    font-size: 14px;
+    color: var(--small-text-color);
+  }
+
+  ion-item {
+    --background: transparent; // Make item background transparent within card
+    --padding-start: 0;
+    --inner-padding-end: 0;
+    --border-color: var(--input-border-color);
+    margin-bottom: 12px;
+
+    ion-label[position="stacked"] {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--label-color);
+      margin-bottom: 6px;
+    }
+
+    ion-input {
+      --background: #fdfdfd; // Slightly off-white for input fields
+      border: 1px solid var(--input-border-color);
+      border-radius: 8px;
+      --padding-start: 12px;
+      --padding-end: 12px;
+      --padding-top: 10px;
+      --padding-bottom: 10px;
+      font-size: 15px;
+      color: var(--text-color);
+      &.ion-readonly {
+        --background: #eeeeee; // Different background for readonly
+      }
+    }
+    // Specific styling for dark theme inputs
+    body.dark-theme & ion-input {
+      --background: #2a2a2a;
+      &.ion-readonly {
+        --background: #333333;
+      }
+    }
+  }
+  .readonly-item ion-input {
+    opacity: 0.8;
+  }
 }
 
-.chart-placeholder3:focus-within {
-  outline: none;
-  box-shadow: none;
-  border: 1px solid #ddd;
+.profile-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+
+  .profile-avatar {
+    width: 70px;
+    height: 70px;
+    margin-right: 16px;
+    border: 3px solid var(--ion-color-primary-tint); // Example border
+    img {
+      border-radius: 50%;
+    }
+  }
+
+  .profile-info {
+    display: flex;
+    flex-direction: column;
+    .profile-name {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--text-color);
+    }
+    .profile-email {
+      font-size: 14px;
+      color: var(--small-text-color);
+    }
+  }
 }
 
-ion-select::part(icon) {
-  position: absolute;
-  right: 12px;
-  color: #333;
-  font-size: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-}
-
-ion-select::part(text) {
-  color: #000;
-}
-
-.input-group {
-  margin-left: 6%;
-  width: 40%;
-  margin-top: 2.5%;
-}
-
-.input-group label {
-  display: block;
+.action-button {
+  margin-top: 16px;
+  --border-radius: 8px;
   font-weight: 500;
-  margin-bottom: 8px;
-  color: #333;
+  text-transform: none; // Keep button text as is
+}
+
+ion-button[color="medium"] { // For "Cambiar avatar"
+  --border-color: var(--ion-color-medium-shade);
+  --color: var(--ion-color-medium-shade);
+  &:hover {
+    --background: var(--ion-color-medium-tint);
+  }
+}
+
+
+.small-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--small-text-color);
+  margin-top: 0;
+}
+
+.hint-text {
+  font-size: 12px;
+  color: var(--hint-text-color);
+  margin-top: 8px;
+  margin-bottom: 16px;
+}
+
+.logout-button {
+  margin-top: 24px;
+  --border-radius: 8px;
+  font-weight: 500;
+}
+
+// Responsive adjustments
+@media (max-width: 767px) { // Mobile
+  .main-content {
+    padding: 16px;
+  }
+  .page-title {
+    font-size: 24px;
+  }
+  .page-subtitle {
+    font-size: 14px;
+  }
+  .settings-card {
+    ion-card-title {
+      font-size: 17px;
+    }
+  }
+  .profile-header {
+    flex-direction: column;
+    align-items: flex-start;
+    .profile-avatar {
+      margin-bottom: 10px;
+    }
+  }
 }

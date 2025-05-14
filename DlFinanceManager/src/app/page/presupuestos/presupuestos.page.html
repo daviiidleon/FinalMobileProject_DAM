@@ -3,8 +3,8 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-
   <div class="dashboard-layout">
+
     <!-- Columna izquierda: menú lateral -->
     <div class="first-content">
       <app-side-menu></app-side-menu>
@@ -18,15 +18,33 @@
           <div class="page-title">Presupuestos</div>
         </div>
         <div class="card">
-          <ion-button class="button-transacciones" >+ Añadir presupuesto</ion-button>
+          <ion-button class="button-transacciones">+ Añadir presupuesto</ion-button>
         </div>
       </div>
 
       <div class="chart-section">
         <div class="chart-placeholder">
-          <ion-icon name="pie-chart-outline" size="large"></ion-icon>
+          <ion-grid class="presupuestos-grid">
+            <ion-row class="header-row">
+              <ion-col><strong>Categoría</strong></ion-col>
+              <ion-col><strong>Monto</strong></ion-col>
+              <ion-col><strong>Gastado</strong></ion-col>
+              <ion-col><strong>Restante</strong></ion-col>
+            </ion-row>
+
+            <ion-row *ngFor="let presupuesto of presupuestos">
+              <ion-col>{{ presupuesto.categoria }}</ion-col>
+              <ion-col>{{ presupuesto.monto }}</ion-col>
+              <ion-col>{{ presupuesto.gastado }}</ion-col>
+              <ion-col class="restante-col">
+                <span>{{ presupuesto.restante }}</span>
+                <ion-button size="small" fill="clear" color="primary">Editar</ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
         </div>
       </div>
+
     </div>
   </div>
 </ion-content>

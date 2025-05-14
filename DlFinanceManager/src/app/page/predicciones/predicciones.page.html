@@ -18,15 +18,31 @@
           <div class="page-title">Predicciones</div>
         </div>
         <div class="card">
-          <ion-button class="button-transacciones" >+ Añadir predicción</ion-button>
+          <ion-button class="button-transacciones">+ Añadir predicción</ion-button>
         </div>
       </div>
 
       <div class="chart-section">
         <div class="chart-placeholder">
-          <ion-icon name="pie-chart-outline" size="large"></ion-icon>
+          <ion-grid class="predicciones-grid">
+            <ion-row class="header-row">
+              <ion-col><strong>Fecha</strong></ion-col>
+              <ion-col><strong>Categoría</strong></ion-col>
+              <ion-col><strong>Monto</strong></ion-col>
+              <ion-col><strong>Tipo</strong></ion-col>
+            </ion-row>
+
+            <ion-row *ngFor="let prediccion of predicciones">
+              <ion-col>{{ prediccion.fecha | date }}</ion-col>
+              <ion-col>{{ prediccion.categoria }}</ion-col>
+              <ion-col>{{ prediccion.monto | currency }}</ion-col>
+              <ion-col>{{ prediccion.tipo }}</ion-col>
+            </ion-row>
+          </ion-grid>
         </div>
       </div>
+
     </div>
   </div>
+
 </ion-content>
