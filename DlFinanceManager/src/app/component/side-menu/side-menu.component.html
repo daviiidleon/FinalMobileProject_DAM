@@ -1,50 +1,56 @@
-<ion-content>
-  <div class="option-box" (click)="goTo('dashboard')">
-    <ion-icon name="clipboard-sharp" size="large"></ion-icon>
-    <div class="text-container">
-      <p>Dashboard</p>
-    </div>
+<ion-header class="side-menu-header" [class.collapsed]="isCollapsed">
+  <ion-toolbar> <div class="logo-area" (click)="goTo('/dashboard')">
+    <ion-img src="../../../assets/icon/Header.png" alt="App Logo" class="header-logo-image"></ion-img>
   </div>
-  <div class="option-box" (click)="goTo('transacciones')">
-    <ion-icon name="git-compare-sharp" size="large"></ion-icon>
-    <div class="text-container">
-      <p>Transacciones</p>
-    </div>
-  </div>
-  <div class="option-box" (click)="goTo('cuentas')">
-    <ion-icon name="albums-sharp" size="large"></ion-icon>
-    <div class="text-container">
-      <p>Cuentas</p>
-    </div>
-  </div>
-  <div class="option-box" (click)="goTo('presupuestos')">
-    <ion-icon name="newspaper-sharp" size="large"></ion-icon>
-    <div class="text-container">
-      <p>Presupuestos</p>
-    </div>
-  </div>
-  <div class="option-box" (click)="goTo('ahorro')">
-    <ion-icon name="trending-up-sharp" size="large"></ion-icon>
-    <div class="text-container">
-      <p>Ahorro</p>
-    </div>
-  </div>
-  <div class="option-box" (click)="goTo('predicciones')">
-    <ion-icon name="stats-chart-sharp" size="large"></ion-icon>
-    <div class="text-container">
-      <p>Predicciones</p>
-    </div>
-  </div>
-  <div class="option-box" (click)="goTo('reportes')">
-    <ion-icon name="document-text-sharp" size="large"></ion-icon>
-    <div class="text-container">
-      <p>Reportes</p>
-    </div>
-  </div>
-  <div class="option-box" (click)="goTo('configuracion')">
-    <ion-icon name="cog-sharp" size="large"></ion-icon>
-    <div class="text-container">
-      <p>Configuración</p>
-    </div>
-  </div>
+    <ion-buttons slot="end" *ngIf="!isMobileView">
+      <ion-button fill="clear" (click)="toggleCollapse()" class="collapse-toggle-button">
+        <ion-icon slot="icon-only" [name]="isCollapsed ? 'chevron-forward-outline' : 'chevron-back-outline'"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="side-menu-content" [class.collapsed]="isCollapsed" [style.backgroundColor]="'#faf6e9'">
+  <ion-list lines="none" class="main-nav-list" [style.backgroundColor]="'#faf6e9'">
+    <ion-item
+      *ngFor="let item of mainMenuItems"
+      (click)="goTo(item.path, $event)"
+      button
+      detail="false"
+      class="menu-item"
+      [class.active-item]="item.active"
+      [attr.title]="isCollapsed ? item.title : null"
+    >
+      <ion-icon [name]="item.icon" slot="start" aria-hidden="true"></ion-icon>
+      <ion-label class="menu-item-label" [class.hidden]="isCollapsed">{{ item.title }}</ion-label>
+    </ion-item>
+  </ion-list>
 </ion-content>
+
+<ion-footer class="side-menu-footer" [class.collapsed]="isCollapsed" [style.backgroundColor]="'#faf6e9'">
+  <ion-list lines="none" class="footer-elements-list" [style.backgroundColor]="'#faf6e9'">
+    <ion-item
+      *ngFor="let item of footerMenuItems"
+      (click)="goTo(item.path, $event)"
+      button
+      detail="false"
+      class="menu-item" [class.active-item]="item.active"
+      [attr.title]="isCollapsed ? item.title : null"
+    >
+      <ion-icon [name]="item.icon" slot="start" aria-hidden="true"></ion-icon>
+      <ion-label class="menu-item-label" [class.hidden]="isCollapsed">{{ item.title }}</ion-label>
+    </ion-item>
+
+    <div class="footer-action-item user-profile-item" (click)="goTo('/profile')">
+      <ion-avatar slot="start" class="user-avatar">
+        <img [src]="currentUser.avatarUrl || 'https://placehold.co/40x40/2c2c2c/faf6e9?text=U'" alt="User Avatar" />
+      </ion-avatar>
+      <span class="footer-action-label" [class.hidden]="isCollapsed">{{ currentUser.name }}</span>
+    </div>
+
+    <div class="footer-action-item logout-item" (click)="logout()">
+      <ion-icon name="log-out-outline" slot="start" aria-hidden="true"></ion-icon>
+      <span class="footer-action-label" [class.hidden]="isCollapsed">Cerrar sesión</span>
+    </div>
+  </ion-list>
+</ion-footer>
