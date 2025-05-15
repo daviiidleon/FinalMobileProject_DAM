@@ -1,63 +1,57 @@
-// Host styling for the app-side-menu component itself
 :host {
   display: flex;
   flex-direction: column;
   height: 100%;
-  width: var(--side-menu-expanded-width, 260px);
-  // Fondo único para todo el menú
-  background-color: var(--global-menu-bg, #faf6e9);
-  // Color de texto oscuro general
-  color: var(--global-menu-text-color, #3a3a3a);
-  transition: width 0.3s ease-in-out;
-  overflow: hidden;
-  border-right: 1px solid var(--global-menu-border-color, #e0dacb); // Borde derecho sutil
+  width: 100%;
+  background-color: #faf6e9;
+  color: #3a3a3a;
+  border-right: 1px solid #e0dacb;
 
   &.collapsed {
     width: var(--side-menu-collapsed-width, 60px);
 
-    .menu-item-label,
-    .header-title-after-logo,
-    .footer-action-label {
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.1s ease, visibility 0s linear 0.1s;
-    }
-
     .header-logo-image {
       margin: 0 auto;
     }
+
     .user-avatar {
-      margin-left: 0; // Ajuste para cuando está colapsado
+      margin-left: 0;
+    }
+  }
+
+  @media (max-width: 991px) {
+    position: absolute;
+    z-index: 9999;
+    width: 100%;
+    max-width: 260px;
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(0);
+
+    &.collapsed {
+      transform: translateX(-100%);
     }
   }
 }
 
-// Variables globales para el tema del menú
+/* Global Variables */
 :host {
   --global-menu-bg: #faf6e9;
-  --global-menu-text-color: #3a3a3a; // Un color oscuro consistente para todo el texto e iconos
+  --global-menu-text-color: #3a3a3a;
   --global-menu-icon-color: #3a3a3a;
-  --global-menu-border-color: #e0dacb; // Un borde sutil si es necesario
+  --global-menu-border-color: #e0dacb;
 
-  // Variables para los ítems (principalmente para el estado activo)
-  --menu-item-active-font-weight: 600; // Poner en negrita el texto del ítem activo
-  // --menu-item-active-icon-decoration: underline; // Ejemplo alternativo para ítem activo
+  --menu-item-active-font-weight: 600;
 
-  --side-menu-header-height: 60px;
+  --side-menu-header-height: 70px;
   --side-menu-footer-padding: 8px;
   --side-menu-item-height: 48px;
   --side-menu-expanded-width: 250px;
-  --side-menu-collapsed-width: 64px; // Suficiente para el icono y algo de padding
+  --side-menu-collapsed-width: 64px;
 }
 
-
-// Header Styling
+/* Header */
 .side-menu-header {
-  min-height: var(--side-menu-header-height);
-  // El borde inferior puede ser opcional si el diseño es muy plano
-  border-bottom: 1px solid var(--global-menu-border-color);
   padding: 0 8px;
-  background-color: transparent; // Hereda de :host
   display: flex;
   align-items: center;
 
@@ -68,7 +62,7 @@
     width: 100%;
     display: flex;
     align-items: center;
-    color: var(--global-menu-text-color); // Asegurar color de texto en toolbar
+    color: var(--global-menu-text-color);
   }
 
   .logo-area {
@@ -83,58 +77,66 @@
       width: auto;
       max-width: calc(var(--side-menu-expanded-width) - 80px);
       object-fit: contain;
-      margin-right: 10px; // Si hubiera un título junto al logo
+      margin-right: 10px;
     }
   }
 
   .collapse-toggle-button {
-    --color: var(--global-menu-icon-color); // Icono del botón de colapso
+    --color: var(--global-menu-icon-color);
     font-size: 20px;
     min-width: 40px;
     margin-left: auto;
   }
+
+  @media (max-width: 991px) {
+    .collapse-toggle-button {
+      display: none;
+    }
+  }
 }
 
-// Content Styling (holds the main menu items)
+/* Content */
 .side-menu-content {
-  --background: transparent; // Hereda de :host
+  --background: #faf6e9 !important; /* Fuerza el fondo en el content */
+  background-color: #faf6e9 !important;
   flex-grow: 1;
   overflow-y: auto;
 
   ion-list.main-nav-list {
-    background: transparent;
+    background: #faf6e9 !important; /* Fuerza el fondo en la lista principal */
+    background-color: #faf6e9 !important;
     padding-top: 8px;
     padding-bottom: 8px;
   }
 }
 
-// Footer Styling
+/* Footer */
 .side-menu-footer {
-  // El borde superior puede ser opcional
   border-top: 1px solid var(--global-menu-border-color);
-  background-color: transparent; // Hereda de :host
+  background-color: #faf6e9 !important; /* Fuerza el fondo en el footer */
   padding: var(--side-menu-footer-padding) 8px;
   box-shadow: none;
 
   ion-list.footer-elements-list {
-    background: transparent;
+    background: #faf6e9 !important; /* Fuerza el fondo en la lista del footer */
+    background-color: #faf6e9 !important;
     padding-top: 0;
   }
 }
 
-// Common Menu Item Styling
+/* Menu Items */
+ion-item {
+  --background: #faf6e9 !important; /* Establece el fondo directamente en el ion-item */
+  background-color: #faf6e9 !important; /* Asegúrate también de esta propiedad */
+}
+
+ion-item.active-item {
+  --background: #faf6e9 !important; /* También para el estado activo */
+  background-color: #faf6e9 !important;
+}
+
 .menu-item {
-  --padding-start: 16px;
-  --padding-end: 16px;
-  --min-height: var(--side-menu-item-height);
-  height: var(--side-menu-item-height);
-  border-radius: 6px; // Puedes quitarlo si prefieres ítems sin redondear
   margin: 4px 0;
-  display: flex;
-  align-items: center;
-  transition: none; // Sin transición de color de fondo
-  white-space: nowrap;
-  background-color: transparent !important; // ¡Asegúrate de que el fondo sea transparente!
   color: var(--global-menu-text-color);
 
   ion-icon {
@@ -146,48 +148,31 @@
 
   .menu-item-label {
     font-size: 0.95rem;
-    font-weight: 500; // Peso normal
+    font-weight: 500;
     transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
     overflow: hidden;
     text-overflow: ellipsis;
     color: inherit;
   }
 
-  // No hay cambio de fondo en hover
-  &:hover {
-    // Opcional: un sutil cambio de opacidad o nada
-    // opacity: 0.85;
-  }
-
-  // El ítem activo solo cambia el peso de la fuente
   &.active-item {
-    background-color: transparent !important; // ¡También transparente cuando está activo!
-    // color: var(--global-menu-text-color); // El color del texto no cambia
-    font-weight: var(--menu-item-active-font-weight); // Solo negrita
-
     .menu-item-label {
-      font-weight: var(--menu-item-active-font-weight); // Asegurar que la label también se ponga en negrita
-    }
-
-    ion-icon {
-      // Opcional: podrías hacer el icono un poco más oscuro o mantenerlo igual
-      // color: darken(var(--global-menu-icon-color), 10%);
+      font-weight: var(--menu-item-active-font-weight);
     }
   }
 }
 
-
-// Footer Action Items (User Profile, Logout)
+/* Footer Actions */
 .footer-action-item {
   display: flex;
   align-items: center;
   padding: 10px 16px;
   margin: 4px 0;
   cursor: pointer;
-  border-radius: 6px; // Puede quitarse
+  border-radius: 6px;
   color: var(--global-menu-text-color);
-  background-color: transparent !important; // ¡Asegúrate de que sea transparente!
-  transition: none; // Sin transición de color de fondo
+  background-color: transparent !important; /* Intentamos mantener el fondo transparente aquí */
+  transition: none;
 
   ion-icon {
     color: var(--global-menu-icon-color);
@@ -204,24 +189,20 @@
     text-overflow: ellipsis;
   }
 
-  &:hover {
-    // opacity: 0.85; // Opcional
-  }
-
   &.user-profile-item .user-avatar {
     width: 32px;
     height: 32px;
     margin-right: 12px;
-    border: 1px solid var(--global-menu-border-color); // Borde sutil para el avatar
+    border: 1px solid var(--global-menu-border-color);
     min-width: 32px;
+
     img {
-      border-radius: 50%; // Asegurar que la imagen del avatar sea redonda
+      border-radius: 50%;
     }
   }
 }
 
-
-// Hidden class for labels when collapsed
+/* Hidden Labels */
 .hidden {
   opacity: 0 !important;
   visibility: hidden !important;
@@ -232,7 +213,7 @@
   padding-right: 0 !important;
 }
 
-// Tooltip for collapsed items
+/* Tooltips for Collapsed State */
 :host(.collapsed) .menu-item[title]:hover::after,
 :host(.collapsed) .footer-action-item[title]:hover::after {
   content: attr(title);
@@ -240,12 +221,12 @@
   left: calc(var(--side-menu-collapsed-width) + 5px);
   top: 50%;
   transform: translateY(-50%);
-  background-color: #333; // El tooltip puede mantener su propio estilo oscuro
+  background-color: #333;
   color: white;
   padding: 6px 10px;
   border-radius: 4px;
   font-size: 0.8rem;
   white-space: nowrap;
   z-index: 10000;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }

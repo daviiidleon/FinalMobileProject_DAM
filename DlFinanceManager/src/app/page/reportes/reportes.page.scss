@@ -1,5 +1,6 @@
 .dashboard-layout {
   display: flex;
+  flex-direction: row;
   height: 100%;
   width: 100%;
 }
@@ -15,7 +16,6 @@
   box-sizing: border-box;
 }
 
-/* Mantén tus estilos de contenido como ya los tenías */
 .page-title {
   font-size: 24px;
   font-weight: bold;
@@ -25,38 +25,14 @@
   color: #333;
 }
 
-.chart-section h2 {
-  margin-bottom: 10px;
-  margin-left: 6%;
-}
-
-.chart-placeholder {
-  border: 1px solid #ddd;
-  height: 100px;
-  width: 84%;
-  background: #fff;
-  border-radius: 8px;
+.chart-section {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-right: 23%;
-  margin-left: 6%;
-  margin-top: 4%;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.chart-placeholder2 {
-  border: 1px solid #ddd;
-  height: 100px;  width: 84%;
-  background: #fff;
-  border-radius: 8px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-right: 23%;
-  margin-left: 6%;
-  margin-top: 2%;
-}
-
+.chart-placeholder,
+.chart-placeholder2,
 .chart-placeholder3 {
   border: 1px solid #ddd;
   height: 100px;
@@ -66,9 +42,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-right: 23%;
-  margin-left: 6%;
-  margin-top: 2%;
+  margin: 0 auto;
 }
 
 ion-button {
@@ -78,3 +52,55 @@ ion-button {
   --box-shadow: none;
 }
 
+/* ---------------------- */
+/* ✅ MEDIA QUERIES */
+/* ---------------------- */
+
+@media (max-width: 991px) {
+  .dashboard-layout {
+    flex-direction: column;
+  }
+
+  .first-content {
+    width: 100%;
+    order: 2;
+  }
+
+  .main-content {
+    padding: 10px;
+    order: 1;
+  }
+
+  .page-title {
+    font-size: 20px;
+    margin-left: 0;
+    text-align: center;
+  }
+
+  .chart-placeholder,
+  .chart-placeholder2,
+  .chart-placeholder3 {
+    width: 95%;
+    height: auto;
+    padding: 20px;
+  }
+
+  ion-button {
+    font-size: 16px;
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 576px) {
+  ion-button {
+    font-size: 14px;
+  }
+
+  .chart-placeholder,
+  .chart-placeholder2,
+  .chart-placeholder3 {
+    height: auto;
+    padding: 15px;
+  }
+}

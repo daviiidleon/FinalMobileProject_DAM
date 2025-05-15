@@ -10,8 +10,8 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="side-menu-content" [class.collapsed]="isCollapsed" [style.backgroundColor]="'#faf6e9'">
-  <ion-list lines="none" class="main-nav-list" [style.backgroundColor]="'#faf6e9'">
+<ion-content class="side-menu-content" [class.collapsed]="isCollapsed">
+  <ion-list lines="none" class="main-nav-list">
     <ion-item
       *ngFor="let item of mainMenuItems"
       (click)="goTo(item.path, $event)"
@@ -27,8 +27,8 @@
   </ion-list>
 </ion-content>
 
-<ion-footer class="side-menu-footer" [class.collapsed]="isCollapsed" [style.backgroundColor]="'#faf6e9'">
-  <ion-list lines="none" class="footer-elements-list" [style.backgroundColor]="'#faf6e9'">
+<ion-footer class="side-menu-footer" [class.collapsed]="isCollapsed">
+  <ion-list lines="none" class="footer-elements-list">
     <ion-item
       *ngFor="let item of footerMenuItems"
       (click)="goTo(item.path, $event)"

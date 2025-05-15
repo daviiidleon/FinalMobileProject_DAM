@@ -1,5 +1,6 @@
 .dashboard-layout {
   display: flex;
+  flex-direction: row;
   height: 100%;
   width: 100%;
 }
@@ -27,7 +28,7 @@
 .button-transacciones {
   --background: #494949;
   --color: white;
-  margin-left: 650px;
+  margin-left: auto;
   width: 87%;
   font-size: 12px;
 }
@@ -56,14 +57,17 @@
 
 .summary-cards {
   display: flex;
+  justify-content: space-between;
   margin-bottom: 30px;
   margin-left: 42px;
   margin-top: 50px;
+  flex-wrap: wrap;
 }
 
 .card {
   padding: 15px;
   width: 20%;
+  min-width: 200px;
 }
 
 .ahorro-grid {
@@ -94,10 +98,93 @@ ion-progress-bar {
 .progress-container {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .progress-percentage {
   margin-left: 10px;
   font-weight: bold;
   color: #333;
+}
+
+/* ---------------------- */
+/* ✅ MEDIA QUERIES */
+/* ---------------------- */
+
+@media (max-width: 991px) {
+  .dashboard-layout {
+    flex-direction: column;
+  }
+
+  .first-content {
+    width: 100%;
+    order: 2;
+  }
+
+  .main-content {
+    padding: 10px;
+    order: 1;
+  }
+
+  .summary-cards {
+    flex-direction: column;
+    align-items: center;
+    margin-left: 0;
+    gap: 20px;
+  }
+
+  .card {
+    width: 90%;
+  }
+
+  .chart-placeholder {
+    width: 95%;
+    margin: 0 auto;
+  }
+
+  .button-transacciones {
+    width: 100%;
+    margin-left: 0;
+    font-size: 14px;
+  }
+
+  .page-title {
+    font-size: 20px;
+    margin-left: 0;
+    text-align: center;
+  }
+
+  .progress-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .progress-percentage {
+    margin-left: 0;
+    margin-top: 4px;
+  }
+}
+
+@media (max-width: 576px) {
+  .ahorro-grid ion-col,
+  .header-row ion-col {
+    font-size: 12px;
+    padding: 6px 0;
+  }
+
+  .chart-placeholder {
+    padding: 6px;
+  }
+
+  .button-transacciones {
+    font-size: 12px;
+  }
+
+  .card {
+    padding: 10px;
+  }
+
+  .progress-percentage {
+    font-size: 12px;
+  }
 }
