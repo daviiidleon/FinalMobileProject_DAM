@@ -73,7 +73,7 @@
     flex-grow: 1;
 
     .header-logo-image {
-      height: calc(var(--side-menu-header-height) - 20px);
+      height: 90px;
       width: auto;
       max-width: calc(var(--side-menu-expanded-width) - 80px);
       object-fit: contain;

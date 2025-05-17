@@ -1,47 +1,47 @@
-// header.component.ts
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import {
-  IonHeader,
-  IonToolbar,
-  IonIcon
-} from '@ionic/angular/standalone';
-import { addIcons } from 'ionicons';
-import {
-  personCircleOutline,
-  logOutOutline
-} from 'ionicons/icons';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router, NavigationEnd } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
+import {IonButtons, IonHeader, IonMenuButton, IonSearchbar, IonTitle, IonToolbar} from "@ionic/angular/standalone";
 
 @Component({
   selector: 'app-header',
-  standalone: true,
+  templateUrl: './header.component.html',
+  styleUrls: ['./header.component.scss'],
   imports: [
-    CommonModule,
     IonHeader,
     IonToolbar,
-    IonIcon
-  ],
-  templateUrl: './header.component.html',
-  styleUrls: ['./header.component.scss']
+    IonButtons,
+    IonMenuButton,
+    IonTitle,
+    IonSearchbar
+  ]
 })
-export class HeaderComponent implements OnInit {
-  // Iconos registrados para usar en el template
-  personIcon = personCircleOutline;
-  logoutIcon = logOutOutline;
+export class HeaderComponent implements OnInit, OnDestroy {
+  pageTitle: string = 'DL Finance Manager';
+  private routerSubscription: Subscription | undefined;
 
-  constructor(
-    private router: Router,
-    private cd: ChangeDetectorRef
-  ) {
-    // Registrar los iconos con ionicons
-    addIcons({ personCircleOutline, logOutOutline });
+  constructor(private router: Router) {}
+
+  ngOnInit() {
+    this.routerSubscription = this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        this.pageTitle = this.getPageTitle(event.urlAfterRedirects);
+      });
   }
 
-  ngOnInit() {}
+  ngOnDestroy() {
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
+  }
 
-  logout() {
-    // Lógica de logout…
-    this.router.navigate(['/login']);
+  getPageTitle(url: string): string {
+    const segments = url.split('/').filter(Boolean);
+    if (segments.length === 0) return 'DL Finance Manager';
+    const title = segments[segments.length - 1];
+    return title.charAt(0).toUpperCase() + title.slice(1).replace('-', ' ');
   }
 }
+

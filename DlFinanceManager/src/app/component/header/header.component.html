@@ -1,16 +1,14 @@
-<!-- header.component.html -->
-<ion-header>
+<ion-header class="ion-no-border">
   <ion-toolbar class="header-toolbar">
     <div class="header-content">
-      <div class="logo">
-        <img src="../../../assets/icon/Header.png" alt="Logo">
-      </div>
-      <div class="spacer"></div>
-      <div class="user-controls">
-        <ion-icon name="person-circle-outline"></ion-icon>
-        <span class="nickname">Nickname</span>
-        <ion-icon name="log-out-outline"></ion-icon>
-      </div>
+      <ion-buttons slot="start" class="md:hidden">
+        <ion-menu-button></ion-menu-button>
+      </ion-buttons>
+      <ion-title>{{ pageTitle }}</ion-title>
+      <ion-searchbar
+        class="search-bar"
+        placeholder="Search..."
+      ></ion-searchbar>
     </div>
   </ion-toolbar>
 </ion-header>
