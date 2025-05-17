@@ -1,39 +1,69 @@
-<ion-header [translucent]="true">
-  <!--<app-header></app-header>-->
-</ion-header>
+<ion-header [translucent]="true"></ion-header>
 
 <ion-content [fullscreen]="true">
-
   <div class="dashboard-layout">
-    <!-- Columna izquierda: menú lateral -->
     <div class="first-content">
       <app-side-menu></app-side-menu>
     </div>
 
-    <!-- Columna derecha: contenido principal -->
     <div class="main-content">
       <app-header></app-header>
       <div class="page-title"></div>
 
       <div class="summary-cards">
-        <div class="card">
-          <div class="card-title">Saldo total</div>
-          <div class="card-value">5.000,00 €</div>
+        <div class="card" *ngIf="currentBalance">
+          <div class="card-title">Saldo actual</div>
+          <div class="card-value">{{ currentBalance.current | number:'1.2-2' }} €</div>
         </div>
-        <div class="card">
-          <div class="card-title">Gastos de este mes</div>
-          <div class="card-value">1.200,00 €</div>
+        <div class="card" *ngIf="monthlyIncomeExpense">
+          <div class="card-title">Ingresos totales (mes)</div>
+          <div class="card-value">{{ monthlyIncomeExpense.income | number:'1.2-2' }} €</div>
         </div>
-        <div class="card">
-          <div class="card-title">Objetivo de ahorro</div>
-          <div class="card-value">10.200,00 €</div>
+        <div class="card" *ngIf="monthlyIncomeExpense">
+          <div class="card-title">Gastos totales (mes)</div>
+          <div class="card-value">{{ monthlyIncomeExpense.expense | number:'1.2-2' }} €</div>
+        </div>
+        <div class="card" *ngIf="budgetUtilization">
+          <div class="card-title">Utilización del presupuesto</div>
+          <div class="card-value">{{ budgetUtilization.percentage }}%</div>
         </div>
       </div>
 
       <div class="chart-section">
+        <div class="card-title2">Resumen de ingresos y gastos</div>
+        <p style="text-align: center; color: #777; margin-bottom: 15px;">Desempeño financiero mensual</p>
         <div class="chart-placeholder">
-          <div class="card-title2">Gastos por categoría</div>
-          <ion-icon name="pie-chart-outline" size="large"></ion-icon>
+          <canvas id="incomeExpenseChart"></canvas>
+        </div>
+      </div>
+
+      <div class="bottom-widgets">
+        <div class="recent-transactions-section">
+          <div class="card-title2">Transacciones recientes</div>
+          <div class="recent-transactions-placeholder" *ngIf="recentTransactions.length > 0; else noTransactions">
+            <ul>
+              <li *ngFor="let transaction of recentTransactions">{{ transaction.description }} - {{ transaction.amount | number:'1.2-2' }}</li>
+            </ul>
+          </div>
+          <ng-template #noTransactions>
+            <div class="recent-transactions-placeholder">
+              <p style="text-align: center; color: #777;">No hay transacciones recientes.</p>
+            </div>
+          </ng-template>
+        </div>
+
+        <div class="savings-goals-section">
+          <div class="card-title2">Metas de ahorro</div>
+          <div class="savings-goals-placeholder" *ngIf="savingsGoals.length > 0; else noGoals">
+            <ul>
+              <li *ngFor="let goal of savingsGoals">{{ goal.name }} - {{ goal.currentAmount }} / {{ goal.targetAmount }}</li>
+            </ul>
+          </div>
+          <ng-template #noGoals>
+            <div class="savings-goals-placeholder">
+              <p style="text-align: center; color: #777;">No hay metas de ahorro activas.</p>
+            </div>
+          </ng-template>
         </div>
       </div>
     </div>
