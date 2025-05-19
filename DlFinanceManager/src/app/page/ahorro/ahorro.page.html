@@ -1,51 +1,141 @@
 <ion-header [translucent]="true">
-  <!--<app-header></app-header>-->
+
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <div class="dashboard-layout">
-
-    <!-- Columna izquierda: menú lateral -->
     <div class="first-content">
       <app-side-menu></app-side-menu>
     </div>
 
-    <!-- Columna derecha: contenido principal -->
     <div class="main-content">
       <app-header></app-header>
-      <div class="summary-cards">
-        <div class="card">
-          <div class="page-title"></div>
-        </div>
-        <div class="card">
-          <ion-button class="button-transacciones">+ Añadir objetivo</ion-button>
+
+      <div class="goals-actions-top">
+        <ion-button (click)="openCreateGoalModal()">
+          <ion-icon name="add-outline" slot="start"></ion-icon>
+          Crear Nuevo Objetivo
+        </ion-button>
+      </div>
+
+      <div class="empty-goals" *ngIf="objetivos.length === 0">
+        <div class="empty-state">
+          <ion-icon name="piggy-bank-outline" size="large"></ion-icon>
+          <h2>¡Comienza a planificar tus sueños!</h2>
+          <p>Define tus metas de ahorro y sigue tu progreso.</p>
         </div>
       </div>
 
-      <div class="chart-section">
-        <div class="chart-placeholder">
-          <ion-grid class="ahorro-grid">
-            <ion-row class="header-row">
-              <ion-col><strong>Objetivo</strong></ion-col>
-              <ion-col><strong>Monto</strong></ion-col>
-              <ion-col><strong>Ahorrado</strong></ion-col>
-              <ion-col><strong>Progreso</strong></ion-col>
-            </ion-row>
+      <div class="goals-grid" *ngIf="objetivos.length > 0">
+        <div class="page-title">
+          <h2>Tus Objetivos de Ahorro</h2>
+          <p>Define tus metas financieras y sigue tu progreso.</p>
+        </div>
 
-            <ion-row *ngFor="let objetivo of objetivos">
-              <ion-col>{{ objetivo.nombre }}</ion-col>
-              <ion-col>{{ objetivo.monto | currency }}</ion-col>
-              <ion-col>{{ objetivo.ahorrado | currency }}</ion-col>
-              <ion-col>
-                <div class="progress-container">
-                  <ion-progress-bar [value]="objetivo.progreso / 100"></ion-progress-bar>
-                  <span class="progress-percentage">{{ objetivo.progreso }}%</span>
-                </div>
-              </ion-col>
-            </ion-row>
-          </ion-grid>
+        <div class="goals-card-container">
+          <div class="goal-card" *ngFor="let objetivo of objetivos">
+            <div class="goal-header">
+              <h3>{{ objetivo.nombre }}</h3>
+              <ion-icon name="calendar-outline"></ion-icon>
+              <span *ngIf="objetivo.fechaLimite">{{ formatDate(objetivo.fechaLimite) }}</span>
+            </div>
+            <div class="goal-body">
+              <p><strong>Meta:</strong> {{ objetivo.montoMeta | currency }}</p>
+              <p><strong>Ahorrado:</strong> {{ objetivo.montoActual | currency }}</p>
+              <p><strong>Restante:</strong> {{ (objetivo.montoMeta - objetivo.montoActual) | currency }}</p>
+              <div class="progress-container">
+                <ion-progress-bar [value]="objetivo.progreso / 100"></ion-progress-bar>
+                <span class="progress-percentage">{{ objetivo.progreso | number: '1.0-0' }}%</span>
+              </div>
+              <p class="deadline-passed" *ngIf="objetivo.fechaLimite && isDeadlinePassed(objetivo.fechaLimite)">
+                Plazo vencido
+              </p>
+            </div>
+            <div class="goal-actions">
+              <ion-button size="small" (click)="openAddFundsModal(objetivo)">
+                <ion-icon name="add-circle-outline" slot="icon-only"></ion-icon>
+                Añadir
+              </ion-button>
+              <ion-button size="small" color="warning" (click)="openEditGoalModal(objetivo)">
+                <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+                Editar
+              </ion-button>
+              <ion-button size="small" color="danger" (click)="deleteGoal(objetivo.id)">
+                <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+                Eliminar
+              </ion-button>
+            </div>
+          </div>
         </div>
       </div>
+
+      <ion-modal [isOpen]="isCreateGoalModalOpen">
+        <ng-template>
+          <ion-content class="ion-padding">
+            <ion-toolbar>
+              <ion-title>{{ isEditingGoal ? 'Editar Objetivo' : 'Crear Nuevo Objetivo' }}</ion-title>
+              <ion-buttons slot="end">
+                <ion-button (click)="closeCreateGoalModal()">Cerrar</ion-button>
+              </ion-buttons>
+            </ion-toolbar>
+            <form [formGroup]="goalForm" (ngSubmit)="submitGoalForm()">
+              <ion-item>
+                <ion-label position="floating">Nombre del Objetivo</ion-label>
+                <ion-input formControlName="nombre"></ion-input>
+                <ion-note color="danger" *ngIf="goalForm.get('nombre')?.hasError('required') && goalForm.get('nombre')?.touched">
+                  El nombre es requerido.
+                </ion-note>
+                <ion-note color="danger" *ngIf="goalForm.get('nombre')?.hasError('minlength') && goalForm.get('nombre')?.touched">
+                  El nombre debe tener al menos 3 caracteres.
+                </ion-note>
+              </ion-item>
+              <ion-item>
+                <ion-label position="floating">Monto Meta (€)</ion-label>
+                <ion-input type="number" formControlName="montoMeta"></ion-input>
+                <ion-note color="danger" *ngIf="goalForm.get('montoMeta')?.hasError('required') && goalForm.get('montoMeta')?.touched">
+                  El monto meta es requerido.
+                </ion-note>
+                <ion-note color="danger" *ngIf="goalForm.get('montoMeta')?.hasError('min') && goalForm.get('montoMeta')?.touched">
+                  El monto debe ser positivo.
+                </ion-note>
+              </ion-item>
+              <ion-item>
+                <ion-label position="floating">Monto Actual (€)</ion-label>
+                <ion-input type="number" formControlName="montoActual"></ion-input>
+                <ion-note color="danger" *ngIf="goalForm.get('montoActual')?.hasError('min') && goalForm.get('montoActual')?.touched">
+                  El monto no puede ser negativo.
+                </ion-note>
+              </ion-item>
+              <ion-item>
+                <ion-label>Fecha Límite (Opcional)</ion-label>
+                <ion-datetime formControlName="fechaLimite" displayFormat="DD MMMYYYY"></ion-datetime>
+              </ion-item>
+              <ion-button expand="full" type="submit" [disabled]="goalForm.invalid || isSubmitting">
+                <ion-spinner name="crescent" *ngIf="isSubmitting"></ion-spinner>
+                <span *ngIf="!isSubmitting">{{ isEditingGoal ? 'Guardar Cambios' : 'Crear Objetivo' }}</span>
+              </ion-button>
+            </form>
+          </ion-content>
+        </ng-template>
+      </ion-modal>
+
+      <ion-modal [isOpen]="isAddFundsModalOpen" *ngIf="selectedGoal">
+        <ng-template>
+          <ion-content class="ion-padding">
+            <ion-toolbar>
+              <ion-title>Añadir Fondos a "{{ selectedGoal.nombre }}"</ion-title>
+              <ion-buttons slot="end">
+                <ion-button (click)="closeAddFundsModal()">Cerrar</ion-button>
+              </ion-buttons>
+            </ion-toolbar>
+            <ion-item>
+              <ion-label position="floating">Cantidad a Añadir (€)</ion-label>
+              <ion-input type="number" [(ngModel)]="fundsToAdd"></ion-input>
+            </ion-item>
+            <ion-button expand="full" (click)="addFunds()">Añadir Fondos</ion-button>
+          </ion-content>
+        </ng-template>
+      </ion-modal>
 
     </div>
   </div>

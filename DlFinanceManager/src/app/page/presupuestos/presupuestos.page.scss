@@ -16,165 +16,138 @@
   box-sizing: border-box;
 }
 
-.page-title {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 20px;
-  margin-left: 6%;
-  margin-top: 3%;
-  color: #333;
-}
-
-.button-transacciones {
-  --background: #494949;
-  --color: white;
-  margin-left: auto;
-  width: 87%;
-  font-size: 12px;
-}
-
-.button-transacciones:hover {
-  --background: black;
-}
-
-.chart-section h2 {
-  margin-bottom: 10px;
-  margin-left: 6%;
-}
-
-.chart-placeholder {
-  border: 1px solid #ddd;
-  height: auto;
-  width: 84%;
-  background: #fff;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  padding: 10px;
-  margin-right: 23%;
-  margin-left: 6%;
-}
-
-.summary-cards {
+.budgets-header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 30px;
-  margin-left: 42px;
-  margin-top: 50px;
-  flex-wrap: wrap;
-}
-
-.card {
-  padding: 15px;
-  width: 20%;
-  min-width: 200px;
-}
-
-.presupuestos-grid {
-  width: 100%;
-  font-size: 14px;
-}
-
-.header-row {
-  background-color: #f0f0f0;
-  font-weight: bold;
-  border-bottom: 1px solid #ccc;
-}
-
-ion-row {
-  border-bottom: 1px solid #e0e0e0;
-  padding: 8px 0;
-}
-
-ion-col {
-  text-align: left;
-}
-
-.restante-col {
-  display: flex;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
+  margin-bottom: 20px;
 }
 
-.restante-col ion-button {
-  margin-left: 10px;
+.page-title {
+  h2 {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
+  }
+  p {
+    color: #666;
+    font-size: 14px;
+  }
 }
 
-/* ---------------------- */
-/* ✅ MEDIA QUERIES */
-/* ---------------------- */
+.create-budget-button {
+  --background: var(--ion-color-primary);
+  --color: white;
+}
 
-@media (max-width: 991px) {
-  .dashboard-layout {
-    flex-direction: column;
-  }
+.budget-alerts {
+  background-color: #fdecea;
+  border: 1px solid #f9caca;
+  color: #cc0000;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 8px;
 
-  .first-content {
-    width: 100%;
-    order: 2;
-  }
-
-  .main-content {
-    padding: 10px;
-    order: 1;
-  }
-
-  .summary-cards {
-    flex-direction: column;
-    margin-left: 0;
+  .alert-container {
+    display: flex;
     align-items: center;
+
+    ion-icon {
+      margin-right: 10px;
+      font-size: 1.5em;
+    }
+
+    strong {
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    ul {
+      padding-left: 20px;
+      margin-top: 5px;
+    }
+
+    li {
+      font-size: 14px;
+    }
+  }
+}
+
+.past-budgets {
+  h3 {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #333;
+  }
+
+  .budget-cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 20px;
   }
 
-  .card {
-    width: 90%;
-  }
-
-  .chart-placeholder {
-    width: 95%;
-    margin: 0 auto;
-  }
-
-  .button-transacciones {
-    width: 100%;
-    margin-left: 0;
-    font-size: 14px;
-  }
-
-  .page-title {
-    font-size: 20px;
-    margin-left: 0;
-    text-align: center;
-  }
-}
-
-@media (max-width: 576px) {
-  .header-row ion-col,
-  ion-row ion-col {
-    font-size: 12px;
-    padding: 6px 0;
-  }
-
-  .chart-placeholder {
-    padding: 6px;
-  }
-
-  .button-transacciones {
-    font-size: 12px;
-  }
-
-  .card {
-    padding: 10px;
-  }
-
-  .restante-col {
+  .budget-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
+    justify-content: space-between;
+    height: auto;
 
-  .restante-col ion-button {
-    margin-left: 0;
+    .card-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+
+      ion-icon {
+        font-size: 1.2em;
+        margin-right: 5px;
+        color: var(--ion-color-primary);
+      }
+
+      span {
+        font-weight: bold;
+        margin-right: auto;
+      }
+
+      .date {
+        font-size: 0.9em;
+        color: #666;
+      }
+    }
+
+    .card-body {
+      margin-bottom: 15px;
+      p {
+        margin-bottom: 5px;
+        font-size: 0.95em;
+        color: #333;
+      }
+
+      .progress-bar-container {
+        margin-top: 10px;
+        ion-progress-bar {
+          margin-bottom: 5px;
+        }
+        span {
+          font-size: 0.8em;
+          color: #666;
+        }
+      }
+    }
+
+    .card-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+
+      ion-button {
+        font-size: 0.8em;
+      }
+    }
   }
 }
