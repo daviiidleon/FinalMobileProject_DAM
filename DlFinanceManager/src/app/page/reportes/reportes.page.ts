@@ -7,7 +7,8 @@ import {
   IonHeader,
   IonIcon,
   IonTitle,
-  IonToolbar
+  IonToolbar,
+  LoadingController // Import LoadingController
 } from '@ionic/angular/standalone';
 import { HeaderComponent } from "../../component/header/header.component";
 import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
@@ -32,10 +33,30 @@ import { SideMenuComponent } from "../../component/side-menu/side-menu.component
 })
 export class ReportesPage implements OnInit {
 
-  constructor() { }
+  isLoading = true; // Add isLoading property
+
+  constructor(private loadingController: LoadingController) { } // Inject LoadingController
 
   ngOnInit() {
-    // Aquí se agregará la lógica para generar los informes
+    // No logic here, ionViewWillEnter will handle initial load
   }
 
+  async ionViewWillEnter() {
+    await this.loadReportes();
+  }
+
+  async loadReportes() {
+    this.isLoading = true; // Show skeleton
+    const loading = await this.loadingController.create({
+      message: 'Cargando reportes...',
+      spinner: 'crescent'
+    });
+    await loading.present();
+
+    // Simulate data loading
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    this.isLoading = false; // Hide skeleton
+    loading.dismiss();
+  }
 }

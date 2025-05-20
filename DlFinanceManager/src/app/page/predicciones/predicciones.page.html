@@ -9,26 +9,46 @@
     <div class="main-content">
       <app-header></app-header>
 
-      <div class="page-title">Sugerencias de Ahorro</div>
+      <div *ngIf="isLoading" class="page-title skeleton-title">
+        <div class="skeleton h-6 w-60"></div>
+      </div>
+      <div *ngIf="!isLoading" class="page-title">Sugerencias de Ahorro</div>
 
       <div class="sugerencias-container">
-        <div class="sugerencia-card" *ngFor="let sugerencia of sugerencias">
-          <div class="sugerencia-text">{{ sugerencia.texto }}</div>
+        <div class="sugerencia-card skeleton-card" *ngIf="isLoading">
+          <div class="skeleton h-5 w-full mb-2"></div>
+          <div class="skeleton h-4 w-3/4 mb-4"></div>
 
-          <div class="sugerencia-info">
-            <div class="sugerencia-impacto">
-              <strong>Impacto estimado:</strong> {{ sugerencia.impacto | currency }}
-            </div>
-            <div class="sugerencia-barra">
-              <div class="progreso" [style.width.%]="sugerencia.porcentaje"></div>
-            </div>
+          <div class="sugerencia-info skeleton-info">
+            <div class="skeleton h-4 w-1/2 mb-2"></div>
+            <div class="skeleton h-2 w-full"></div>
           </div>
 
-          <div class="sugerencia-actions">
-            <ion-button fill="outline" color="primary">Aceptar</ion-button>
-            <ion-button fill="clear" color="danger">Descartar</ion-button>
+          <div class="sugerencia-actions skeleton-actions">
+            <div class="skeleton h-8 w-20"></div>
+            <div class="skeleton h-8 w-20"></div>
           </div>
         </div>
+
+        <ng-container *ngIf="!isLoading">
+          <div class="sugerencia-card" *ngFor="let sugerencia of sugerencias">
+            <div class="sugerencia-text">{{ sugerencia.texto }}</div>
+
+            <div class="sugerencia-info">
+              <div class="sugerencia-impacto">
+                <strong>Impacto estimado:</strong> {{ sugerencia.impacto | currency:'EUR':'symbol':'1.0-0' }}
+              </div>
+              <div class="sugerencia-barra">
+                <div class="progreso" [style.width.%]="sugerencia.porcentaje"></div>
+              </div>
+            </div>
+
+            <div class="sugerencia-actions">
+              <ion-button fill="outline" color="primary">Aceptar</ion-button>
+              <ion-button fill="clear" color="danger">Descartar</ion-button>
+            </div>
+          </div>
+        </ng-container>
       </div>
     </div>
   </div>

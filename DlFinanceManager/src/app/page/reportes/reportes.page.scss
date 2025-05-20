@@ -25,6 +25,15 @@
   color: #333;
 }
 
+/* Skeleton for the page title */
+.skeleton-title {
+  .skeleton {
+    margin-bottom: 20px; /* Aligns with actual title's margin-bottom */
+    margin-left: 6%;
+    margin-top: 3%;
+  }
+}
+
 .chart-section {
   display: flex;
   flex-direction: column;
@@ -60,6 +69,53 @@ ion-button {
   --box-shadow: none;
   display: flex;
   align-items: center;
+}
+
+/* Skeleton styles */
+.skeleton-placeholder {
+  background-color: #f0f0f0;
+  animation: pulse 1.5s infinite ease-in-out;
+  border-radius: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.skeleton {
+  background-color: #e0e0e0;
+  animation: pulse 1.5s infinite ease-in-out;
+  border-radius: 4px;
+}
+
+.h-6 {
+  height: 24px;
+}
+
+.h-8 {
+  height: 32px;
+}
+
+.w-60 {
+  width: 240px;
+}
+
+.w-64{
+  width: 256px;
+}
+
+/* Pulse animation */
+@keyframes pulse {
+  0% {
+    background-color: #e0e0e0;
+  }
+
+  50% {
+    background-color: #f0f0f0;
+  }
+
+  100% {
+    background-color: #e0e0e0;
+  }
 }
 
 /* ---------------------- */

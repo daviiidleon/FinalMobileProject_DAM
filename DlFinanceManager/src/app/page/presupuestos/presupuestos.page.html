@@ -11,7 +11,15 @@
     <div class="main-content">
       <app-header></app-header>
 
-      <div class="budgets-header">
+      <div *ngIf="isLoading" class="budgets-header skeleton-header">
+        <div class="page-title">
+          <div class="skeleton h-8 w-40 mb-2"></div>
+          <div class="skeleton h-4 w-60"></div>
+        </div>
+        <div class="skeleton h-10 w-32 create-budget-button"></div>
+      </div>
+
+      <div *ngIf="!isLoading" class="budgets-header">
         <div class="page-title">
           <h2>Budgets</h2>
           <p>Set and track your monthly spending limits.</p>
@@ -22,7 +30,15 @@
         </ion-button>
       </div>
 
-      <div class="budget-alerts" *ngIf="budgetAlerts.length > 0">
+      <div *ngIf="isLoading" class="budget-alerts skeleton-alert">
+        <div class="skeleton h-6 w-full mb-2"></div>
+        <div class="skeleton h-4 w-3/4"></div>
+        <ul class="mt-2">
+          <li *ngFor="let i of [1,2]"><div class="skeleton h-4 w-full mb-1"></div></li>
+        </ul>
+      </div>
+
+      <div *ngIf="!isLoading && budgetAlerts.length > 0" class="budget-alerts">
         <div class="alert-container">
           <ion-icon name="warning-outline" color="danger"></ion-icon>
           <strong>Budget Alerts!</strong>
@@ -36,33 +52,59 @@
       </div>
 
       <div class="past-budgets">
-        <h3>Past Budgets</h3>
+        <h3 *ngIf="isLoading" class="skeleton h-6 w-40 mb-4"></h3>
+        <h3 *ngIf="!isLoading">Past Budgets</h3>
         <div class="budget-cards-container">
-          <div class="budget-card" *ngFor="let presupuesto of pastBudgets">
-            <div class="card-header">
-              <ion-icon [name]="getCategoryIcon(presupuesto.categoriaValue)"></ion-icon>
-              <span>{{ presupuesto.categoriaDisplay }}</span>
-              <span class="date">{{ presupuesto.mes }} {{ presupuesto.anio }}</span>
-            </div>
-            <div class="card-body">
-              <p>Limit: {{ presupuesto.limite }}</p>
-              <p>Spent: {{ presupuesto.gastado }}</p>
-              <p>Remaining: {{ presupuesto.restante }}</p>
-              <div class="progress-bar-container">
-                <ion-progress-bar [value]="presupuesto.porcentaje"></ion-progress-bar>
-                <span>{{ presupuesto.porcentaje | percent }} budget used</span>
+          <ng-container *ngIf="isLoading">
+            <div class="budget-card skeleton-budget-card" *ngFor="let i of [1, 2, 3]">
+              <div class="skeleton h-8 w-full mb-3"></div>
+              <div class="skeleton h-4 w-3/4 mb-2"></div>
+              <div class="skeleton h-4 w-1/2 mb-2"></div>
+              <div class="skeleton h-4 w-2/3 mb-4"></div>
+              <div class="skeleton h-4 w-full mb-2"></div>
+              <div class="skeleton h-3 w-1/2"></div>
+              <div class="skeleton-actions">
+                <div class="skeleton h-9 w-20"></div>
+                <div class="skeleton h-9 w-20"></div>
               </div>
             </div>
-            <div class="card-actions">
-              <ion-button fill="clear" color="primary" (click)="openEditBudgetModal(presupuesto)">
-                <ion-icon name="create-outline"></ion-icon>
-                Edit
-              </ion-button>
-              <ion-button fill="clear" color="danger" (click)="deleteBudget(presupuesto.id)">
-                <ion-icon name="trash-outline"></ion-icon>
-                Delete
-              </ion-button>
+          </ng-container>
+
+          <ng-container *ngIf="!isLoading && pastBudgets.length > 0">
+            <div class="budget-card" *ngFor="let presupuesto of pastBudgets">
+              <div class="card-header">
+                <ion-icon [name]="getCategoryIcon(presupuesto.categoriaValue)"></ion-icon>
+                <span>{{ presupuesto.categoriaDisplay }}</span>
+                <span class="date">{{ presupuesto.mes }} {{ presupuesto.anio }}</span>
+              </div>
+              <div class="card-body">
+                <p>Limit: {{ presupuesto.limite }}</p>
+                <p>Spent: {{ presupuesto.gastado }}</p>
+                <p>Remaining: {{ presupuesto.restante }}</p>
+                <div class="progress-bar-container">
+                  <ion-progress-bar [value]="presupuesto.porcentaje"></ion-progress-bar>
+                  <span>{{ presupuesto.porcentaje | percent }} budget used</span>
+                </div>
+              </div>
+              <div class="card-actions">
+                <ion-button fill="clear" color="primary" (click)="openEditBudgetModal(presupuesto)">
+                  <ion-icon name="create-outline"></ion-icon>
+                  Edit
+                </ion-button>
+                <ion-button fill="clear" color="danger" (click)="deleteBudget(presupuesto.id)">
+                  <ion-icon name="trash-outline"></ion-icon>
+                  Delete
+                </ion-button>
+              </div>
             </div>
+          </ng-container>
+
+          <div *ngIf="!isLoading && pastBudgets.length === 0" class="no-budgets">
+            <p>No budgets created yet. Start by creating your first budget!</p>
+            <ion-button class="create-budget-button" (click)="openCreateBudgetModal()">
+              <ion-icon name="add-outline" slot="start"></ion-icon>
+              Create First Budget
+            </ion-button>
           </div>
         </div>
       </div>
@@ -105,7 +147,7 @@
               </ion-item>
               <ion-item>
                 <ion-label>Month</ion-label>
-                <ion-datetime formControlName="mes" displayFormat="MMMM YYYY" value="{{ currentDate | date:'yyyy-MM-01' }}"></ion-datetime>
+                <ion-datetime formControlName="mes" displayFormat="MMMM grec-x-pseudo" value="{{ currentDate | date:'yyyy-MM-01' }}"></ion-datetime>
               </ion-item>
               <ion-button expand="full" type="submit" [disabled]="budgetForm.invalid || isSubmitting">
                 <ion-spinner name="crescent" *ngIf="isSubmitting"></ion-spinner>

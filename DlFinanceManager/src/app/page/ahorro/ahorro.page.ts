@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
   IonButton,
@@ -19,13 +19,23 @@ import {
   IonDatetime,
   IonButtons,
   IonNote,
-  LoadingController,
+  LoadingController, // <--- Ensure LoadingController is imported
   IonMenuButton,
   IonSpinner,
 } from '@ionic/angular/standalone';
 import { HeaderComponent } from '../../component/header/header.component';
 import { SideMenuComponent } from '../../component/side-menu/side-menu.component';
 import { Subscription } from 'rxjs';
+import { addIcons } from 'ionicons';
+import {
+  addOutline,
+  cashOutline,
+  calendarOutline,
+  addCircleOutline,
+  createOutline,
+  trashOutline
+} from 'ionicons/icons';
+
 
 interface ObjetivoAhorro {
   id: string;
@@ -42,14 +52,13 @@ interface ObjetivoAhorro {
   styleUrls: ['./ahorro.page.scss'],
   standalone: true,
   imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
     IonContent,
     IonHeader,
     IonTitle,
     IonToolbar,
-    CommonModule,
-    FormsModule,
-    HeaderComponent,
-    SideMenuComponent,
     IonIcon,
     IonButton,
     IonCol,
@@ -57,7 +66,6 @@ interface ObjetivoAhorro {
     IonGrid,
     IonProgressBar,
     IonModal,
-    ReactiveFormsModule,
     IonItem,
     IonLabel,
     IonInput,
@@ -66,6 +74,10 @@ interface ObjetivoAhorro {
     IonNote,
     IonMenuButton,
     IonSpinner,
+    DatePipe,
+    CurrencyPipe,
+    HeaderComponent,
+    SideMenuComponent,
   ],
 })
 export class AhorroPage implements OnInit, OnDestroy {
@@ -77,10 +89,20 @@ export class AhorroPage implements OnInit, OnDestroy {
   fundsToAdd: number | null = null;
   goalForm: FormGroup;
   isSubmitting = false;
+  isLoading = true; // Still using this for the skeleton
   private storageKey = 'objetivosAhorro';
   private storageSubscription: Subscription | undefined;
 
-  constructor(private fb: FormBuilder, private loadingCtrl: LoadingController) {
+  constructor(private fb: FormBuilder, private loadingCtrl: LoadingController) { // <--- Injected LoadingController
+    addIcons({
+      addOutline,
+      cashOutline,
+      calendarOutline,
+      addCircleOutline,
+      createOutline,
+      trashOutline
+    });
+
     this.goalForm = this.fb.group({
       id: [''],
       nombre: ['', [Validators.required, Validators.minLength(3)]],
@@ -90,8 +112,13 @@ export class AhorroPage implements OnInit, OnDestroy {
     });
   }
 
-  async ngOnInit() {
-    await this.loadObjetivos();
+  ngOnInit() {
+    // Keep this empty or for one-time setups.
+    // The loading of data is handled in ionViewWillEnter.
+  }
+
+  async ionViewWillEnter() {
+    await this.loadObjetivos(); // This will trigger the skeleton load and the LoadingController
   }
 
   ngOnDestroy() {
@@ -101,6 +128,19 @@ export class AhorroPage implements OnInit, OnDestroy {
   }
 
   async loadObjetivos() {
+    this.isLoading = true; // Start loading state for skeleton
+
+    // <--- Start Dashboard-style LoadingController
+    const loading = await this.loadingCtrl.create({
+      message: 'Cargando objetivos...',
+      spinner: 'crescent'
+    });
+    await loading.present();
+    // End Dashboard-style LoadingController --->
+
+    // Simulate fetching data with a delay
+    await new Promise(resolve => setTimeout(resolve, 1500)); // Keep this for demonstration
+
     try {
       const storedObjetivos = localStorage.getItem(this.storageKey);
       if (storedObjetivos) {
@@ -114,6 +154,9 @@ export class AhorroPage implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Error al cargar objetivos:', error);
       this.objetivos = [];
+    } finally {
+      this.isLoading = false; // End loading state, hide skeleton
+      loading.dismiss(); // <--- Dismiss the LoadingController
     }
   }
 
@@ -231,7 +274,7 @@ export class AhorroPage implements OnInit, OnDestroy {
           return {
             ...obj,
             montoActual: nuevoMontoActual,
-            progreso: nuevoMontoActual / obj.montoMeta * 100,
+            progreso: (nuevoMontoActual / obj.montoMeta) * 100,
           };
         }
         return obj;
@@ -253,4 +296,3 @@ export class AhorroPage implements OnInit, OnDestroy {
     await loading.dismiss();
   }
 }
-

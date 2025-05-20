@@ -1,42 +1,53 @@
 <ion-header [translucent]="true">
-  <!--<app-header></app-header>-->
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <div class="dashboard-layout">
-    <!-- Columna izquierda: menú lateral -->
     <div class="first-content">
       <app-side-menu></app-side-menu>
     </div>
 
-    <!-- Columna derecha: contenido principal -->
     <div class="main-content">
       <app-header></app-header>
 
-      <!-- Título de la página -->
-      <div class="page-title">Informes y reportes</div>
+      <div *ngIf="isLoading" class="page-title skeleton-title">
+        <div class="skeleton h-6 w-60"></div>
+      </div>
+      <div *ngIf="!isLoading" class="page-title">Informes y reportes</div>
 
       <div class="chart-section">
-        <div class="chart-placeholder">
-          <ion-button size="large">
-            <ion-icon name="document-outline" slot="start"></ion-icon>
-            Generar informe en PDF
-          </ion-button>
+        <div *ngIf="isLoading" class="chart-placeholder skeleton-placeholder">
+          <div class="skeleton h-8 w-64"></div>
+        </div>
+        <div *ngIf="isLoading" class="chart-placeholder2 skeleton-placeholder">
+          <div class="skeleton h-8 w-64"></div>
+        </div>
+        <div *ngIf="isLoading" class="chart-placeholder3 skeleton-placeholder">
+          <div class="skeleton h-8 w-64"></div>
         </div>
 
-        <div class="chart-placeholder2">
-          <ion-button size="large">
-            <ion-icon name="document-text-outline" slot="start"></ion-icon>
-            Generar informe en Excel
-          </ion-button>
-        </div>
+        <ng-container *ngIf="!isLoading">
+          <div class="chart-placeholder">
+            <ion-button size="large">
+              <ion-icon name="document-outline" slot="start"></ion-icon>
+              Generar informe en PDF
+            </ion-button>
+          </div>
 
-        <div class="chart-placeholder3">
-          <ion-button size="large">
-            <ion-icon name="document-attach-outline" slot="start"></ion-icon>
-            Generar informe en CSV
-          </ion-button>
-        </div>
+          <div class="chart-placeholder2">
+            <ion-button size="large">
+              <ion-icon name="document-text-outline" slot="start"></ion-icon>
+              Generar informe en Excel
+            </ion-button>
+          </div>
+
+          <div class="chart-placeholder3">
+            <ion-button size="large">
+              <ion-icon name="document-attach-outline" slot="start"></ion-icon>
+              Generar informe en CSV
+            </ion-button>
+          </div>
+        </ng-container>
       </div>
     </div>
   </div>

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule, DatePipe, PercentPipe } from '@angular/common'; //  <-- ENSURE THESE ARE HERE
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
   IonButton,
@@ -17,17 +17,35 @@ import {
   IonSpinner,
   IonProgressBar,
   IonSelect,
-  IonSelectOption, IonNote
+  IonSelectOption,
+  IonNote,
+  LoadingController
 } from '@ionic/angular/standalone';
 import { HeaderComponent } from "../../component/header/header.component";
 import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
+import { addIcons } from 'ionicons';
+import {
+  addOutline,
+  warningOutline,
+  fastFoodOutline,
+  carOutline,
+  filmOutline,
+  bookOutline,
+  heartOutline,
+  homeOutline,
+  flashOutline,
+  ellipsisHorizontalOutline,
+  pricetagOutline,
+  createOutline,
+  trashOutline
+} from 'ionicons/icons';
 
 type CategoriaKey = 'comida' | 'transporte' | 'entretenimiento' | 'educacion' | 'salud' | 'housing' | 'utilities' | 'otros';
 
 interface PastBudget {
   id: string;
-  categoriaValue: CategoriaKey; // Usamos el tipo CategoriaKey
-  categoriaDisplay: string; // Para mostrar en la lista
+  categoriaValue: CategoriaKey;
+  categoriaDisplay: string;
   mes: string;
   anio: string;
   limite: string;
@@ -46,18 +64,19 @@ interface BudgetAlert {
   styleUrls: ['./presupuestos.page.scss'],
   standalone: true,
   imports: [
+    // Core Angular Modules for directives and pipes
+    CommonModule,        // <--- THIS IS CRITICAL for *ngIf, *ngFor
+    FormsModule,         // <--- Required for forms, even if reactive form is used (general good practice)
+    ReactiveFormsModule, // <--- Required for FormGroup and form controls
+
+    // Ionic Standalone Components
     IonContent,
     IonHeader,
     IonTitle,
     IonToolbar,
-    CommonModule,
-    FormsModule,
-    HeaderComponent,
-    SideMenuComponent,
     IonIcon,
     IonButton,
     IonModal,
-    ReactiveFormsModule,
     IonItem,
     IonLabel,
     IonInput,
@@ -65,10 +84,17 @@ interface BudgetAlert {
     IonButtons,
     IonSpinner,
     IonProgressBar,
-    DatePipe,
     IonSelect,
     IonSelectOption,
-    IonNote
+    IonNote,
+
+    // Angular Pipes (explicitly imported for standalone components)
+    DatePipe,   // <--- Required for 'date' pipe
+    PercentPipe, // <--- Required for 'percent' pipe
+
+    // Your custom components
+    HeaderComponent,
+    SideMenuComponent
   ]
 })
 export class PresupuestosPage implements OnInit {
@@ -84,45 +110,9 @@ export class PresupuestosPage implements OnInit {
     otros: 'Otros'
   };
 
-  pastBudgets: PastBudget[] = [
-    {
-      id: '1',
-      categoriaValue: 'comida',
-      categoriaDisplay: 'Comida',
-      mes: 'December',
-      anio: '2023',
-      limite: '€550',
-      gastado: '€120',
-      restante: '€430',
-      porcentaje: 0.218
-    },
-    {
-      id: '2',
-      categoriaValue: 'comida',
-      categoriaDisplay: 'Comida',
-      mes: 'November',
-      anio: '2023',
-      limite: '€500',
-      gastado: '€350.75',
-      restante: '€149.25',
-      porcentaje: 0.702
-    },
-    {
-      id: '3',
-      categoriaValue: 'transporte',
-      categoriaDisplay: 'Transporte',
-      mes: 'November',
-      anio: '2023',
-      limite: '€150',
-      gastado: '€160',
-      restante: '-€10',
-      porcentaje: 1.067
-    }
-  ];
-
-  budgetAlerts: BudgetAlert[] = [
-    { message: 'Transport (107% used) for November 2023' }
-  ];
+  pastBudgets: PastBudget[] = [];
+  budgetAlerts: BudgetAlert[] = [];
+  isLoading: boolean = true;
 
   isCreateBudgetModalOpen = false;
   isEditingBudget = false;
@@ -131,7 +121,23 @@ export class PresupuestosPage implements OnInit {
   editingBudgetId: string | null = null;
   currentDate = new Date();
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private loadingController: LoadingController) {
+    addIcons({
+      addOutline,
+      warningOutline,
+      fastFoodOutline,
+      carOutline,
+      filmOutline,
+      bookOutline,
+      heartOutline,
+      homeOutline,
+      flashOutline,
+      ellipsisHorizontalOutline,
+      pricetagOutline,
+      createOutline,
+      trashOutline
+    });
+
     this.budgetForm = this.fb.group({
       categoria: ['', Validators.required],
       monto: [null, [Validators.required, Validators.min(0.01)]],
@@ -139,7 +145,64 @@ export class PresupuestosPage implements OnInit {
     });
   }
 
-  ngOnInit() { }
+  ngOnInit() {
+    this.loadBudgets();
+  }
+
+  async loadBudgets() {
+    this.isLoading = true;
+    const loading = await this.loadingController.create({
+      message: 'Loading budgets...',
+      spinner: 'crescent'
+    });
+    await loading.present();
+
+    // Simulate fetching data with a delay
+    setTimeout(() => {
+      this.pastBudgets = [
+        {
+          id: '1',
+          categoriaValue: 'comida',
+          categoriaDisplay: 'Comida',
+          mes: 'December',
+          anio: '2023',
+          limite: '€550',
+          gastado: '€120',
+          restante: '€430',
+          porcentaje: 0.218
+        },
+        {
+          id: '2',
+          categoriaValue: 'comida',
+          categoriaDisplay: 'Comida',
+          mes: 'November',
+          anio: '2023',
+          limite: '€500',
+          gastado: '€350.75',
+          restante: '€149.25',
+          porcentaje: 0.702
+        },
+        {
+          id: '3',
+          categoriaValue: 'transporte',
+          categoriaDisplay: 'Transporte',
+          mes: 'November',
+          anio: '2023',
+          limite: '€150',
+          gastado: '€160',
+          restante: '-€10',
+          porcentaje: 1.067
+        }
+      ];
+
+      this.budgetAlerts = [
+        { message: 'Transport (107% used) for November 2023' }
+      ];
+
+      this.isLoading = false;
+      loading.dismiss();
+    }, 1500);
+  }
 
   getCategoryIcon(categoryValue: CategoriaKey): string {
     switch (categoryValue) {
@@ -179,14 +242,14 @@ export class PresupuestosPage implements OnInit {
     this.editingBudgetId = null;
   }
 
-  submitBudgetForm() {
+  async submitBudgetForm() {
     if (this.budgetForm.valid) {
       this.isSubmitting = true;
       const formValue = this.budgetForm.value;
       const monthYear = new Date(formValue.mes);
       const month = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(monthYear);
       const year = monthYear.getFullYear().toString();
-      const categoriaValue = formValue.categoria as CategoriaKey; // Casteamos el valor
+      const categoriaValue = formValue.categoria as CategoriaKey;
 
       const newBudget: PastBudget = {
         id: this.editingBudgetId || Math.random().toString(36).substring(2, 15),
@@ -200,16 +263,31 @@ export class PresupuestosPage implements OnInit {
         porcentaje: 0
       };
 
-      if (this.isEditingBudget && this.editingBudgetId) {
-        this.pastBudgets = this.pastBudgets.map(budget =>
-          budget.id === this.editingBudgetId ? newBudget : budget
-        );
-      } else {
-        this.pastBudgets.push(newBudget);
-      }
+      const submitLoading = await this.loadingController.create({
+        message: this.isEditingBudget ? 'Saving changes...' : 'Creating budget...',
+        spinner: 'crescent'
+      });
+      await submitLoading.present();
 
-      this.isSubmitting = false;
-      this.closeCreateBudgetModal();
+      setTimeout(() => {
+        if (this.isEditingBudget && this.editingBudgetId) {
+          this.pastBudgets = this.pastBudgets.map(budget =>
+            budget.id === this.editingBudgetId ? newBudget : budget
+          );
+        } else {
+          this.pastBudgets.push(newBudget);
+        }
+        this.pastBudgets.sort((a,b) => {
+          const dateA = new Date(`${a.mes} 1, ${a.anio}`);
+          const dateB = new Date(`${b.mes} 1, ${b.anio}`);
+          return dateB.getTime() - dateA.getTime();
+        });
+        this.isSubmitting = false;
+        submitLoading.dismiss();
+        this.closeCreateBudgetModal();
+      }, 700);
+    } else {
+      this.budgetForm.markAllAsTouched();
     }
   }
 
@@ -225,7 +303,16 @@ export class PresupuestosPage implements OnInit {
     this.isCreateBudgetModalOpen = true;
   }
 
-  deleteBudget(id: string) {
-    this.pastBudgets = this.pastBudgets.filter(budget => budget.id !== id);
+  async deleteBudget(id: string) {
+    const deleteLoading = await this.loadingController.create({
+      message: 'Deleting budget...',
+      spinner: 'crescent'
+    });
+    await deleteLoading.present();
+
+    setTimeout(() => {
+      this.pastBudgets = this.pastBudgets.filter(budget => budget.id !== id);
+      deleteLoading.dismiss();
+    }, 500);
   }
 }
