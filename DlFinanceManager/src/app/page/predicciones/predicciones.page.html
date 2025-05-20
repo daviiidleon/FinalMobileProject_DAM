@@ -1,48 +1,35 @@
-<ion-header [translucent]="true">
-  <!--<app-header></app-header>-->
-</ion-header>
+<ion-header [translucent]="true"></ion-header>
 
 <ion-content [fullscreen]="true">
-
   <div class="dashboard-layout">
-    <!-- Columna izquierda: menú lateral -->
     <div class="first-content">
       <app-side-menu></app-side-menu>
     </div>
 
-    <!-- Columna derecha: contenido principal -->
     <div class="main-content">
       <app-header></app-header>
-      <div class="summary-cards">
-        <div class="card">
-          <div class="page-title"></div>
-        </div>
-        <div class="card">
-          <ion-button class="button-transacciones">+ Añadir predicción</ion-button>
-        </div>
-      </div>
 
-      <div class="chart-section">
-        <div class="chart-placeholder">
-          <ion-grid class="predicciones-grid">
-            <ion-row class="header-row">
-              <ion-col><strong>Fecha</strong></ion-col>
-              <ion-col><strong>Categoría</strong></ion-col>
-              <ion-col><strong>Monto</strong></ion-col>
-              <ion-col><strong>Tipo</strong></ion-col>
-            </ion-row>
+      <div class="page-title">Sugerencias de Ahorro</div>
 
-            <ion-row *ngFor="let prediccion of predicciones">
-              <ion-col>{{ prediccion.fecha | date }}</ion-col>
-              <ion-col>{{ prediccion.categoria }}</ion-col>
-              <ion-col>{{ prediccion.monto | currency }}</ion-col>
-              <ion-col>{{ prediccion.tipo }}</ion-col>
-            </ion-row>
-          </ion-grid>
+      <div class="sugerencias-container">
+        <div class="sugerencia-card" *ngFor="let sugerencia of sugerencias">
+          <div class="sugerencia-text">{{ sugerencia.texto }}</div>
+
+          <div class="sugerencia-info">
+            <div class="sugerencia-impacto">
+              <strong>Impacto estimado:</strong> {{ sugerencia.impacto | currency }}
+            </div>
+            <div class="sugerencia-barra">
+              <div class="progreso" [style.width.%]="sugerencia.porcentaje"></div>
+            </div>
+          </div>
+
+          <div class="sugerencia-actions">
+            <ion-button fill="outline" color="primary">Aceptar</ion-button>
+            <ion-button fill="clear" color="danger">Descartar</ion-button>
+          </div>
         </div>
       </div>
-
     </div>
   </div>
-
 </ion-content>

@@ -19,20 +19,35 @@ import { SideMenuComponent } from "../../component/side-menu/side-menu.component
   templateUrl: './predicciones.page.html',
   styleUrls: ['./predicciones.page.scss'],
   standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, HeaderComponent, SideMenuComponent, IonIcon, IonButton, IonRow, IonCol, IonGrid]
+  imports: [
+    IonContent, IonHeader, IonTitle, IonToolbar,
+    CommonModule, FormsModule, HeaderComponent,
+    SideMenuComponent, IonIcon, IonButton, IonRow,
+    IonCol, IonGrid
+  ]
 })
 export class PrediccionesPage implements OnInit {
 
-  // Datos de ejemplo
-  predicciones = [
-    { fecha: new Date(2025, 4, 10), categoria: 'Viajes', monto: 1000, tipo: 'Ingreso' },
-    { fecha: new Date(2025, 5, 15), categoria: 'Salud', monto: 500, tipo: 'Gasto' },
-    { fecha: new Date(2025, 6, 20), categoria: 'Educación', monto: 200, tipo: 'Ingreso' }
+  sugerencias = [
+    {
+      texto: '🎯 Puedes ahorrar 50 € reduciendo un 20% tu gasto en delivery.',
+      impacto: 50,
+      porcentaje: 40
+    },
+    {
+      texto: '💡 Mueve 20 € a tu cuenta de ahorro esta semana: no los necesitas.',
+      impacto: 20,
+      porcentaje: 25
+    },
+    {
+      texto: '📉 Estás gastando más en transporte que el 80% de usuarios como tú.',
+      impacto: 35,
+      porcentaje: 30
+    }
   ];
 
   constructor() { }
 
-  ngOnInit() {
-  }
+  ngOnInit() { }
 
 }

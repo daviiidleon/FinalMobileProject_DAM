@@ -3,6 +3,7 @@
   flex-direction: row;
   height: 100%;
   width: 100%;
+  background-color: white;
 }
 
 .first-content {
@@ -20,80 +21,65 @@
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 20px;
-  margin-left: 6%;
-  margin-top: 3%;
+  color: #1e1e1e;
+}
+
+.sugerencias-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 10px;
+}
+
+.sugerencia-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  transition: transform 0.2s ease;
+}
+
+.sugerencia-card:hover {
+  transform: translateY(-3px);
+}
+
+.sugerencia-text {
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 10px;
   color: #333;
 }
 
-.button-transacciones {
-  --background: #494949;
-  --color: white;
-  margin-left: auto;
-  width: 87%;
-  font-size: 12px;
+.sugerencia-info {
+  margin-top: 10px;
 }
 
-.button-transacciones:hover {
-  --background: black;
-}
-
-.chart-section h2 {
-  margin-bottom: 10px;
-  margin-left: 6%;
-}
-
-.chart-placeholder {
-  border: 1px solid #ddd;
-  height: auto;
-  width: 84%;
-  background: #fff;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  padding: 10px;
-  margin-right: 23%;
-  margin-left: 6%;
-}
-
-.summary-cards {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 30px;
-  margin-left: 42px;
-  margin-top: 50px;
-  flex-wrap: wrap;
-}
-
-.card {
-  padding: 15px;
-  width: 20%;
-  min-width: 200px;
-}
-
-.predicciones-grid {
-  width: 100%;
+.sugerencia-impacto {
   font-size: 14px;
+  margin-bottom: 5px;
+  color: #666;
 }
 
-.header-row {
-  background-color: #f0f0f0;
-  font-weight: bold;
-  border-bottom: 1px solid #ccc;
+.sugerencia-barra {
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
 }
 
-ion-row {
-  border-bottom: 1px solid #e0e0e0;
-  padding: 8px 0;
+.progreso {
+  height: 100%;
+  background-color: #007bff;
+  transition: width 0.3s ease;
 }
 
-ion-col {
-  text-align: left;
+.sugerencia-actions {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
 }
 
-/* ---------------------- */
-/* ✅ MEDIA QUERIES */
-/* ---------------------- */
-
+/* Responsivo */
 @media (max-width: 991px) {
   .dashboard-layout {
     flex-direction: column;
@@ -105,55 +91,11 @@ ion-col {
   }
 
   .main-content {
-    padding: 10px;
     order: 1;
-  }
-
-  .summary-cards {
-    flex-direction: column;
-    align-items: center;
-    margin-left: 0;
-    gap: 20px;
-  }
-
-  .card {
-    width: 90%;
-  }
-
-  .chart-placeholder {
-    width: 95%;
-    margin: 0 auto;
-  }
-
-  .button-transacciones {
-    width: 100%;
-    margin-left: 0;
-    font-size: 14px;
-  }
-
-  .page-title {
-    font-size: 20px;
-    margin-left: 0;
-    text-align: center;
-  }
-}
-
-@media (max-width: 576px) {
-  .predicciones-grid ion-col,
-  .header-row ion-col {
-    font-size: 12px;
-    padding: 6px 0;
-  }
-
-  .chart-placeholder {
-    padding: 6px;
-  }
-
-  .button-transacciones {
-    font-size: 12px;
-  }
-
-  .card {
     padding: 10px;
+  }
+
+  .sugerencia-card {
+    padding: 15px;
   }
 }

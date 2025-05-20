@@ -34,15 +34,23 @@
 .chart-placeholder,
 .chart-placeholder2,
 .chart-placeholder3 {
-  border: 1px solid #ddd;
-  height: 100px;
-  width: 84%;
-  background: #fff;
-  border-radius: 8px;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  height: 120px;
+  width: 80%;
+  background: #fefefe;
+  border-radius: 16px;
   display: flex;
   justify-content: center;
   align-items: center;
   margin: 0 auto;
+  transition: transform 0.2s;
+}
+
+.chart-placeholder:hover,
+.chart-placeholder2:hover,
+.chart-placeholder3:hover {
+  transform: translateY(-4px);
 }
 
 ion-button {
@@ -50,6 +58,8 @@ ion-button {
   color: black;
   --background: transparent;
   --box-shadow: none;
+  display: flex;
+  align-items: center;
 }
 
 /* ---------------------- */
@@ -89,6 +99,7 @@ ion-button {
     font-size: 16px;
     width: 100%;
     text-align: center;
+    justify-content: center;
   }
 }
 
