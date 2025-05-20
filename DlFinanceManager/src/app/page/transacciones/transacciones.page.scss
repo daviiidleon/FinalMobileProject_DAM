@@ -1,12 +1,22 @@
+/* --- Dashboard Layout and General Styles (shared with other pages) --- */
 .dashboard-layout {
   display: flex;
   flex-direction: row;
   height: 100%;
   width: 100%;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
 }
 
 .first-content {
   width: 15%;
+  background-color: #222;
+  color: #fff;
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 }
 
 .main-content {
@@ -16,12 +26,13 @@
   box-sizing: border-box;
 }
 
+/* --- Transactions Header Section --- */
 .transactions-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-  padding-right: 10px; /* Añade un poco de espacio a la derecha */
+  padding-right: 10px;
 }
 
 .header-left h1 {
@@ -46,12 +57,13 @@
   font-size: 14px;
 }
 
+/* --- Transactions Filter Section --- */
 .transactions-filter {
   display: flex;
   gap: 20px;
   margin-bottom: 20px;
   align-items: center;
-  padding-right: 10px; /* Añade un poco de espacio a la derecha */
+  padding-right: 10px;
 }
 
 .search-bar {
@@ -62,6 +74,7 @@
   width: 200px;
 }
 
+/* --- Transactions List Section --- */
 .transactions-list {
   background-color: #fff;
   border: 1px solid #ddd;
@@ -89,9 +102,9 @@ ion-col {
   text-align: left;
   display: flex;
   align-items: center;
-  overflow: hidden; /* Evita que el contenido se desborde */
-  text-overflow: ellipsis; /* Muestra puntos suspensivos si el texto es demasiado largo */
-  white-space: nowrap; /* Evita el salto de línea */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 ion-icon {
@@ -99,7 +112,7 @@ ion-icon {
 }
 
 ion-col:last-child {
-  justify-content: flex-end; /* Alinea los botones de acción a la derecha */
+  justify-content: flex-end; /* Align action buttons to the right */
 }
 
 ion-button[size="small"] {
@@ -116,6 +129,18 @@ ion-button[size="small"] {
 
 .income {
   color: var(--ion-color-success);
+}
+
+.no-transactions {
+  text-align: center;
+  padding: 40px;
+  color: #777;
+  border-top: 1px solid #e0e0e0;
+  margin-top: 10px;
+
+  ion-button {
+    margin-top: 20px;
+  }
 }
 
 /* --------------------- */
@@ -168,7 +193,7 @@ ion-button[size="small"] {
   }
 
   ion-col:last-child {
-    justify-content: flex-end; /* Alinea los botones de acción a la derecha */
+    justify-content: flex-end; /* Align action buttons to the right */
   }
 }
 
@@ -193,3 +218,80 @@ ion-button[size="small"] {
     --padding-end: 3px;
   }
 }
+
+
+/* --- Skeleton Loader Styles --- */
+
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Specific skeleton styles for this page */
+.skeleton-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-right: 10px;
+  .header-left {
+    flex-grow: 1;
+  }
+  .header-right {
+    display: flex;
+    gap: 10px;
+  }
+}
+
+.skeleton-filter {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+  align-items: center;
+  padding-right: 10px;
+  .search-bar, .category-filter {
+    flex-grow: 1;
+  }
+}
+
+.skeleton-list {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  .transacciones-grid {
+    width: 100%;
+  }
+  ion-row {
+    border-bottom: 1px solid #e0e0e0;
+    padding: 8px 0;
+  }
+  ion-row:last-child {
+    border-bottom: none;
+  }
+}
+
+/* Utility classes for skeleton dimensions */
+.h-4 { height: 1rem; }
+.h-8 { height: 2rem; }
+.h-10 { height: 2.5rem; }
+.h-12 { height: 3rem; }
+
+.w-full { width: 100%; }
+.w-2\/3 { width: 66.666%; }
+.w-1\/2 { width: 50%; }
+.w-40 { width: 10rem; } /* Approx width for buttons */
+
+.mb-2 { margin-bottom: 0.5rem; }
+.ml-2 { margin-left: 0.5rem; }

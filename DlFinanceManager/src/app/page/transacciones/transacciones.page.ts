@@ -18,11 +18,12 @@ import {
   IonSelect,
   IonSelectOption,
   IonTitle,
-  IonToolbar
+  IonToolbar,
+  LoadingController // Import LoadingController
 } from '@ionic/angular/standalone';
 import { HeaderComponent } from "../../component/header/header.component";
 import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
-import { RouterLink } from '@angular/router'; // Import RouterLink
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-transacciones',
@@ -58,46 +59,78 @@ export class TransaccionesPage implements OnInit {
   @ViewChild(IonPopover) popover!: IonPopover;
   popoverEvent: any;
 
-  transacciones: any[] = [
-    {
-      tipo: 'Expense',
-      fecha: 'Nov 15, 2023',
-      cuenta: 'Cuenta Corriente',
-      cantidad: '-€75.50',
-      categoria: 'Food',
-      descripcion: 'Groceries for the week'
-    },
-    {
-      tipo: 'Income',
-      fecha: 'Nov 1, 2023',
-      cuenta: 'Cuenta Corriente',
-      cantidad: '+€2200.00',
-      categoria: 'Salary',
-      descripcion: 'November Salary'
-    },
-    {
-      tipo: 'Expense',
-      fecha: 'Nov 5, 2023',
-      cuenta: 'Tarjeta Crédito',
-      cantidad: '-€120.00',
-      categoria: 'Utilities',
-      descripcion: 'Electricity Bill'
-    },
-    {
-      tipo: 'Expense',
-      fecha: 'Nov 10, 2023',
-      cuenta: 'Efectivo',
-      cantidad: '-€30.00',
-      categoria: 'Transport',
-      descripcion: 'Bus fare'
-    }
-    // Add more transactions here
-  ];
+  transacciones: any[] = []; // Initialize as empty to show loading state
+  isLoading: boolean = true; // Set to true initially
 
-  constructor() { }
+  constructor(private loadingController: LoadingController) { } // Inject LoadingController
 
   ngOnInit() {
-    // Here you would typically load transactions from a service
+    this.loadTransactions();
+  }
+
+  async loadTransactions() {
+    this.isLoading = true; // Show skeleton loaders
+    const loading = await this.loadingController.create({ // Show Ionic spinner
+      message: 'Loading transactions...',
+      spinner: 'crescent'
+    });
+    await loading.present();
+
+    // Simulate fetching data with a delay
+    setTimeout(() => {
+      this.transacciones = [
+        {
+          tipo: 'Expense',
+          fecha: 'Nov 15, 2023',
+          cuenta: 'Cuenta Corriente',
+          cantidad: '-€75.50',
+          categoria: 'Food',
+          descripcion: 'Groceries for the week'
+        },
+        {
+          tipo: 'Income',
+          fecha: 'Nov 1, 2023',
+          cuenta: 'Cuenta Corriente',
+          cantidad: '+€2200.00',
+          categoria: 'Salary',
+          descripcion: 'November Salary'
+        },
+        {
+          tipo: 'Expense',
+          fecha: 'Oct 28, 2023',
+          cuenta: 'Tarjeta Crédito',
+          cantidad: '-€120.00',
+          categoria: 'Utilities',
+          descripcion: 'Electricity Bill'
+        },
+        {
+          tipo: 'Expense',
+          fecha: 'Oct 25, 2023',
+          cuenta: 'Efectivo',
+          cantidad: '-€30.00',
+          categoria: 'Transport',
+          descripcion: 'Bus fare'
+        },
+        {
+          tipo: 'Income',
+          fecha: 'Oct 20, 2023',
+          cuenta: 'Cuenta Ahorro',
+          cantidad: '+€500.00',
+          categoria: 'Investment',
+          descripcion: 'Stock Dividend'
+        },
+        {
+          tipo: 'Expense',
+          fecha: 'Oct 18, 2023',
+          cuenta: 'Tarjeta Crédito',
+          cantidad: '-€85.00',
+          categoria: 'Entertainment',
+          descripcion: 'Concert Tickets'
+        }
+      ];
+      this.isLoading = false; // Hide skeleton loaders
+      loading.dismiss(); // Dismiss Ionic spinner
+    }, 1500); // Simulate 1.5 seconds of loading
   }
 
   async mostrarOpciones(transaccion: any, ev: any) {

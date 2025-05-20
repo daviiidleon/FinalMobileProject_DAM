@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, formatDate } from '@angular/common'; // Include formatDate from CommonModule
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
   IonButton,
@@ -25,13 +25,10 @@ import {
   IonText,
   IonButtons,
   LoadingController,
-  //IonCardFooter, // Removed IonCardFooter
 } from '@ionic/angular/standalone';
 import { HeaderComponent } from "../../component/header/header.component";
 import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
-import { LucideAngularModule } from 'lucide-angular'; // Import the module
-//import { format } from 'date-fns'; // Removed date-fns
-import { formatDate } from '@angular/common'; //use angular formatDate
+import { LucideAngularModule } from 'lucide-angular';
 
 interface Account {
   id: string;
@@ -97,13 +94,12 @@ interface AccountFormValues {
     IonSelectOption,
     IonText,
     IonButtons,
-    //IonCardFooter, // Removed IonCardFooter
-    LucideAngularModule, // Import the module here
+    LucideAngularModule,
   ]
 })
 export class CuentasPage implements OnInit {
   accounts: Account[] = [];
-  isLoading = true;
+  isLoading = true; // Initialize to true for skeleton loading
   isModalOpen = false;
   editingAccount: Account | undefined;
   accountForm: FormGroup;
@@ -129,8 +125,10 @@ export class CuentasPage implements OnInit {
   async loadAccounts() {
     const loading = await this.loadingController.create({
       message: 'Loading accounts...',
+      spinner: 'crescent' // Added spinner type
     });
     await loading.present();
+
     setTimeout(() => {
       this.accounts = [
         { id: 'acc1', nombre: 'Checking Account', tipo: 'Checking', saldo: 5210.75, institucion: 'City Bank', fechaActualizacion: new Date().toISOString() },
@@ -138,9 +136,9 @@ export class CuentasPage implements OnInit {
         { id: 'acc3', nombre: 'Travel Rewards Card', tipo: 'Credit Card', saldo: -750.20, institucion: 'Global Credit Inc.', fechaActualizacion: new Date(Date.now() - 86400000).toISOString() },
         { id: 'acc4', nombre: 'Retirement Fund', tipo: 'Investment', saldo: 125000.00, institucion: 'InvestWell Group' },
       ];
-      this.isLoading = false;
+      this.isLoading = false; // Hide skeleton when data is loaded
       loading.dismiss();
-    }, 1000);
+    }, 1500); // Simulate network delay
   }
 
   openModal(account?: Account) {
@@ -169,13 +167,23 @@ export class CuentasPage implements OnInit {
     this.isFormSubmitted = true;
     if (this.accountForm.valid) {
       const formData = this.accountForm.value as AccountFormValues;
-      if (this.editingAccount) {
-        this.updateAccount(formData);
-      } else {
-        this.createAccount(formData);
-      }
-      this.closeModal();
+      const submitLoading = await this.loadingController.create({
+        message: this.editingAccount ? 'Updating account...' : 'Creating account...',
+        spinner: 'crescent'
+      });
+      await submitLoading.present();
+
+      setTimeout(() => {
+        if (this.editingAccount) {
+          this.updateAccount(formData);
+        } else {
+          this.createAccount(formData);
+        }
+        submitLoading.dismiss();
+        this.closeModal();
+      }, 700); // Simulate API call delay for form submission
     } else {
+      // Mark all fields as touched to display validation errors
       Object.values(this.accountForm.controls).forEach(control => {
         control.markAsTouched();
       });
@@ -185,7 +193,7 @@ export class CuentasPage implements OnInit {
   createAccount(formData: AccountFormValues) {
     const newAccount: Account = {
       ...formData,
-      id: `acc${Date.now()}`,
+      id: `acc${Date.now()}`, // Simple ID generation
       fechaActualizacion: new Date().toISOString()
     };
     this.accounts = [newAccount, ...this.accounts].sort((a, b) => a.nombre.localeCompare(b.nombre));
@@ -200,11 +208,20 @@ export class CuentasPage implements OnInit {
     }
   }
 
-  deleteAccount(accountId: string) {
-    this.accounts = this.accounts.filter(acc => acc.id !== accountId);
+  async deleteAccount(accountId: string) {
+    const deleteLoading = await this.loadingController.create({
+      message: 'Deleting account...',
+      spinner: 'crescent'
+    });
+    await deleteLoading.present();
+
+    setTimeout(() => {
+      this.accounts = this.accounts.filter(acc => acc.id !== accountId);
+      deleteLoading.dismiss();
+    }, 500); // Simulate API call delay for deletion
   }
 
-  getIcon(type: string): string {
+  getIcon(type: string): any { // Changed return type to 'any' for lucide-icon
     return accountTypeIcons[type] || 'shapes';
   }
 
@@ -216,11 +233,10 @@ export class CuentasPage implements OnInit {
     if (!isoDate) {
       return '';
     }
-    return formatDate(isoDate, 'PP', 'en-US');
+    return formatDate(isoDate, 'MMM d, yyyy', 'en-US'); // Using Angular's formatDate
   }
 
   getFormControl(name: string) {
     return this.accountForm.controls[name];
   }
 }
-

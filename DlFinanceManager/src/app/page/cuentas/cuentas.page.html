@@ -10,7 +10,16 @@
 
     <div class="main-content">
       <app-header></app-header>
-      <div class="page-header">
+
+      <div *ngIf="isLoading" class="page-header skeleton-page-header">
+        <h1 class="page-title">
+          <div class="skeleton h-8 w-40 mr-3"></div>
+        </h1>
+        <p class="skeleton h-4 w-60"></p>
+        <div class="skeleton h-10 w-32 add-account-button"></div>
+      </div>
+
+      <div *ngIf="!isLoading" class="page-header">
         <h1 class="page-title">
           <lucide-icon name="landmark" class="mr-3 h-8 w-8 text-primary"></lucide-icon> Accounts
         </h1>
