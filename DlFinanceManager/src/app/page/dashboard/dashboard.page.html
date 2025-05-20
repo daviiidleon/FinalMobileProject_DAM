@@ -8,9 +8,18 @@
 
     <div class="main-content">
       <app-header></app-header>
-      <div class="page-title"></div>
+      <div class="page-title">
+        <h1 class="page-title">Dashboard</h1>
+      </div>
 
-      <div class="summary-cards">
+      <div *ngIf="isLoading" class="summary-cards">
+        <div class="card skeleton-card" *ngFor="let i of [1,2,3,4]">
+          <div class="skeleton h-6 w-3/4 mb-2"></div>
+          <div class="skeleton h-10 w-full"></div>
+        </div>
+      </div>
+
+      <div *ngIf="!isLoading" class="summary-cards">
         <div class="card" *ngIf="currentBalance">
           <div class="card-title">Saldo actual</div>
           <div class="card-value">{{ currentBalance.current | number:'1.2-2' }} €</div>
@@ -29,7 +38,15 @@
         </div>
       </div>
 
-      <div class="chart-section">
+      <div *ngIf="isLoading" class="chart-section">
+        <div class="skeleton h-8 w-2/3 mb-4"></div>
+        <div class="skeleton h-4 w-1/2 mb-6"></div>
+        <div class="chart-placeholder skeleton-chart">
+          <div class="skeleton h-48 w-full"></div>
+        </div>
+      </div>
+
+      <div *ngIf="!isLoading" class="chart-section">
         <div class="card-title2">Resumen de ingresos y gastos</div>
         <p style="text-align: center; color: #777; margin-bottom: 15px;">Desempeño financiero mensual</p>
         <div class="chart-placeholder">
@@ -37,7 +54,18 @@
         </div>
       </div>
 
-      <div class="bottom-widgets">
+      <div *ngIf="isLoading" class="bottom-widgets">
+        <div class="recent-transactions-section skeleton-widget">
+          <div class="skeleton h-8 w-3/4 mb-4"></div>
+          <div class="skeleton h-4 w-full mb-2" *ngFor="let i of [1,2,3]"></div>
+        </div>
+        <div class="savings-goals-section skeleton-widget">
+          <div class="skeleton h-8 w-3/4 mb-4"></div>
+          <div class="skeleton h-4 w-full mb-2" *ngFor="let i of [1,2]"></div>
+        </div>
+      </div>
+
+      <div *ngIf="!isLoading" class="bottom-widgets">
         <div class="recent-transactions-section">
           <div class="card-title2">Transacciones recientes</div>
           <div class="recent-transactions-placeholder" *ngIf="recentTransactions.length > 0; else noTransactions">
