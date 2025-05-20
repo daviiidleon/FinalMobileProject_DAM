@@ -1,4 +1,5 @@
 <ion-header [translucent]="true">
+  <app-header></app-header>
 </ion-header>
 
 <ion-content [fullscreen]="true">
@@ -9,8 +10,6 @@
     </div>
 
     <div class="main-content">
-      <app-header></app-header>
-
       <div *ngIf="isLoading" class="page-header skeleton-page-header">
         <h1 class="page-title">
           <div class="skeleton h-8 w-40 mr-3"></div>
@@ -21,11 +20,11 @@
 
       <div *ngIf="!isLoading" class="page-header">
         <h1 class="page-title">
-          <lucide-icon name="landmark" class="mr-3 h-8 w-8 text-primary"></lucide-icon> Accounts
+          <ion-icon name="business" class="mr-3 h-8 w-8 text-primary"></ion-icon> Accounts
         </h1>
         <p class="text-muted-foreground">Manage your financial accounts and track your balances.</p>
         <ion-button (click)="openModal()" class="add-account-button">
-          <lucide-icon name="plus-circle" slot="start" class="h-4 w-4"></lucide-icon> Add Account
+          <ion-icon name="add-circle" slot="start" class="h-4 w-4"></ion-icon> Add Account
         </ion-button>
       </div>
 
@@ -55,7 +54,7 @@
           <ion-card-header>
             <div class="flex items-start justify-between gap-2">
               <div class="flex items-center">
-                <lucide-icon [name]="getIcon(account.tipo)" class="mr-3 h-6 w-6 text-primary"></lucide-icon>
+                <ion-icon [name]="getIcon(account.tipo)" class="mr-3 h-6 w-6 text-primary"></ion-icon>
                 <ion-card-title class="text-xl">{{ account.nombre }}</ion-card-title>
               </div>
               <ion-badge color="light" class="text-xs shrink-0">{{ account.tipo }}</ion-badge>
@@ -71,17 +70,17 @@
               </p>
             </div>
             <div class="flex items-center text-xs text-muted-foreground" *ngIf="account.fechaActualizacion">
-              <lucide-icon name="calendar-clock" class="mr-1.5 h-3.5 w-3.5"></lucide-icon>
+              <ion-icon name="calendar-outline" class="mr-1.5 h-3.5 w-3.5"></ion-icon>
               Last updated: {{ formatDate(account.fechaActualizacion) }}
             </div>
           </ion-card-content>
 
           <div class="card-footer flex justify-end gap-2 border-t pt-4">
             <ion-button fill="outline" size="small" (click)="openModal(account)">
-              <lucide-icon name="pen" slot="start" class="h-4 w-4"></lucide-icon> Edit
+              <ion-icon name="pencil-outline" slot="start" class="h-4 w-4"></ion-icon> Edit
             </ion-button>
             <ion-button color="danger" size="small" (click)="deleteAccount(account.id)">
-              <lucide-icon name="trash-2" slot="start" class="h-4 w-4"></lucide-icon> Delete
+              <ion-icon name="trash-outline" slot="start" class="h-4 w-4"></ion-icon> Delete
             </ion-button>
           </div>
         </ion-card>
@@ -96,7 +95,7 @@
             Start by adding your checking, savings, credit card, or other financial accounts.
           </p>
           <ion-button (click)="openModal()" class="mt-6">
-            <lucide-icon name="plus-circle" slot="start" class="h-4 w-4"></lucide-icon> Add your first account
+            <ion-icon name="add-circle" slot="start" class="h-4 w-4"></ion-icon> Add your first account
           </ion-button>
         </ion-card-content>
       </ion-card>
@@ -110,7 +109,9 @@
         <ion-toolbar>
           <ion-title>{{ editingAccount ? 'Edit Account' : 'Create New Account' }}</ion-title>
           <ion-buttons slot="end">
-            <ion-button (click)="closeModal()">Close</ion-button>
+            <ion-button (click)="closeModal()">
+              <ion-icon name="close-outline"></ion-icon>
+            </ion-button>
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
@@ -150,7 +151,9 @@
           </div>
 
           <ion-button type="submit" class="w-full" [disabled]="false">
-            <lucide-icon *ngIf="isLoading" name="loader-2" slot="start" class="animate-spin"></lucide-icon>
+            <ion-icon *ngIf="isLoading" name="reload-circle" slot="start" class="animate-spin"></ion-icon>
+            <ion-icon *ngIf="!isLoading && !editingAccount" name="add-circle" slot="start"></ion-icon>
+            <ion-icon *ngIf="!isLoading && editingAccount" name="save-outline" slot="start"></ion-icon>
             {{ editingAccount ? 'Update Account' : 'Create Account' }}
           </ion-button>
         </form>

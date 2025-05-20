@@ -1,4 +1,6 @@
-<ion-header [translucent]="true"></ion-header>
+<ion-header [translucent]="true">
+  <app-header></app-header>
+</ion-header>
 
 <ion-content [fullscreen]="true">
   <div class="dashboard-layout">
@@ -7,8 +9,6 @@
     </div>
 
     <div class="main-content">
-      <app-header></app-header>
-
       <div *ngIf="isLoading" class="page-title skeleton-title">
         <div class="skeleton h-6 w-60"></div>
       </div>

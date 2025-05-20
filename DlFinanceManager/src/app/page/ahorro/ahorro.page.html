@@ -1,4 +1,5 @@
 <ion-header [translucent]="true">
+  <app-header></app-header>
 </ion-header>
 
 <ion-content [fullscreen]="true">
@@ -8,8 +9,6 @@
     </div>
 
     <div class="main-content">
-      <app-header></app-header>
-
       <div *ngIf="isLoading" class="goals-actions-top skeleton-actions-top">
         <div class="skeleton h-10 w-48 create-goal-button"></div>
       </div>
@@ -98,7 +97,7 @@
         </div>
       </div>
 
-      <ion-modal [isOpen]="isCreateGoalModalOpen">
+      <ion-modal [isOpen]="isCreateGoalModalOpen" (didDismiss)="closeCreateGoalModal()">
         <ng-template>
           <ion-content class="ion-padding">
             <ion-toolbar>
@@ -137,7 +136,7 @@
               </ion-item>
               <ion-item>
                 <ion-label>Fecha Límite (Opcional)</ion-label>
-                <ion-datetime formControlName="fechaLimite" displayFormat="DD MMM隷"></ion-datetime>
+                <ion-datetime formControlName="fechaLimite" presentation="date" displayFormat="DD MMM YYYY"></ion-datetime>
               </ion-item>
               <ion-button expand="full" type="submit" [disabled]="goalForm.invalid || isSubmitting">
                 <ion-spinner name="crescent" *ngIf="isSubmitting"></ion-spinner>
@@ -148,7 +147,7 @@
         </ng-template>
       </ion-modal>
 
-      <ion-modal [isOpen]="isAddFundsModalOpen" *ngIf="selectedGoal">
+      <ion-modal [isOpen]="isAddFundsModalOpen" *ngIf="selectedGoal" (didDismiss)="closeAddFundsModal()">
         <ng-template>
           <ion-content class="ion-padding">
             <ion-toolbar>

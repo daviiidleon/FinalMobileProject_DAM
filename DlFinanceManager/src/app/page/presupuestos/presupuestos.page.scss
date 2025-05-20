@@ -1,4 +1,36 @@
-/* --- Dashboard Layout and General Styles (shared with other pages) --- */
+/* --- Inlined CSS Variables for Budgets Page --- */
+:host { // Using :host to encapsulate these variables for this component
+  --page-background: #f8f9fa; // Very light grey for ion-content
+  --card-background: #ffffff; // Pure white for cards and distinct sections
+  --border-color: #e9ecef; // Light grey for subtle separation
+  --main-text-color: #343a40; // Dark grey for good contrast
+  --secondary-text-color: #6c757d; // Medium grey for less prominent text
+  --sidebar-background: #222; // Dark background for the side menu
+  --sidebar-text: #fff; // White text for the side menu
+  --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.04); // Softer shadow for cards/lists
+  --shadow-subtle: 0 1px 3px rgba(0,0,0,0.03); // Very subtle shadow for input fields
+
+  // Ionic specific colors used within this page (ensure these match your global variables if you have them)
+  --ion-color-primary: #007bff; // A standard, vibrant blue
+  --ion-color-primary-shade: #006bdf;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-danger: #dc3545; // A clear red
+  --ion-color-danger-shade: #c12f3d;
+  --ion-color-light: #f8f9fa; // Used for modal header toolbar
+  --ion-color-step-50: #f8f8f8; // Light step for input backgrounds
+}
+
+/* --- Dashboard Layout and General Styles (shared with other pages, now inlined) --- */
+ion-content {
+  --background: var(--page-background); /* Set page background */
+}
+
+ion-header {
+  --background: var(--card-background); /* Header background */
+  border-bottom: 1px solid var(--border-color); /* Subtle header border */
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03); /* Subtle header shadow */
+}
+
 .dashboard-layout {
   display: flex;
   flex-direction: row;
@@ -12,8 +44,8 @@
 
 .first-content {
   width: 15%;
-  background-color: #222;
-  color: #fff;
+  background-color: var(--sidebar-background); /* Using inlined variable */
+  color: var(--sidebar-text); /* Using inlined variable */
   @media (max-width: 768px) {
     width: 100%;
   }
@@ -39,25 +71,28 @@
       font-size: 24px;
       font-weight: bold;
       margin-bottom: 5px;
-      color: #333;
+      color: var(--main-text-color); /* Using inlined variable */
     }
     p {
-      color: #666;
+      color: var(--secondary-text-color); /* Using inlined variable */
       font-size: 14px;
     }
   }
 
   .create-budget-button {
-    --background: var(--ion-color-primary, #3880ff); /* Default Ionic primary color */
-    --color: white;
+    --background: var(--ion-color-primary); /* Using primary color for button */
+    --color: var(--ion-color-primary-contrast); /* White text on primary */
     height: 40px; /* Fixed height for consistency */
     display: flex;
     align-items: center;
     justify-content: center;
     margin-left: auto; /* Push button to the right */
+    --border-radius: 8px; /* Consistent button radius */
+    font-weight: 600;
+    text-transform: none;
 
     &:hover {
-      --background: var(--ion-color-primary-shade, #3171e0);
+      --background: var(--ion-color-primary-shade);
     }
   }
 
@@ -84,10 +119,11 @@
 .budget-alerts {
   background-color: #fdecea; /* Light red */
   border: 1px solid #f9caca; /* Slightly darker red border */
-  color: #cc0000; /* Dark red text */
+  color: var(--ion-color-danger); /* Dark red text using danger color */
   padding: 15px;
   margin-bottom: 20px;
   border-radius: 8px;
+  box-shadow: var(--shadow-light); /* Apply consistent shadow */
 
   .alert-container {
     display: flex;
@@ -96,6 +132,7 @@
       margin-right: 10px;
       font-size: 1.5em;
       min-width: 24px;
+      color: var(--ion-color-danger); /* Ensure icon also uses danger color */
     }
     strong {
       font-weight: bold;
@@ -105,6 +142,7 @@
       margin-top: 0;
       margin-bottom: 5px;
       font-size: 14px;
+      color: var(--main-text-color); // Body text in alert should be main text color
     }
     ul {
       padding-left: 20px;
@@ -114,6 +152,7 @@
     li {
       font-size: 14px;
       margin-bottom: 3px;
+      color: var(--main-text-color); // List items in alert should be main text color
     }
   }
 }
@@ -124,7 +163,7 @@
     font-size: 20px;
     font-weight: bold;
     margin-bottom: 15px;
-    color: #333;
+    color: var(--main-text-color); /* Using inlined variable */
   }
 
   .budget-cards-container {
@@ -134,14 +173,15 @@
   }
 
   .budget-card {
-    background-color: #fff;
+    background-color: var(--card-background); /* Using inlined variable */
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-light); /* Apply consistent shadow */
     padding: 15px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     height: auto;
+    border: 1px solid var(--border-color); /* Add consistent border */
 
     .card-header {
       display: flex;
@@ -150,15 +190,16 @@
       ion-icon {
         font-size: 1.2em;
         margin-right: 5px;
-        color: var(--ion-color-primary, #3880ff);
+        color: var(--ion-color-primary); /* Using primary color for icons */
       }
       span {
         font-weight: bold;
         margin-right: auto;
+        color: var(--main-text-color);
       }
       .date {
         font-size: 0.9em;
-        color: #666;
+        color: var(--secondary-text-color); /* Using inlined variable */
       }
     }
 
@@ -167,19 +208,20 @@
       p {
         margin-bottom: 5px;
         font-size: 0.95em;
-        color: #333;
+        color: var(--main-text-color); /* Using inlined variable */
       }
       .progress-bar-container {
         margin-top: 10px;
         ion-progress-bar {
           margin-bottom: 5px;
           height: 8px;
-          --background: #e0e0e0;
-          --progress-background: var(--ion-color-primary, #3880ff);
+          --background: var(--border-color); /* Use border color for progress bar background */
+          --progress-background: var(--ion-color-primary); /* Use primary color for progress */
+          border-radius: 4px; // Slight border-radius for progress bar
         }
         span {
           font-size: 0.8em;
-          color: #666;
+          color: var(--secondary-text-color); /* Using inlined variable */
         }
       }
     }
@@ -194,9 +236,28 @@
         --padding-start: 8px;
         --padding-end: 8px;
         --ripple-color: transparent;
+        --border-radius: 8px; // Consistent button radius
+        font-weight: 600;
+        text-transform: none;
+
         ion-icon {
           font-size: 1.1em;
           margin-right: 3px;
+        }
+      }
+
+      ion-button[color="primary"] {
+        --color: var(--ion-color-primary); // Clear buttons will show primary text color
+        --background: transparent;
+        &:hover {
+          --background: rgba(var(--ion-color-primary-rgb, 0,123,255), 0.1); // Light hover effect
+        }
+      }
+      ion-button[color="danger"] {
+        --color: var(--ion-color-danger);
+        --background: transparent;
+        &:hover {
+          --background: rgba(var(--ion-color-danger-rgb, 220,53,69), 0.1);
         }
       }
     }
@@ -206,11 +267,12 @@
 .no-budgets {
   text-align: center;
   padding: 40px;
-  color: #777;
-  border: 1px dashed #ddd;
+  color: var(--secondary-text-color); /* Using inlined variable */
+  border: 1px dashed var(--border-color); /* Use border color for dashed border */
   border-radius: 8px;
   grid-column: 1 / -1;
-  background-color: #fff;
+  background-color: var(--card-background); /* Using inlined variable */
+  box-shadow: var(--shadow-light); // Apply consistent shadow
 
   p {
     margin-bottom: 20px;
@@ -218,7 +280,13 @@
 
   ion-button {
     --background: var(--ion-color-primary);
-    --color: white;
+    --color: var(--ion-color-primary-contrast);
+    --border-radius: 8px;
+    font-weight: 600;
+    text-transform: none;
+    &:hover {
+      --background: var(--ion-color-primary-shade);
+    }
   }
 }
 
@@ -231,15 +299,22 @@ ion-modal {
   --box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 
   ion-toolbar {
-    --background: var(--ion-color-light, #f8f8f8);
+    --background: var(--ion-color-light); // Light background for toolbar
+    border-bottom: 1px solid var(--border-color); // Consistent border
     ion-title {
       font-size: 1.25rem;
       font-weight: 600;
-      color: #333;
+      color: var(--main-text-color);
     }
     ion-buttons ion-button {
       font-size: 0.9rem;
+      --color: var(--ion-color-primary); // Close button text color
     }
+  }
+
+  .modal-form {
+    padding: 20px;
+    background-color: var(--page-background); // Modal body background
   }
 
   ion-item {
@@ -250,7 +325,7 @@ ion-modal {
 
     ion-label {
       font-size: 0.95rem;
-      color: #555;
+      color: var(--secondary-text-color); // Label color
     }
 
     ion-input, ion-select, ion-datetime {
@@ -258,11 +333,12 @@ ion-modal {
       --padding-end: 10px;
       --padding-top: 8px;
       --padding-bottom: 8px;
-      border: 1px solid #ddd;
+      border: 1px solid var(--border-color); // Consistent border
       border-radius: 6px;
-      background: var(--ion-color-step-50, #f8f8f8);
+      background: var(--ion-color-step-50); // Light background for inputs
       font-size: 1rem;
-      --background: var(--ion-color-step-50, #f8f8f8);
+      --background: var(--ion-color-step-50); /* Ensure background is set for filled style */
+      box-shadow: var(--shadow-subtle); // Subtle shadow for inputs
     }
 
     ion-note {
@@ -275,18 +351,25 @@ ion-modal {
     margin-top: 20px;
     height: 44px;
     font-size: 1rem;
-    --background: var(--ion-color-primary, #3880ff);
-    --color: white;
+    --background: var(--ion-color-primary);
+    --color: var(--ion-color-primary-contrast);
+    --border-radius: 8px;
+    font-weight: 600;
+    text-transform: none;
 
     &:hover {
-      --background: var(--ion-color-primary-shade, #3171e0);
+      --background: var(--ion-color-primary-shade);
+    }
+
+    ion-spinner {
+      color: var(--ion-color-primary-contrast); // Spinner color to match text
     }
   }
 }
 
 /* --- Skeleton Loader Styles --- */
 .skeleton {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, var(--border-color) 25%, #e0e0e0 50%, var(--border-color) 75%);
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
   border-radius: 4px;
@@ -319,22 +402,24 @@ ion-modal {
 }
 
 .skeleton-alert {
-  background-color: #f0f0f0;
-  border: 1px solid #e0e0e0;
+  background-color: var(--card-background); // Consistent background for skeleton alert
+  border: 1px solid var(--border-color);
   padding: 15px;
   margin-bottom: 20px;
   border-radius: 8px;
+  box-shadow: var(--shadow-light); // Apply consistent shadow
 }
 
 .skeleton-budget-card {
-  background-color: #fff;
+  background-color: var(--card-background); // Consistent background
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-light);
   padding: 15px;
   height: 200px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  border: 1px solid var(--border-color);
 
   .skeleton-actions {
     display: flex;

@@ -1,12 +1,51 @@
+/* --- Inlined CSS Variables for Reports Page --- */
+:host { // Using :host to encapsulate these variables for this component
+  --page-background: #f8f9fa; // Very light grey for ion-content
+  --card-background: #ffffff; // Pure white for cards and distinct sections
+  --border-color: #e9ecef; // Light grey for subtle separation
+  --main-text-color: #343a40; // Dark grey for good contrast
+  --secondary-text-color: #6c757d; // Medium grey for less prominent text
+  --sidebar-background: #222; // Dark background for the side menu
+  --sidebar-text: #fff; // White text for the side menu
+  --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.04); // Softer shadow for cards/lists
+  --shadow-subtle: 0 1px 3px rgba(0,0,0,0.03); // Very subtle shadow for input fields
+
+  // Ionic specific colors used within this page (ensure these match your global variables if you have them)
+  --ion-color-primary: #007bff; // A standard, vibrant blue
+  --ion-color-primary-shade: #006bdf;
+  --ion-color-primary-contrast: #ffffff;
+}
+
+/* --- Dashboard Layout and General Styles (shared with other pages, now inlined) --- */
+ion-content {
+  --background: var(--page-background); /* Set page background */
+}
+
+ion-header {
+  --background: var(--card-background); /* Header background */
+  border-bottom: 1px solid var(--border-color); /* Subtle header border */
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03); /* Subtle header shadow */
+}
+
 .dashboard-layout {
   display: flex;
   flex-direction: row;
   height: 100%;
   width: 100%;
+  background-color: var(--page-background); // Ensure consistent background
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
 }
 
 .first-content {
   width: 15%;
+  background-color: var(--sidebar-background);
+  color: var(--sidebar-text);
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 }
 
 .main-content {
@@ -20,9 +59,9 @@
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 20px;
-  margin-left: 6%;
-  margin-top: 3%;
-  color: #333;
+  margin-left: 6%; /* Keeping original margin */
+  margin-top: 3%; /* Keeping original margin */
+  color: var(--main-text-color); /* Using inlined variable */
 }
 
 /* Skeleton for the page title */
@@ -43,67 +82,81 @@
 .chart-placeholder,
 .chart-placeholder2,
 .chart-placeholder3 {
-  border: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-color); /* Add a border for better definition */
+  box-shadow: var(--shadow-light); /* Consistent shadow */
   height: 120px;
   width: 80%;
-  background: #fefefe;
-  border-radius: 16px;
+  background: var(--card-background); /* Using inlined variable */
+  border-radius: 12px; /* Slightly smaller radius for consistency */
   display: flex;
   justify-content: center;
   align-items: center;
   margin: 0 auto;
-  transition: transform 0.2s;
+  transition: transform 0.2s ease, box-shadow 0.2s ease; /* Add transition for shadow */
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08); /* A slightly more pronounced hover shadow */
+  }
+
+  ion-button {
+    font-size: 18px;
+    --color: var(--main-text-color); /* Using inlined variable for button text */
+    --background: transparent;
+    --box-shadow: none;
+    display: flex;
+    align-items: center;
+    font-weight: 600; // Make button text bolder
+    text-transform: none; // Keep button text as is
+    --padding-start: 20px;
+    --padding-end: 20px;
+    --height: 50px; // Ensure consistent button height
+
+    ion-icon {
+      margin-right: 10px;
+      font-size: 24px; // Larger icons for clarity
+      color: var(--ion-color-primary); // Use primary color for icons
+    }
+  }
 }
 
-.chart-placeholder:hover,
-.chart-placeholder2:hover,
-.chart-placeholder3:hover {
-  transform: translateY(-4px);
-}
-
-ion-button {
-  font-size: 18px;
-  color: black;
-  --background: transparent;
-  --box-shadow: none;
-  display: flex;
-  align-items: center;
-}
 
 /* Skeleton styles */
 .skeleton-placeholder {
-  background-color: #f0f0f0;
+  background-color: var(--card-background); // Match card background
+  border: 1px solid var(--border-color); // Match card border
+  box-shadow: var(--shadow-light); // Match card shadow
   animation: pulse 1.5s infinite ease-in-out;
-  border-radius: 16px;
+  border-radius: 12px;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .skeleton {
-  background-color: #e0e0e0;
-  animation: pulse 1.5s infinite ease-in-out;
+  background: linear-gradient(90deg, var(--border-color) 25%, #e0e0e0 50%, var(--border-color) 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
   border-radius: 4px;
 }
 
-.h-6 {
-  height: 24px;
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
-.h-8 {
-  height: 32px;
-}
+/* Utility classes for skeleton dimensions */
+.h-6 { height: 1.5rem; }
+.h-8 { height: 2rem; }
 
-.w-60 {
-  width: 240px;
-}
+.w-60 { width: 15rem; }
+.w-64{ width: 16rem; }
 
-.w-64{
-  width: 256px;
-}
-
-/* Pulse animation */
+/* Pulse animation for skeleton effect */
 @keyframes pulse {
   0% {
     background-color: #e0e0e0;
@@ -118,10 +171,7 @@ ion-button {
   }
 }
 
-/* ---------------------- */
-/* ✅ MEDIA QUERIES */
-/* ---------------------- */
-
+/* Responsive */
 @media (max-width: 991px) {
   .dashboard-layout {
     flex-direction: column;
@@ -156,12 +206,16 @@ ion-button {
     width: 100%;
     text-align: center;
     justify-content: center;
+    --padding-start: 10px;
+    --padding-end: 10px;
+    --height: 45px;
   }
 }
 
 @media (max-width: 576px) {
   ion-button {
     font-size: 14px;
+    --height: 40px;
   }
 
   .chart-placeholder,

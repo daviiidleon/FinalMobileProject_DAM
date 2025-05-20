@@ -24,6 +24,16 @@ import {
 import { HeaderComponent } from "../../component/header/header.component";
 import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
 import { RouterLink } from '@angular/router';
+import { addIcons } from 'ionicons'; // Import addIcons
+import {
+  cloudUploadOutline, // For "Import from CSV/Excel"
+  addCircleOutline,   // For "Add Transaction" and "Add your first transaction"
+  arrowDownCircle,    // For "Expense" type
+  arrowUpCircle,      // For "Income" type
+  ellipsisVertical,   // For table row actions
+  pencilOutline,      // For "Edit" in popover
+  trashOutline        // For "Delete" in popover
+} from 'ionicons/icons'; // Import the specific icons you need
 
 @Component({
   selector: 'app-transacciones',
@@ -62,7 +72,19 @@ export class TransaccionesPage implements OnInit {
   transacciones: any[] = []; // Initialize as empty to show loading state
   isLoading: boolean = true; // Set to true initially
 
-  constructor(private loadingController: LoadingController) { } // Inject LoadingController
+  constructor(private loadingController: LoadingController) {
+    // Add Ionicons to the global Ionicons library for this standalone component
+    // This ensures they are available in the template.
+    addIcons({
+      cloudUploadOutline,
+      addCircleOutline,
+      arrowDownCircle,
+      arrowUpCircle,
+      ellipsisVertical,
+      pencilOutline,
+      trashOutline
+    });
+  } // Inject LoadingController
 
   ngOnInit() {
     this.loadTransactions();

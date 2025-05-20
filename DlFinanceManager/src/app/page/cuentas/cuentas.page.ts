@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule, formatDate } from '@angular/common'; // Include formatDate from CommonModule
+import { CommonModule, formatDate } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
   IonButton,
@@ -28,7 +28,23 @@ import {
 } from '@ionic/angular/standalone';
 import { HeaderComponent } from "../../component/header/header.component";
 import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
-import { LucideAngularModule } from 'lucide-angular';
+import { addIcons } from 'ionicons';
+import {
+  business,
+  addCircle,
+  receiptOutline,     // CORRECTED: Changed from receiptTextOutline to receiptOutline
+  walletOutline,
+  cardOutline,
+  trendingUp,
+  cashOutline,
+  shapesOutline,
+  calendarOutline,
+  pencilOutline,
+  trashOutline,
+  reloadCircle,
+  saveOutline,
+  closeOutline
+} from 'ionicons/icons';
 
 interface Account {
   id: string;
@@ -40,18 +56,18 @@ interface Account {
 }
 
 interface AccountTypeIcons {
-  [key: string]: any;
+  [key: string]: string; // Type is string for Ionicon names
 }
 
 const ACCOUNT_TYPES = ['Checking', 'Savings', 'Credit Card', 'Investment', 'Loan', 'Other'];
 
 const accountTypeIcons: AccountTypeIcons = {
-  Checking: 'receipt-text',
-  Savings: 'piggy-bank',
-  'Credit Card': 'credit-card',
+  Checking: 'receipt-outline',     // CORRECTED: Changed from receipt-text-outline to receipt-outline
+  Savings: 'wallet-outline',
+  'Credit Card': 'card-outline',
   Investment: 'trending-up',
-  Loan: 'landmark',
-  Other: 'shapes',
+  Loan: 'cash-outline',
+  Other: 'shapes-outline',
 };
 
 interface AccountFormValues {
@@ -94,12 +110,11 @@ interface AccountFormValues {
     IonSelectOption,
     IonText,
     IonButtons,
-    LucideAngularModule,
   ]
 })
 export class CuentasPage implements OnInit {
   accounts: Account[] = [];
-  isLoading = true; // Initialize to true for skeleton loading
+  isLoading = true;
   isModalOpen = false;
   editingAccount: Account | undefined;
   accountForm: FormGroup;
@@ -116,6 +131,24 @@ export class CuentasPage implements OnInit {
       saldo: [0, Validators.required],
       institucion: [''],
     });
+
+    // Add Ionicons to the global Ionicons library for this standalone component
+    addIcons({
+      business,
+      addCircle,
+      receiptOutline,     // CORRECTED here too
+      walletOutline,
+      cardOutline,
+      trendingUp,
+      cashOutline,
+      shapesOutline,
+      calendarOutline,
+      pencilOutline,
+      trashOutline,
+      reloadCircle,
+      saveOutline,
+      closeOutline
+    });
   }
 
   ngOnInit() {
@@ -125,7 +158,7 @@ export class CuentasPage implements OnInit {
   async loadAccounts() {
     const loading = await this.loadingController.create({
       message: 'Loading accounts...',
-      spinner: 'crescent' // Added spinner type
+      spinner: 'crescent'
     });
     await loading.present();
 
@@ -136,9 +169,9 @@ export class CuentasPage implements OnInit {
         { id: 'acc3', nombre: 'Travel Rewards Card', tipo: 'Credit Card', saldo: -750.20, institucion: 'Global Credit Inc.', fechaActualizacion: new Date(Date.now() - 86400000).toISOString() },
         { id: 'acc4', nombre: 'Retirement Fund', tipo: 'Investment', saldo: 125000.00, institucion: 'InvestWell Group' },
       ];
-      this.isLoading = false; // Hide skeleton when data is loaded
+      this.isLoading = false;
       loading.dismiss();
-    }, 1500); // Simulate network delay
+    }, 1500);
   }
 
   openModal(account?: Account) {
@@ -181,9 +214,8 @@ export class CuentasPage implements OnInit {
         }
         submitLoading.dismiss();
         this.closeModal();
-      }, 700); // Simulate API call delay for form submission
+      }, 700);
     } else {
-      // Mark all fields as touched to display validation errors
       Object.values(this.accountForm.controls).forEach(control => {
         control.markAsTouched();
       });
@@ -193,7 +225,7 @@ export class CuentasPage implements OnInit {
   createAccount(formData: AccountFormValues) {
     const newAccount: Account = {
       ...formData,
-      id: `acc${Date.now()}`, // Simple ID generation
+      id: `acc${Date.now()}`,
       fechaActualizacion: new Date().toISOString()
     };
     this.accounts = [newAccount, ...this.accounts].sort((a, b) => a.nombre.localeCompare(b.nombre));
@@ -218,11 +250,19 @@ export class CuentasPage implements OnInit {
     setTimeout(() => {
       this.accounts = this.accounts.filter(acc => acc.id !== accountId);
       deleteLoading.dismiss();
-    }, 500); // Simulate API call delay for deletion
+    }, 500);
   }
 
-  getIcon(type: string): any { // Changed return type to 'any' for lucide-icon
-    return accountTypeIcons[type] || 'shapes';
+  getIcon(type: string): string {
+    // Mapping custom string names to valid Ionicons names
+    switch (type) {
+      case 'Checking': return 'receipt-outline'; // CORRECTED here too
+      case 'Savings': return 'wallet-outline';
+      case 'Credit Card': return 'card-outline';
+      case 'Investment': return 'trending-up';
+      case 'Loan': return 'cash-outline';
+      default: return 'shapes-outline';
+    }
   }
 
   isNegativeBalance(account: Account): boolean {
@@ -233,7 +273,7 @@ export class CuentasPage implements OnInit {
     if (!isoDate) {
       return '';
     }
-    return formatDate(isoDate, 'MMM d, yyyy', 'en-US'); // Using Angular's formatDate
+    return formatDate(isoDate, 'MMM d, yyyy', 'en-US');
   }
 
   getFormControl(name: string) {

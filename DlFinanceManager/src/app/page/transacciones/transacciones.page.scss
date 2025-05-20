@@ -1,4 +1,36 @@
-/* --- Dashboard Layout and General Styles (shared with other pages) --- */
+/* (No changes to SCSS, as icons are handled by Ionicon's styling and sizing) */
+:host { // Using :host to encapsulate these variables for this component
+  --page-background: #f8f9fa; // Very light grey for ion-content
+  --card-background: #ffffff; // Pure white for cards and distinct sections
+  --border-color: #e9ecef; // Light grey for subtle separation
+  --main-text-color: #343a40; // Dark grey for good contrast
+  --secondary-text-color: #6c757d; // Medium grey for less prominent text
+  --sidebar-background: #222; // Dark background for the side menu
+  --sidebar-text: #fff; // White text for the side menu
+  --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.04); // Softer shadow for cards/lists
+  --shadow-subtle: 0 1px 3px rgba(0,0,0,0.03); // Very subtle shadow for input fields
+
+  // Ionic specific colors used within this page (ensure these match your global variables if you have them)
+  --ion-color-primary: #007bff;
+  --ion-color-primary-shade: #006bdf;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-success: #28a745;
+  --ion-color-success-shade: #24943e;
+  --ion-color-danger: #dc3545;
+  --ion-color-danger-shade: #c12f3d;
+}
+
+/* --- Dashboard Layout and General Styles (now mostly inherited from app.scss) --- */
+ion-content {
+  --background: var(--page-background); /* Set page background */
+}
+
+ion-header {
+  --background: var(--card-background); /* Header background */
+  border-bottom: 1px solid var(--border-color); /* Subtle header border */
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03); /* Subtle header shadow */
+}
+
 .dashboard-layout {
   display: flex;
   flex-direction: row;
@@ -12,8 +44,8 @@
 
 .first-content {
   width: 15%;
-  background-color: #222;
-  color: #fff;
+  background-color: var(--sidebar-background);
+  color: var(--sidebar-text);
   @media (max-width: 768px) {
     width: 100%;
   }
@@ -38,24 +70,48 @@
 .header-left h1 {
   font-size: 24px;
   font-weight: bold;
-  color: #333;
+  color: var(--main-text-color);
   margin-bottom: 5px;
 }
 
 .header-left p {
   font-size: 14px;
-  color: #777;
+  color: var(--secondary-text-color);
 }
 
 .header-right {
   display: flex;
   align-items: center;
+  gap: 10px; /* Use gap for spacing between buttons */
 }
 
 .header-right ion-button {
-  margin-left: 10px;
   font-size: 14px;
+  --border-radius: 8px; /* Consistent button radius */
+  font-weight: 600; /* Consistent button text weight */
+  text-transform: none; /* Prevent all caps */
+  height: auto; // Allow button height to adjust based on content and padding
+  padding: 10px 18px; // Consistent padding for buttons
+  display: flex; /* Ensure flex for icon and text alignment */
+  align-items: center; /* Center items vertically */
+
+  ion-icon {
+    margin-right: 8px; /* Space between icon and text */
+    font-size: 18px; /* Adjust icon size */
+  }
 }
+// Set specific colors for buttons if not handled by color="success" etc.
+ion-button[color="success"] {
+  --background: var(--ion-color-success);
+  --background-activated: var(--ion-color-success-shade);
+  --color: var(--ion-color-primary-contrast); /* White text for success button */
+}
+ion-button:not([color]) { // Default button for "Import from CSV/Excel"
+  --background: var(--ion-color-primary); // Using primary for default button
+  --background-activated: var(--ion-color-primary-shade);
+  --color: var(--ion-color-primary-contrast); // White text on primary
+}
+
 
 /* --- Transactions Filter Section --- */
 .transactions-filter {
@@ -74,12 +130,36 @@
   width: 200px;
 }
 
+/* Style for ion-searchbar and ion-select */
+ion-searchbar {
+  --background: var(--card-background); /* Using inlined variable */
+  --border-radius: 8px; /* Consistent radius */
+  border: 1px solid var(--border-color); /* Subtle border */
+  box-shadow: var(--shadow-subtle); /* Subtle shadow */
+  padding-inline-start: 10px; // Adjust searchbar padding
+  padding-inline-end: 10px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+ion-select {
+  --background: var(--card-background); /* Using inlined variable */
+  --border-radius: 8px; /* Consistent radius */
+  border: 1px solid var(--border-color); /* Subtle border */
+  box-shadow: var(--shadow-subtle); /* Subtle shadow */
+  padding-left: 14px; // Adjust padding for select
+  padding-right: 8px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
 /* --- Transactions List Section --- */
 .transactions-list {
-  background-color: #fff;
-  border: 1px solid #ddd;
+  background-color: var(--card-background); /* Using inlined variable */
+  border: 1px solid var(--border-color); /* Using inlined variable */
   border-radius: 8px;
   padding: 10px;
+  box-shadow: var(--shadow-light); /* Apply consistent shadow */
 }
 
 .transacciones-grid {
@@ -88,13 +168,15 @@
 }
 
 .header-row {
-  background-color: #f0f0f0;
+  background-color: #f0f0f0; // Keep a light grey background for header row
   font-weight: bold;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid var(--border-color);
+  padding: 10px 0; // Slightly more padding for header row
+  color: var(--main-text-color); // Text color for header row
 }
 
 ion-row {
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--border-color);
   padding: 8px 0;
 }
 
@@ -105,6 +187,7 @@ ion-col {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--main-text-color); // Consistent text color for table content
 }
 
 ion-icon {
@@ -116,30 +199,53 @@ ion-col:last-child {
 }
 
 ion-button[size="small"] {
-  --padding-start: 5px;
-  --padding-end: 5px;
+  --padding-start: 8px; /* Adjusted padding for better look with icon */
+  --padding-end: 8px; /* Adjusted padding for better look with icon */
   --padding-top: 5px;
   --padding-bottom: 5px;
   margin-left: 5px;
+  --border-radius: 5px; // Slightly smaller radius for small buttons
+  --background: var(--ion-color-primary); // Default small button primary
+  --background-activated: var(--ion-color-primary-shade);
+  color: var(--ion-color-primary-contrast);
+  display: flex; /* Ensure flex for icon and text alignment */
+  align-items: center; /* Center items vertically */
+
+  ion-icon {
+    margin-right: 0; /* No margin-right for single icon button */
+    font-size: 20px; /* Larger icon for actions button */
+  }
+}
+
+/* Popover list item icons */
+ion-list ion-item ion-icon {
+  margin-right: 10px; /* Space between icon and text in popover list */
+  font-size: 18px; /* Adjust icon size for popover */
 }
 
 .expense {
-  color: var(--ion-color-danger);
+  color: var(--ion-color-danger); // Using inlined danger color
+  font-weight: 500; /* Slightly bolder for emphasis */
 }
 
 .income {
-  color: var(--ion-color-success);
+  color: var(--ion-color-success); // Using inlined success color
+  font-weight: 500; /* Slightly bolder for emphasis */
 }
 
 .no-transactions {
   text-align: center;
   padding: 40px;
-  color: #777;
-  border-top: 1px solid #e0e0e0;
+  color: var(--secondary-text-color); // Using inlined secondary text color
+  border-top: 1px solid var(--border-color); // Consistent border
   margin-top: 10px;
 
   ion-button {
     margin-top: 20px;
+    // Button styles inherited from above
+    ion-icon {
+      margin-right: 8px; /* Ensure space for icon in this button too */
+    }
   }
 }
 
@@ -158,7 +264,7 @@ ion-button[size="small"] {
   }
 
   .main-content {
-    padding: 10px;
+    padding: 15px;
     order: 1;
   }
 
@@ -171,12 +277,14 @@ ion-button[size="small"] {
   .header-right {
     flex-direction: column;
     align-items: stretch;
+    width: 100%;
   }
 
   .header-right ion-button {
     margin-left: 0;
     margin-top: 10px;
     width: 100%;
+    justify-content: center; /* Center content in full-width buttons */
   }
 
   .transactions-filter {
@@ -193,7 +301,7 @@ ion-button[size="small"] {
   }
 
   ion-col:last-child {
-    justify-content: flex-end; /* Align action buttons to the right */
+    justify-content: flex-end;
   }
 }
 
@@ -216,14 +324,28 @@ ion-button[size="small"] {
     font-size: 10px;
     --padding-start: 3px;
     --padding-end: 3px;
+    ion-icon {
+      font-size: 16px; /* Smaller icon for very small buttons */
+    }
+  }
+
+  // Ensure icons are still properly spaced on smaller screens
+  .header-right ion-button ion-icon {
+    font-size: 16px; /* Smaller icons for header buttons on small screens */
+    margin-right: 5px;
+  }
+
+  .no-transactions ion-button ion-icon {
+    font-size: 16px;
+    margin-right: 5px;
   }
 }
 
 
-/* --- Skeleton Loader Styles --- */
+/* --- Skeleton Loader Styles (using inlined variables) --- */
 
 .skeleton {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, var(--border-color) 25%, #e0e0e0 50%, var(--border-color) 75%);
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
   border-radius: 4px;
@@ -240,11 +362,6 @@ ion-button[size="small"] {
 
 /* Specific skeleton styles for this page */
 .skeleton-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-right: 10px;
   .header-left {
     flex-grow: 1;
   }
@@ -266,15 +383,15 @@ ion-button[size="small"] {
 }
 
 .skeleton-list {
-  background-color: #fff;
-  border: 1px solid #ddd;
+  background-color: var(--card-background);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 10px;
   .transacciones-grid {
     width: 100%;
   }
   ion-row {
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--border-color);
     padding: 8px 0;
   }
   ion-row:last-child {

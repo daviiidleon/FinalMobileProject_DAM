@@ -1,4 +1,5 @@
 <ion-header [translucent]="true">
+  <app-header></app-header>
 </ion-header>
 
 <ion-content [fullscreen]="true">
@@ -9,8 +10,6 @@
     </div>
 
     <div class="main-content">
-      <app-header></app-header>
-
       <div *ngIf="isLoading" class="transactions-header skeleton-header">
         <div class="header-left">
           <div class="skeleton h-8 w-2/3 mb-2"></div>
@@ -29,11 +28,11 @@
         </div>
         <div class="header-right">
           <ion-button>
-            <ion-icon name="upload-outline"></ion-icon>
+            <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
             Import from CSV/Excel
           </ion-button>
           <ion-button color="success" routerLink="/add-transaction">
-            <ion-icon name="add-outline"></ion-icon>
+            <ion-icon name="add-circle-outline" slot="start"></ion-icon>
             Add Transaction
           </ion-button>
         </div>
@@ -142,7 +141,7 @@
         <div *ngIf="!isLoading && transacciones.length === 0" class="no-transactions">
           <p>No transactions found. Add your first transaction!</p>
           <ion-button color="success" routerLink="/add-transaction">
-            <ion-icon name="add-outline"></ion-icon>
+            <ion-icon name="add-circle-outline" slot="start"></ion-icon>
             Add Transaction
           </ion-button>
         </div>
