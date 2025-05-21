@@ -19,7 +19,7 @@ import {
   IonDatetime,
   IonButtons,
   IonNote,
-  LoadingController, // <--- Ensure LoadingController is imported
+  LoadingController,
   IonMenuButton,
   IonSpinner,
 } from '@ionic/angular/standalone';
@@ -89,11 +89,11 @@ export class AhorroPage implements OnInit, OnDestroy {
   fundsToAdd: number | null = null;
   goalForm: FormGroup;
   isSubmitting = false;
-  isLoading = true; // Still using this for the skeleton
+  isLoading = true;
   private storageKey = 'objetivosAhorro';
   private storageSubscription: Subscription | undefined;
 
-  constructor(private fb: FormBuilder, private loadingCtrl: LoadingController) { // <--- Injected LoadingController
+  constructor(private fb: FormBuilder, private loadingCtrl: LoadingController) {
     addIcons({
       addOutline,
       cashOutline,
@@ -118,7 +118,7 @@ export class AhorroPage implements OnInit, OnDestroy {
   }
 
   async ionViewWillEnter() {
-    await this.loadObjetivos(); // This will trigger the skeleton load and the LoadingController
+    await this.loadObjetivos();
   }
 
   ngOnDestroy() {
@@ -130,16 +130,14 @@ export class AhorroPage implements OnInit, OnDestroy {
   async loadObjetivos() {
     this.isLoading = true; // Start loading state for skeleton
 
-    // <--- Start Dashboard-style LoadingController
     const loading = await this.loadingCtrl.create({
-      message: 'Cargando objetivos...',
+      message: 'Loading goals...', // Translated message
       spinner: 'crescent'
     });
     await loading.present();
-    // End Dashboard-style LoadingController --->
 
     // Simulate fetching data with a delay
-    await new Promise(resolve => setTimeout(resolve, 1500)); // Keep this for demonstration
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
     try {
       const storedObjetivos = localStorage.getItem(this.storageKey);
@@ -152,11 +150,11 @@ export class AhorroPage implements OnInit, OnDestroy {
         this.objetivos = [];
       }
     } catch (error) {
-      console.error('Error al cargar objetivos:', error);
+      console.error('Error loading goals:', error); // Translated message
       this.objetivos = [];
     } finally {
       this.isLoading = false; // End loading state, hide skeleton
-      loading.dismiss(); // <--- Dismiss the LoadingController
+      loading.dismiss();
     }
   }
 
@@ -182,7 +180,7 @@ export class AhorroPage implements OnInit, OnDestroy {
     }
     const dateObj = new Date(date);
     const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
-    return new Intl.DateTimeFormat('es-ES', options).format(dateObj);
+    return new Intl.DateTimeFormat('en-US', options).format(dateObj); // Changed to en-US for English date format
   }
 
   isDeadlinePassed(fechaLimite: string | undefined): boolean {
@@ -218,7 +216,7 @@ export class AhorroPage implements OnInit, OnDestroy {
     if (this.goalForm.valid) {
       this.isSubmitting = true;
       const loading = await this.loadingCtrl.create({
-        message: this.isEditingGoal ? 'Guardando...' : 'Creando objetivo...',
+        message: this.isEditingGoal ? 'Saving changes...' : 'Creating goal...', // Translated message
       });
       await loading.present();
 
@@ -264,7 +262,7 @@ export class AhorroPage implements OnInit, OnDestroy {
   async addFunds() {
     if (this.selectedGoal && this.fundsToAdd !== null && this.fundsToAdd > 0) {
       const loading = await this.loadingCtrl.create({
-        message: 'Añadiendo fondos...',
+        message: 'Adding funds...', // Translated message
       });
       await loading.present();
 
@@ -288,7 +286,7 @@ export class AhorroPage implements OnInit, OnDestroy {
 
   async deleteGoal(goalId: string) {
     const loading = await this.loadingCtrl.create({
-      message: 'Eliminando objetivo...',
+      message: 'Deleting goal...', // Translated message
     });
     await loading.present();
     this.objetivos = this.objetivos.filter((obj) => obj.id !== goalId);

@@ -86,12 +86,12 @@
                 </div>
               </div>
               <div class="card-actions">
-                <ion-button fill="clear" color="primary" (click)="openEditBudgetModal(presupuesto)">
-                  <ion-icon name="create-outline"></ion-icon>
+                <ion-button class="edit-button" (click)="openEditBudgetModal(presupuesto)">
+                  <ion-icon name="create-outline" slot="start"></ion-icon>
                   Edit
                 </ion-button>
-                <ion-button fill="clear" color="danger" (click)="deleteBudget(presupuesto.id)">
-                  <ion-icon name="trash-outline"></ion-icon>
+                <ion-button color="danger" (click)="deleteBudget(presupuesto.id)">
+                  <ion-icon name="trash-outline" slot="start"></ion-icon>
                   Delete
                 </ion-button>
               </div>
