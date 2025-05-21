@@ -5,7 +5,7 @@
   --border-color: #e9ecef; // Light grey for subtle separation
   --main-text-color: #343a40; // Dark grey for good contrast
   --secondary-text-color: #6c757d; // Medium grey for less prominent text
-  --sidebar-background: #222; // Dark background for the side menu
+  --sidebar-background: #222; // Dark background for the side menu (este es el que queremos cambiar)
   --sidebar-text: #fff; // White text for the side menu
   --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.04); // Softer shadow
 
@@ -38,9 +38,27 @@ ion-header {
 }
 
 .first-content {
-  width: 15%;
-  background-color: var(--sidebar-background); /* Using inlined variable */
-  color: var(--sidebar-text); /* Using inlined variable */
+  width: 15%; /* Este ancho fijo puede ser problemático si el menú se colapsa mucho */
+  // **CLAVE PARA ELIMINAR EL FONDO NEGRO:**
+  // Opción 1: Cambiar su color de fondo para que coincida con el de la página o sea transparente
+  background-color: transparent; // ¡Cambiado de var(--sidebar-background) a transparent!
+  // O si quieres que mantenga el color del side menu pero no lo muestre si este se colapsa:
+  // background-color: var(--global-menu-bg, #faf6e9); // Usar la variable global del side-menu
+
+  // Opción 2 (Más flexible si el layout lo permite): Ajustar su ancho dinámicamente.
+  // Esto dependerá de cómo se maneje el layout completo.
+  // Por ejemplo, si usas CSS Grid en .dashboard-layout:
+  /*
+  .dashboard-layout {
+    display: grid;
+    grid-template-columns: auto 1fr; // El primer auto se ajustaría al ancho del side-menu
+  }
+  .first-content {
+    width: auto; // Deja que el side-menu defina su ancho
+  }
+  */
+
+  color: var(--sidebar-text); /* El color del texto del side menu, aunque no relevante aquí */
   @media (max-width: 768px) {
     width: 100%;
   }
@@ -57,7 +75,7 @@ ion-header {
   font-size: 28px;
   font-weight: bold;
   margin-bottom: 20px;
-  color: var(--main-text-color); /* Using inlined variable */
+  color: var(--main-text-color);
   margin-left: 0;
   margin-top: 20px;
 
@@ -80,11 +98,11 @@ ion-header {
 }
 
 .card {
-  background: var(--card-background); /* Using inlined variable */
-  border: 1px solid var(--border-color); /* Using inlined variable */
+  background: var(--card-background);
+  border: 1px solid var(--border-color);
   padding: 15px;
   border-radius: 8px;
-  box-shadow: var(--shadow-light); /* Using inlined variable */
+  box-shadow: var(--shadow-light);
   width: calc(25% - 15px);
   height: 100px;
   display: flex;
@@ -103,13 +121,13 @@ ion-header {
 
 .card-title {
   font-size: 16px;
-  color: var(--secondary-text-color); /* Using inlined variable */
+  color: var(--secondary-text-color);
 }
 
 .card-value {
   font-size: 20px;
   font-weight: bold;
-  color: var(--main-text-color); /* Using inlined variable */
+  color: var(--main-text-color);
   margin-top: 10px;
   max-width: none;
 }
@@ -121,10 +139,10 @@ ion-header {
 }
 
 .chart-placeholder {
-  border: 1px solid var(--border-color); /* Using inlined variable */
+  border: 1px solid var(--border-color);
   height: 300px;
   width: 100%;
-  background: var(--card-background); /* Using inlined variable */
+  background: var(--card-background);
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -134,12 +152,12 @@ ion-header {
   margin-right: auto;
   padding: 20px;
   box-sizing: border-box;
-  box-shadow: var(--shadow-light); /* Apply shadow to chart placeholder */
+  box-shadow: var(--shadow-light);
 }
 
 .card-title2 {
   font-size: 22px;
-  color: var(--main-text-color); /* Using inlined variable */
+  color: var(--main-text-color);
   font-weight: bold;
   margin-bottom: 10px;
   margin-left: 0;
@@ -149,7 +167,7 @@ ion-header {
 /* Text inside chart section (like "Desempeño financiero mensual") */
 .chart-section p {
   text-align: center;
-  color: var(--secondary-text-color); /* Using inlined variable */
+  color: var(--secondary-text-color);
   margin-bottom: 15px;
 }
 
@@ -173,13 +191,13 @@ ion-header {
 
 .recent-transactions-placeholder,
 .savings-goals-placeholder {
-  border: 1px solid var(--border-color); /* Using inlined variable */
-  background: var(--card-background); /* Using inlined variable */
+  border: 1px solid var(--border-color);
+  background: var(--card-background);
   border-radius: 8px;
   padding: 15px;
   box-sizing: border-box;
   height: auto;
-  box-shadow: var(--shadow-light); /* Apply shadow to widgets */
+  box-shadow: var(--shadow-light);
 }
 
 .recent-transactions-placeholder ul,
@@ -192,8 +210,8 @@ ion-header {
 .recent-transactions-placeholder li,
 .savings-goals-placeholder li {
   padding: 8px 0;
-  border-bottom: 1px solid var(--border-color); /* Using inlined variable */
-  color: var(--main-text-color); /* Using inlined variable */
+  border-bottom: 1px solid var(--border-color);
+  color: var(--main-text-color);
 }
 
 .recent-transactions-placeholder li:last-child,
@@ -204,7 +222,7 @@ ion-header {
 .recent-transactions-placeholder p,
 .savings-goals-placeholder p {
   text-align: center;
-  color: var(--secondary-text-color); /* Using inlined variable */
+  color: var(--secondary-text-color);
 }
 
 
@@ -242,7 +260,7 @@ ion-header {
 .h-6 { height: 1.5rem; }
 .h-8 { height: 2rem; }
 .h-10 { height: 2.5rem; }
-.h-48 { height: 12rem; } /* Specific for chart placeholder */
+.h-48 { height: 12rem; }
 
 .w-full { width: 100%; }
 .w-3\/4 { width: 75%; }

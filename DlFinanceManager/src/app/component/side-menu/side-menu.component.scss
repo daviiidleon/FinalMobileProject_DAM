@@ -2,16 +2,17 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  width: 100%;
-  background-color: #faf6e9;
-  color: #3a3a3a;
-  border-right: 1px solid #e0dacb;
+  width: var(--side-menu-expanded-width, 250px); /* Usar variable para el ancho expandido */
+  background-color: var(--global-menu-bg); /* Usa la variable global */
+  color: var(--global-menu-text-color);
+  border-right: 1px solid var(--global-menu-border-color);
+  transition: width 0.3s ease-in-out; /* Añade transición para el colapso */
 
   &.collapsed {
-    width: var(--side-menu-collapsed-width, 60px);
+    width: var(--side-menu-collapsed-width, 64px); /* Usar variable para el ancho colapsado */
 
     .header-logo-image {
-      margin: 0 auto;
+      margin: 0 auto; /* Centra el logo cuando colapsado */
     }
 
     .user-avatar {
@@ -26,6 +27,8 @@
     max-width: 260px;
     transition: transform 0.3s ease-in-out;
     transform: translateX(0);
+    background-color: var(--global-menu-bg); /* Asegura el fondo en mobile también */
+    border-right: none; /* Quitar borde derecho en mobile si se comporta como overlay */
 
     &.collapsed {
       transform: translateX(-100%);
@@ -39,13 +42,14 @@
   --global-menu-text-color: #3a3a3a;
   --global-menu-icon-color: #3a3a3a;
   --global-menu-border-color: #e0dacb;
+  --global-menu-hover-bg: #e0dacb; // Nuevo: Color de fondo al pasar el ratón
 
   --menu-item-active-font-weight: 600;
 
   --side-menu-header-height: 70px;
   --side-menu-footer-padding: 8px;
   --side-menu-item-height: 48px;
-  --side-menu-expanded-width: 250px;
+  --side-menu-expanded-width: 220px;
   --side-menu-collapsed-width: 64px;
 }
 
@@ -71,6 +75,7 @@
     cursor: pointer;
     overflow: hidden;
     flex-grow: 1;
+    transition: justify-content 0.3s ease-in-out; /* Transición para centrado */
 
     .header-logo-image {
       height: 90px;
@@ -78,6 +83,7 @@
       max-width: calc(var(--side-menu-expanded-width) - 80px);
       object-fit: contain;
       margin-right: 10px;
+      transition: max-width 0.3s ease-in-out, margin-right 0.3s ease-in-out; /* Transición para imagen */
     }
   }
 
@@ -86,6 +92,17 @@
     font-size: 20px;
     min-width: 40px;
     margin-left: auto;
+  }
+
+  /* Alineación para el logo en el header cuando colapsado */
+  :host(.collapsed) & {
+    .logo-area {
+      justify-content: center; /* Centra el logo */
+    }
+    .header-logo-image {
+      max-width: var(--side-menu-collapsed-width) - 20px; /* Ajusta tamaño del logo */
+      margin-right: 0; /* Elimina el margen derecho */
+    }
   }
 
   @media (max-width: 991px) {
@@ -97,14 +114,15 @@
 
 /* Content */
 .side-menu-content {
-  --background: #faf6e9 !important; /* Fuerza el fondo en el content */
-  background-color: #faf6e9 !important;
+  --background: var(--global-menu-bg); /* Usa la variable */
+  background-color: var(--global-menu-bg); /* Asegura */
   flex-grow: 1;
   overflow-y: auto;
+  overflow-x: hidden; /* Evita scroll horizontal al colapsar */
 
   ion-list.main-nav-list {
-    background: #faf6e9 !important; /* Fuerza el fondo en la lista principal */
-    background-color: #faf6e9 !important;
+    --background: var(--global-menu-bg); /* Usa la variable */
+    background-color: var(--global-menu-bg); /* Asegura */
     padding-top: 8px;
     padding-bottom: 8px;
   }
@@ -113,72 +131,112 @@
 /* Footer */
 .side-menu-footer {
   border-top: 1px solid var(--global-menu-border-color);
-  background-color: #faf6e9 !important; /* Fuerza el fondo en el footer */
+  background-color: var(--global-menu-bg); /* Usa la variable */
   padding: var(--side-menu-footer-padding) 8px;
   box-shadow: none;
 
   ion-list.footer-elements-list {
-    background: #faf6e9 !important; /* Fuerza el fondo en la lista del footer */
-    background-color: #faf6e9 !important;
+    --background: var(--global-menu-bg); /* Usa la variable */
+    background-color: var(--global-menu-bg); /* Asegura */
     padding-top: 0;
   }
 }
 
 /* Menu Items */
 ion-item {
-  --background: #faf6e9 !important; /* Establece el fondo directamente en el ion-item */
-  background-color: #faf6e9 !important; /* Asegúrate también de esta propiedad */
+  --background: var(--global-menu-bg); /* Establece el fondo directamente en el ion-item */
+  background-color: var(--global-menu-bg); /* Asegúrate también de esta propiedad */
+  --highlight-background: var(--global-menu-hover-bg); /* Color de fondo al hacer hover/tocar */
+  --padding-start: 16px; /* Ajusta el padding inicial del item para alinear */
+  --padding-end: 16px;
+  --inner-padding-end: 0; /* Elimina padding interno de Ionic si lo hay */
+  --min-height: var(--side-menu-item-height); /* Asegura una altura consistente */
+  border-radius: 6px; /* Bordes redondeados para los items */
+  margin: 4px 8px; /* Margen para separar items */
+  transition: background-color 0.2s ease-in-out; /* Transición para el hover */
+
+  display: flex; /* Asegura flexbox para alineación */
+  align-items: center; /* Centra verticalmente */
+
+  // Estado hover
+  &:hover {
+    --background: var(--global-menu-hover-bg);
+    background-color: var(--global-menu-hover-bg);
+  }
 }
 
 ion-item.active-item {
-  --background: #faf6e9 !important; /* También para el estado activo */
-  background-color: #faf6e9 !important;
+  --background: var(--global-menu-hover-bg); /* Fondo activo */
+  background-color: var(--global-menu-hover-bg); /* Asegura también esta propiedad */
+  color: var(--global-menu-text-color); /* Asegura el color del texto para el item activo */
+  // Otros estilos para el item activo, como un borde izquierdo o un color de texto más fuerte si lo deseas
+  ion-icon {
+    color: var(--global-menu-text-color); // El icono también podría cambiar de color
+  }
+  .menu-item-label {
+    font-weight: var(--menu-item-active-font-weight);
+  }
 }
 
 .menu-item {
-  margin: 4px 0;
   color: var(--global-menu-text-color);
 
   ion-icon {
     color: var(--global-menu-icon-color);
     font-size: 20px;
-    margin-right: 16px;
-    min-width: 24px;
+    margin-right: 16px; /* Espacio entre icono y label cuando expandido */
+    min-width: 24px; /* Asegura un ancho mínimo para el icono */
+    transition: margin-right 0.2s ease-in-out; /* Transición para el margen */
   }
 
   .menu-item-label {
     font-size: 0.95rem;
     font-weight: 500;
-    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out, width 0.2s ease-in-out, margin-left 0.2s ease-in-out; /* Agrega width y margin-left */
     overflow: hidden;
     text-overflow: ellipsis;
     color: inherit;
+    white-space: nowrap; /* Evita que el texto se rompa */
+    flex-shrink: 0; /* Evita que el label se encoja cuando el menú está colapsado */
   }
 
-  &.active-item {
-    .menu-item-label {
-      font-weight: var(--menu-item-active-font-weight);
+  /* Estado colapsado para los items del menú */
+  :host(.collapsed) & {
+    --padding-start: 0; /* Elimina padding cuando colapsado */
+    --padding-end: 0;
+    margin: 4px auto; /* Centra el ítem completo horizontalmente */
+    width: var(--side-menu-collapsed-width); /* Ajusta el ancho al colapsado */
+    justify-content: center; /* Centra el contenido (el icono) */
+
+    ion-icon {
+      margin-right: 0; /* Elimina el margen derecho del icono */
     }
   }
 }
 
-/* Footer Actions */
+/* Footer Actions (similar al menú principal) */
 .footer-action-item {
   display: flex;
   align-items: center;
   padding: 10px 16px;
-  margin: 4px 0;
+  margin: 4px 8px; /* Margen para separar items */
   cursor: pointer;
   border-radius: 6px;
   color: var(--global-menu-text-color);
   background-color: transparent !important; /* Intentamos mantener el fondo transparente aquí */
-  transition: none;
+  --background: transparent; /* También para Ionic */
+  transition: background-color 0.2s ease-in-out;
+
+  &:hover {
+    background-color: var(--global-menu-hover-bg);
+  }
 
   ion-icon {
     color: var(--global-menu-icon-color);
     font-size: 20px;
     margin-right: 16px;
     min-width: 24px;
+    transition: margin-right 0.2s ease-in-out;
   }
 
   .footer-action-label {
@@ -187,17 +245,47 @@ ion-item.active-item {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out, width 0.2s ease-in-out, margin-left 0.2s ease-in-out;
+    flex-shrink: 0;
   }
 
-  &.user-profile-item .user-avatar {
-    width: 32px;
-    height: 32px;
-    margin-right: 12px;
-    border: 1px solid var(--global-menu-border-color);
-    min-width: 32px;
+  &.user-profile-item {
+    padding-left: 16px; /* Asegura alineación */
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      margin-right: 12px;
+      border: 1px solid var(--global-menu-border-color);
+      min-width: 32px;
+      transition: margin-right 0.2s ease-in-out;
+    }
 
-    img {
-      border-radius: 50%;
+    /* Ajuste para el estado colapsado del avatar y nombre de usuario */
+    :host(.collapsed) & {
+      justify-content: center;
+      padding-left: 0;
+      padding-right: 0;
+      margin: 4px auto;
+      width: var(--side-menu-collapsed-width);
+
+      .user-avatar {
+        margin-right: 0;
+      }
+    }
+  }
+
+  &.logout-item {
+    padding-left: 16px; /* Asegura alineación */
+    :host(.collapsed) & {
+      justify-content: center;
+      padding-left: 0;
+      padding-right: 0;
+      margin: 4px auto;
+      width: var(--side-menu-collapsed-width);
+
+      ion-icon {
+        margin-right: 0;
+      }
     }
   }
 }
@@ -211,6 +299,7 @@ ion-item.active-item {
   margin-right: 0 !important;
   padding-left: 0 !important;
   padding-right: 0 !important;
+  margin-left: 0 !important; /* Asegura que no haya margen izquierdo residual */
 }
 
 /* Tooltips for Collapsed State */

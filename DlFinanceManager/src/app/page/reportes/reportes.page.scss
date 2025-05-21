@@ -41,7 +41,10 @@ ion-header {
 
 .first-content {
   width: 15%;
-  background-color: var(--sidebar-background);
+  // 💥💥💥 CORRECCIÓN AQUÍ: ¡CAMBIO APLICADO! 💥💥💥
+  // Cambiamos el fondo de first-content para que sea transparente,
+  // permitiendo que se vea el color de fondo de ion-content.
+  background-color: transparent; /* Changed from var(--sidebar-background) to transparent! */
   color: var(--sidebar-text);
   @media (max-width: 768px) {
     width: 100%;

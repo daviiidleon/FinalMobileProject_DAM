@@ -1,7 +1,8 @@
 <ion-header class="side-menu-header" [class.collapsed]="isCollapsed">
-  <ion-toolbar> <div class="logo-area" (click)="goTo('/dashboard')">
-    <ion-img src="../../../assets/icon/Header.png" alt="App Logo" class="header-logo-image"></ion-img>
-  </div>
+  <ion-toolbar>
+    <div class="logo-area" (click)="goTo('/dashboard')">
+      <ion-img src="../../../assets/icon/Header.png" alt="App Logo" class="header-logo-image"></ion-img>
+    </div>
     <ion-buttons slot="end" *ngIf="!isMobileView">
       <ion-button fill="clear" (click)="toggleCollapse()" class="collapse-toggle-button">
         <ion-icon slot="icon-only" [name]="isCollapsed ? 'chevron-forward-outline' : 'chevron-back-outline'"></ion-icon>

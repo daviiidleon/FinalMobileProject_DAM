@@ -5,7 +5,7 @@
   --border-color: #e9ecef; // Light grey for subtle separation
   --main-text-color: #343a40; // Dark grey for good contrast
   --secondary-text-color: #6c757d; // Medium grey for less prominent text
-  --sidebar-background: #222; // Dark background for the side menu
+  --sidebar-background: #222; // Dark background for the side menu (este es el que queremos cambiar)
   --sidebar-text: #fff; // White text for the side menu
   --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.04); // Softer shadow for cards/lists
   --shadow-subtle: 0 1px 3px rgba(0,0,0,0.03); // Very subtle shadow for input fields
@@ -44,8 +44,11 @@ ion-header {
 
 .first-content {
   width: 15%;
-  background-color: var(--sidebar-background);
-  color: var(--sidebar-text);
+  // 💥💥💥 CORRECCIÓN AQUÍ: ¡CAMBIO APLICADO! 💥💥💥
+  // Cambiamos el fondo de first-content para que sea transparente,
+  // permitiendo que se vea el color de fondo de ion-content.
+  background-color: transparent; // O podrías usar var(--page-background) si quieres que el color coincida con el resto de la página.
+  color: var(--sidebar-text); // Este color solo afecta el texto dentro de first-content, que ahora será solo el side-menu
   @media (max-width: 768px) {
     width: 100%;
   }
@@ -408,7 +411,7 @@ ion-list ion-item ion-icon {
 .w-full { width: 100%; }
 .w-2\/3 { width: 66.666%; }
 .w-1\/2 { width: 50%; }
-.w-40 { width: 10rem; } /* Approx width for buttons */
+.w-40 { width: 10rem; }
 
 .mb-2 { margin-bottom: 0.5rem; }
 .ml-2 { margin-left: 0.5rem; }
