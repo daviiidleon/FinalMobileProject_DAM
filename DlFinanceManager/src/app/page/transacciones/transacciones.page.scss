@@ -1,5 +1,6 @@
 /* (No changes to SCSS, as icons are handled by Ionicon's styling and sizing) */
-:host { // Using :host to encapsulate these variables for this component
+:host {
+  // Using :host to encapsulate these variables for this component
   --page-background: #f8f9fa; // Very light grey for ion-content
   --card-background: #ffffff; // Pure white for cards and distinct sections
   --border-color: #e9ecef; // Light grey for subtle separation
@@ -8,7 +9,7 @@
   --sidebar-background: #222; // Dark background for the side menu (este es el que queremos cambiar)
   --sidebar-text: #fff; // White text for the side menu
   --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.04); // Softer shadow for cards/lists
-  --shadow-subtle: 0 1px 3px rgba(0,0,0,0.03); // Very subtle shadow for input fields
+  --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.03); // Very subtle shadow for input fields
 
   // Ionic specific colors used within this page (ensure these match your global variables if you have them)
   --ion-color-primary: #007bff;
@@ -28,7 +29,7 @@ ion-content {
 ion-header {
   --background: var(--card-background); /* Header background */
   border-bottom: 1px solid var(--border-color); /* Subtle header border */
-  box-shadow: 0 1px 4px rgba(0,0,0,0.03); /* Subtle header shadow */
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03); /* Subtle header shadow */
 }
 
 .dashboard-layout {
@@ -44,11 +45,8 @@ ion-header {
 
 .first-content {
   width: 15%;
-  // 💥💥💥 CORRECCIÓN AQUÍ: ¡CAMBIO APLICADO! 💥💥💥
-  // Cambiamos el fondo de first-content para que sea transparente,
-  // permitiendo que se vea el color de fondo de ion-content.
-  background-color: transparent; // O podrías usar var(--page-background) si quieres que el color coincida con el resto de la página.
-  color: var(--sidebar-text); // Este color solo afecta el texto dentro de first-content, que ahora será solo el side-menu
+  background-color: transparent; // As per previous correction
+  color: var(--sidebar-text);
   @media (max-width: 768px) {
     width: 100%;
   }
@@ -109,7 +107,8 @@ ion-button[color="success"] {
   --background-activated: var(--ion-color-success-shade);
   --color: var(--ion-color-primary-contrast); /* White text for success button */
 }
-ion-button:not([color]) { // Default button for "Import from CSV/Excel"
+ion-button:not([color]) {
+  // Default button for "Import from CSV/Excel"
   --background: var(--ion-color-primary); // Using primary for default button
   --background-activated: var(--ion-color-primary-shade);
   --color: var(--ion-color-primary-contrast); // White text on primary
@@ -189,16 +188,56 @@ ion-col {
   align-items: center;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: nowrap; // CRUCIAL: Previene que el texto se envuelva dentro de la celda
   color: var(--main-text-color); // Consistent text color for table content
+  padding: 0 10px; /* Reducir el padding horizontal general un poco, lo ajustaremos por columnas */
+  box-sizing: border-box; /* Ensure padding is included in the width */
 }
+
+/* Column Width Adjustments for perfect alignment */
+/* Usaremos anchos fijos o min-width para las columnas pequeñas y flex: 1 para descripción */
+
+.transacciones-grid .col-type {
+  width: 80px; /* Ancho fijo para Type */
+  min-width: 80px;
+  flex-shrink: 0; /* Previene que se encoja */
+}
+
+.transacciones-grid .col-date {
+  width: 120px; /* Ancho fijo para Date */
+  min-width: 120px;
+  flex-shrink: 0;
+}
+
+.transacciones-grid .col-category {
+  width: 120px; /* Ancho fijo para Category */
+  min-width: 120px;
+  flex-shrink: 0;
+}
+
+.transacciones-grid .col-description {
+  flex: 1; /* Ocupa todo el espacio restante */
+  min-width: 150px; /* Un mínimo para asegurar legibilidad si la pantalla es muy estrecha */
+  /* No necesitamos max-width aquí ya que flex: 1 lo hace crecer */
+}
+
+.transacciones-grid .col-amount {
+  width: 120px; /* Ancho fijo para Amount */
+  min-width: 120px;
+  flex-shrink: 0;
+  justify-content: flex-end; /* Alinea el contenido a la derecha */
+}
+
+.transacciones-grid .col-actions {
+  width: 80px; /* Ancho fijo para Actions */
+  min-width: 80px;
+  flex-shrink: 0;
+  justify-content: center; /* Centra el botón de acciones */
+}
+
 
 ion-icon {
   margin-right: 5px;
-}
-
-ion-col:last-child {
-  justify-content: flex-end; /* Align action buttons to the right */
 }
 
 ion-button[size="small"] {
@@ -206,13 +245,14 @@ ion-button[size="small"] {
   --padding-end: 8px; /* Adjusted padding for better look with icon */
   --padding-top: 5px;
   --padding-bottom: 5px;
-  margin-left: 5px;
+  margin-left: 0; /* No external margins affecting alignment */
   --border-radius: 5px; // Slightly smaller radius for small buttons
   --background: var(--ion-color-primary); // Default small button primary
   --background-activated: var(--ion-color-primary-shade);
   color: var(--ion-color-primary-contrast);
   display: flex; /* Ensure flex for icon and text alignment */
   align-items: center; /* Center items vertically */
+  height: 32px; /* Fixed height for consistency */
 
   ion-icon {
     margin-right: 0; /* No margin-right for single icon button */
@@ -303,8 +343,47 @@ ion-list ion-item ion-icon {
     width: 100%;
   }
 
-  ion-col:last-child {
-    justify-content: flex-end;
+  /* Responsive table for smaller screens */
+  .transacciones-grid {
+    display: block; /* Make the grid behave like a block to stack rows */
+    overflow-x: auto; /* Enable horizontal scrolling if needed */
+    white-space: nowrap; /* Prevent columns from wrapping */
+  }
+
+  .header-row,
+  ion-row {
+    display: flex; /* Keep rows as flex containers */
+    flex-wrap: nowrap; /* Prevent columns from wrapping within a row */
+  }
+
+  ion-col {
+    flex: 0 0 auto; /* Allow columns to shrink/grow based on content but not wrap */
+    width: auto; /* Reset width */
+    min-width: 80px; /* Minimum width for each column to prevent excessive squeezing */
+    white-space: normal; /* Allow text to wrap within a column cell on smaller screens */
+    word-break: break-word; /* Break long words */
+    padding: 8px 10px; /* Adjust padding for better readability */
+  }
+
+  /* Re-adjust specific column widths for smaller screens if necessary, or let them auto-adjust */
+  /* Aquí puedes ajustar los min-width para las columnas individuales si es necesario */
+  .transacciones-grid .col-type {
+    min-width: 90px; /* Ajuste para Tipo */
+  }
+  .transacciones-grid .col-date {
+    min-width: 120px; /* Ajuste para Fecha */
+  }
+  .transacciones-grid .col-category {
+    min-width: 120px; /* Ajuste para Categoría */
+  }
+  .transacciones-grid .col-description {
+    min-width: 150px; /* Ajuste para Descripción */
+  }
+  .transacciones-grid .col-amount {
+    min-width: 90px; /* Ajuste para Cantidad */
+  }
+  .transacciones-grid .col-actions {
+    min-width: 70px; /* Ajuste para Acciones */
   }
 }
 
@@ -343,75 +422,3 @@ ion-list ion-item ion-icon {
     margin-right: 5px;
   }
 }
-
-
-/* --- Skeleton Loader Styles (using inlined variables) --- */
-
-.skeleton {
-  background: linear-gradient(90deg, var(--border-color) 25%, #e0e0e0 50%, var(--border-color) 75%);
-  background-size: 200% 100%;
-  animation: loading 1.5s infinite;
-  border-radius: 4px;
-}
-
-@keyframes loading {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-/* Specific skeleton styles for this page */
-.skeleton-header {
-  .header-left {
-    flex-grow: 1;
-  }
-  .header-right {
-    display: flex;
-    gap: 10px;
-  }
-}
-
-.skeleton-filter {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
-  align-items: center;
-  padding-right: 10px;
-  .search-bar, .category-filter {
-    flex-grow: 1;
-  }
-}
-
-.skeleton-list {
-  background-color: var(--card-background);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 10px;
-  .transacciones-grid {
-    width: 100%;
-  }
-  ion-row {
-    border-bottom: 1px solid var(--border-color);
-    padding: 8px 0;
-  }
-  ion-row:last-child {
-    border-bottom: none;
-  }
-}
-
-/* Utility classes for skeleton dimensions */
-.h-4 { height: 1rem; }
-.h-8 { height: 2rem; }
-.h-10 { height: 2.5rem; }
-.h-12 { height: 3rem; }
-
-.w-full { width: 100%; }
-.w-2\/3 { width: 66.666%; }
-.w-1\/2 { width: 50%; }
-.w-40 { width: 10rem; }
-
-.mb-2 { margin-bottom: 0.5rem; }
-.ml-2 { margin-left: 0.5rem; }

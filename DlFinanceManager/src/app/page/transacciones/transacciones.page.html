@@ -71,20 +71,20 @@
       <div *ngIf="isLoading" class="transactions-list skeleton-list">
         <ion-grid class="transacciones-grid">
           <ion-row class="header-row">
-            <ion-col size="2"><div class="skeleton h-4 w-3/4"></div></ion-col>
-            <ion-col size="3"><div class="skeleton h-4 w-3/4"></div></ion-col>
-            <ion-col size="3"><div class="skeleton h-4 w-3/4"></div></ion-col>
+            <ion-col><div class="skeleton h-4 w-3/4"></div></ion-col>
+            <ion-col><div class="skeleton h-4 w-3/4"></div></ion-col>
+            <ion-col><div class="skeleton h-4 w-3/4"></div></ion-col>
             <ion-col><div class="skeleton h-4 w-full"></div></ion-col>
-            <ion-col size="2" class="ion-text-right"><div class="skeleton h-4 w-3/4"></div></ion-col>
-            <ion-col size="1" class="ion-text-right"><div class="skeleton h-4 w-3/4"></div></ion-col>
+            <ion-col class="ion-text-right"><div class="skeleton h-4 w-3/4"></div></ion-col>
+            <ion-col class="ion-text-right"><div class="skeleton h-4 w-3/4"></div></ion-col>
           </ion-row>
           <ion-row *ngFor="let i of [1,2,3,4,5,6]">
-            <ion-col size="2"><div class="skeleton h-4 w-full"></div></ion-col>
-            <ion-col size="3"><div class="skeleton h-4 w-full"></div></ion-col>
-            <ion-col size="3"><div class="skeleton h-4 w-full"></div></ion-col>
             <ion-col><div class="skeleton h-4 w-full"></div></ion-col>
-            <ion-col size="2" class="ion-text-right"><div class="skeleton h-4 w-full"></div></ion-col>
-            <ion-col size="1" class="ion-text-right"><div class="skeleton h-4 w-full"></div></ion-col>
+            <ion-col><div class="skeleton h-4 w-full"></div></ion-col>
+            <ion-col><div class="skeleton h-4 w-full"></div></ion-col>
+            <ion-col><div class="skeleton h-4 w-full"></div></ion-col>
+            <ion-col class="ion-text-right"><div class="skeleton h-4 w-full"></div></ion-col>
+            <ion-col class="ion-text-right"><div class="skeleton h-4 w-full"></div></ion-col>
           </ion-row>
         </ion-grid>
       </div>
@@ -92,28 +92,28 @@
       <div *ngIf="!isLoading" class="transactions-list">
         <ion-grid class="transacciones-grid">
           <ion-row class="header-row">
-            <ion-col size="2"><strong>Type</strong></ion-col>
-            <ion-col size="3"><strong>Date</strong></ion-col>
-            <ion-col size="3"><strong>Category</strong></ion-col>
-            <ion-col><strong>Description</strong></ion-col>
-            <ion-col size="2" class="ion-text-right"><strong>Amount</strong></ion-col>
-            <ion-col size="1" class="ion-text-right"><strong>Actions</strong></ion-col>
+            <ion-col class="col-type"><strong>Type</strong></ion-col>
+            <ion-col class="col-date"><strong>Date</strong></ion-col>
+            <ion-col class="col-category"><strong>Category</strong></ion-col>
+            <ion-col class="col-description"><strong>Description</strong></ion-col>
+            <ion-col class="col-amount ion-text-right"><strong>Amount</strong></ion-col>
+            <ion-col class="col-actions ion-text-right"><strong>Actions</strong></ion-col>
           </ion-row>
 
           <ion-row *ngFor="let transaccion of transacciones">
-            <ion-col size="2">
+            <ion-col class="col-type">
               <ion-icon *ngIf="transaccion.tipo === 'Expense'" color="danger" name="arrow-down-circle"></ion-icon>
               <ion-icon *ngIf="transaccion.tipo === 'Income'" color="success" name="arrow-up-circle"></ion-icon>
               {{ transaccion.tipo }}
             </ion-col>
-            <ion-col size="3">{{ transaccion.fecha }}</ion-col>
-            <ion-col size="3">{{ transaccion.categoria }}</ion-col>
-            <ion-col>{{ transaccion.descripcion }}</ion-col>
-            <ion-col size="2" class="ion-text-right"
+            <ion-col class="col-date">{{ transaccion.fecha }}</ion-col>
+            <ion-col class="col-category">{{ transaccion.categoria }}</ion-col>
+            <ion-col class="col-description">{{ transaccion.descripcion }}</ion-col>
+            <ion-col class="col-amount ion-text-right"
                      [ngClass]="{'expense': transaccion.tipo === 'Expense', 'income': transaccion.tipo === 'Income'}">
               {{ transaccion.cantidad }}
             </ion-col>
-            <ion-col size="1" class="ion-text-right">
+            <ion-col class="col-actions ion-text-right">
               <ion-button size="small" (click)="mostrarOpciones(transaccion, $event)">
                 <ion-icon name="ellipsis-vertical"></ion-icon>
               </ion-button>
