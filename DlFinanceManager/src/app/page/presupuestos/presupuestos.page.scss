@@ -54,19 +54,21 @@ body.dark-theme {
   }
 
   // Dark theme specific for outline buttons
-  ion-card .card-footer {
-    ion-button[fill="outline"] {
-      --color: var(--ion-color-primary); // Blue text in dark theme
-      --border-color: var(--ion-color-primary); // Blue border in dark theme
+  ion-card .card-actions { /* Changed from .card-footer to .card-actions for direct targeting */
+    .edit-button { /* Specific targeting for .edit-button within card-actions */
+      --background: none !important; /* Ensure no background */
+      --color: var(--ion-color-primary) !important;
+      --border-color: var(--ion-color-primary) !important;
       &:hover {
-        --background: rgba(var(--ion-color-primary-rgb), 0.1); // Slight blue tint on hover
+        --background: rgba(var(--ion-color-primary-rgb), 0.1) !important;
       }
     }
     ion-button[color="danger"] {
-      --color: var(--ion-color-danger); // Red text in dark theme
-      --border-color: var(--ion-color-danger); // Red border in dark theme
+      --background: var(--ion-color-danger) !important; /* Keep solid background for dark theme */
+      --color: var(--ion-color-primary-contrast) !important;
+      --border-color: var(--ion-color-danger) !important; /* Add border for consistency if needed */
       &:hover {
-        --background: rgba(var(--ion-color-danger-rgb), 0.1); // Slight red tint on hover
+        --background: var(--ion-color-danger-shade) !important;
       }
     }
   }
@@ -287,16 +289,30 @@ ion-header {
     }
   }
 
+  /* MODIFIED: Edit button now has blue border and blue text */
   .edit-button {
-    --background: var(--ion-color-primary);
-    --background-activated: var(--ion-color-primary-shade);
-    --color: var(--ion-color-primary-contrast);
+    --background: var(--card-background); /* White background */
+    --color: var(--ion-color-primary); /* Blue text */
+    --border-width: 1px;
+    --border-style: solid;
+    --border-color: var(--ion-color-primary); /* Blue border */
+    box-shadow: var(--shadow-subtle);
+
+    &:hover {
+      --background: var(--ion-color-primary); /* Blue background on hover */
+      --color: var(--ion-color-primary-contrast); /* White text on hover */
+    }
   }
 
+  /* MODIFIED: Delete button now has red background and white text */
   ion-button[color="danger"] {
-    --background: var(--ion-color-danger);
-    --background-activated: var(--ion-color-danger-shade);
-    --color: var(--ion-color-primary-contrast);
+    --background: var(--ion-color-danger); /* Red background */
+    --color: var(--ion-color-primary-contrast); /* White text */
+    box-shadow: var(--shadow-subtle);
+
+    &:hover {
+      --background: var(--ion-color-danger-shade); /* Darker red on hover */
+    }
   }
 }
 

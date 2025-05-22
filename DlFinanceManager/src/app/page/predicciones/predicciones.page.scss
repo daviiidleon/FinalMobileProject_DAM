@@ -1,4 +1,4 @@
-/* --- Inlined CSS Variables for Savings Suggestions Page --- */
+/* --- Inlined CSS Variables for Predicciones Page (similar to Savings Page for consistency) --- */
 :host { // Using :host to encapsulate these variables for this component
   --page-background: #f8f9fa; // Very light grey for ion-content
   --card-background: #ffffff; // Pure white for cards and distinct sections
@@ -45,10 +45,7 @@ ion-header {
 
 .first-content {
   width: 15%;
-  // 💥💥💥 CORRECCIÓN AQUÍ: ¡CAMBIO APLICADO! 💥💥💥
-  // Cambiamos el fondo de first-content para que sea transparente,
-  // permitiendo que se vea el color de fondo de ion-content.
-  background-color: transparent; /* Changed from var(--sidebar-background) to transparent! */
+  background-color: transparent;
   color: var(--sidebar-text);
   @media (max-width: 768px) {
     width: 100%;
@@ -66,34 +63,34 @@ ion-header {
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 20px;
-  color: var(--main-text-color); /* Using inlined variable */
+  color: var(--main-text-color);
 }
 
 /* Skeleton for the page title */
 .skeleton-title {
   .skeleton {
-    margin-bottom: 20px; /* Aligns with actual title's margin-bottom */
+    margin-bottom: 20px;
   }
 }
 
-.sugerencias-container {
+.sugerencias-container { /* Asumo que esta clase se usa en la página de Predicciones también para las cards */
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding: 10px; /* Adjust padding if needed */
+  padding: 10px;
 }
 
-.sugerencia-card {
-  background: var(--card-background); /* Using inlined variable */
-  border-radius: 8px; /* Consistent border radius */
-  box-shadow: var(--shadow-light); /* Consistent shadow */
+.sugerencia-card { /* Asumo que esta clase se usa en la página de Predicciones también para las cards */
+  background: var(--card-background);
+  border-radius: 8px;
+  box-shadow: var(--shadow-light);
   padding: 20px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border: 1px solid var(--border-color); /* Add consistent border */
+  border: 1px solid var(--border-color);
 
   &:hover {
     transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08); /* A slightly more pronounced hover shadow */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
   }
 }
 
@@ -101,7 +98,7 @@ ion-header {
   font-size: 18px;
   font-weight: 500;
   margin-bottom: 10px;
-  color: var(--main-text-color); /* Using inlined variable */
+  color: var(--main-text-color);
 }
 
 .sugerencia-info {
@@ -111,39 +108,39 @@ ion-header {
 .sugerencia-impacto {
   font-size: 14px;
   margin-bottom: 5px;
-  color: var(--secondary-text-color); /* Using inlined variable */
+  color: var(--secondary-text-color);
 }
 
 .sugerencia-barra {
   height: 8px;
-  background: var(--border-color); /* Use border color for bar background */
+  background: var(--border-color);
   border-radius: 4px;
   overflow: hidden;
 }
 
 .progreso {
   height: 100%;
-  background-color: var(--ion-color-primary); /* Use primary color for progress */
+  background-color: var(--ion-color-primary);
   transition: width 0.3s ease;
-  border-radius: 4px; // Ensure corners are rounded
+  border-radius: 4px;
 }
 
-.sugerencia-actions {
+.sugerencia-actions { /* Asumo que esta clase se usa en la página de Predicciones también para las acciones de las cards */
   margin-top: 15px;
   display: flex;
   gap: 10px;
 
   ion-button {
-    height: 36px; /* Consistent button height */
+    height: 36px;
     --padding-start: 12px;
     --padding-end: 12px;
     font-size: 0.9em;
-    --border-radius: 8px; /* Consistent button radius */
+    --border-radius: 8px;
     font-weight: 600;
     text-transform: none;
   }
 
-  ion-button[fill="outline"] {
+  ion-button[fill="outline"][color="primary"] { /* Targeting "Aceptar" button */
     --background: transparent;
     --border-color: var(--ion-color-primary);
     --color: var(--ion-color-primary);
@@ -153,11 +150,14 @@ ion-header {
     }
   }
 
-  ion-button[fill="clear"] {
-    --background: transparent;
-    --color: var(--ion-color-danger); // Clear danger button
+  /* MODIFICACIÓN CLAVE EN EL CSS PARA fill="solid" */
+  ion-button[fill="solid"][color="danger"] {
+    --background: var(--ion-color-danger); /* Fondo rojo sólido */
+    --color: var(--ion-color-primary-contrast); /* Texto blanco */
+    --border-radius: 8px; /* Bordes redondeados */
+    box-shadow: var(--shadow-subtle); /* Sombra sutil */
     &:hover {
-      --background: rgba(var(--ion-color-danger-rgb), 0.1);
+      --background: var(--ion-color-danger-shade); /* Tono más oscuro al pasar el ratón */
     }
   }
 }
@@ -182,7 +182,7 @@ ion-header {
 /* Utility classes for skeleton dimensions (re-use from other pages) */
 .h-2 { height: 0.5rem; }
 .h-4 { height: 1rem; }
-.h-5 { height: 1.25rem; } /* For sugerecia-text */
+.h-5 { height: 1.25rem; }
 .h-6 { height: 1.5rem; }
 .h-8 { height: 2rem; }
 
@@ -203,13 +203,13 @@ ion-header {
   box-shadow: var(--shadow-light);
   border-radius: 8px;
   .skeleton-info {
-    margin-bottom: 10px; /* Adjust spacing to match actual info block */
+    margin-bottom: 10px;
   }
 
   .skeleton-actions {
     display: flex;
     gap: 10px;
-    justify-content: flex-start; /* Or flex-end if your buttons are typically right-aligned */
+    justify-content: flex-start;
   }
 }
 
