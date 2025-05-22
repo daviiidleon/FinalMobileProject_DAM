@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core'; // Import ViewChild
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -19,21 +19,28 @@ import {
   IonSelectOption,
   IonTitle,
   IonToolbar,
-  LoadingController // Import LoadingController
+  LoadingController,
+  AlertController,
+  ToastController,
+  IonModal, // Import IonModal
+  IonInput // Import IonInput
 } from '@ionic/angular/standalone';
 import { HeaderComponent } from "../../component/header/header.component";
 import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
-import { RouterLink } from '@angular/router';
-import { addIcons } from 'ionicons'; // Import addIcons
+import { RouterLink } from '@angular/router'; // RouterLink is still here for non-modal buttons
+import { addIcons } from 'ionicons';
 import {
-  cloudUploadOutline, // For "Import from CSV/Excel"
-  addCircleOutline,   // For "Add Transaction" and "Add your first transaction"
-  arrowDownCircle,    // For "Expense" type
-  arrowUpCircle,      // For "Income" type
-  ellipsisVertical,   // For table row actions
-  pencilOutline,      // For "Edit" in popover
-  trashOutline        // For "Delete" in popover
-} from 'ionicons/icons'; // Import the specific icons you need
+  cloudUploadOutline,
+  addCircleOutline,
+  arrowDownCircle,
+  arrowUpCircle,
+  ellipsisVertical,
+  pencilOutline,
+  trashOutline,
+  close // Add close icon for the modal
+} from 'ionicons/icons';
+import { TransactionService } from '../../services/transaction.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-transacciones',
@@ -62,19 +69,36 @@ import {
     RouterLink,
     IonPopover,
     IonList,
-    IonItem
+    IonItem,
+    IonModal, // Include IonModal in imports
+    IonInput // Include IonInput in imports
   ]
 })
-export class TransaccionesPage implements OnInit {
-  @ViewChild(IonPopover) popover!: IonPopover;
-  popoverEvent: any;
+export class TransaccionesPage implements OnInit, OnDestroy {
+  @ViewChild('addEditModal') addEditModal!: IonModal; // Reference to the modal
 
-  transacciones: any[] = []; // Initialize as empty to show loading state
-  isLoading: boolean = true; // Set to true initially
+  transacciones: any[] = [];
+  isLoading: boolean = true;
+  private transactionsSubscription!: Subscription;
 
-  constructor(private loadingController: LoadingController) {
-    // Add Ionicons to the global Ionicons library for this standalone component
-    // This ensures they are available in the template.
+  // Properties for the add/edit form
+  currentTransaction: any = {
+    id: '',
+    tipo: 'Expense',
+    fecha: new Date().toISOString().substring(0, 10), // Default to today's date
+    categoria: '',
+    descripcion: '',
+    cantidad: null,
+  };
+  isEditMode: boolean = false; // To determine if the modal is for editing or adding
+
+  constructor(
+    private loadingController: LoadingController,
+    private alertController: AlertController,
+    private toastController: ToastController,
+    // Removed Router as we are not navigating to separate pages for add/edit
+    private transactionService: TransactionService
+  ) {
     addIcons({
       cloudUploadOutline,
       addCircleOutline,
@@ -82,93 +106,131 @@ export class TransaccionesPage implements OnInit {
       arrowUpCircle,
       ellipsisVertical,
       pencilOutline,
-      trashOutline
+      trashOutline,
+      close // Register the close icon
     });
-  } // Inject LoadingController
+  }
 
   ngOnInit() {
     this.loadTransactions();
   }
 
+  ngOnDestroy() {
+    if (this.transactionsSubscription) {
+      this.transactionsSubscription.unsubscribe();
+    }
+  }
+
   async loadTransactions() {
-    this.isLoading = true; // Show skeleton loaders
-    const loading = await this.loadingController.create({ // Show Ionic spinner
+    this.isLoading = true;
+    const loading = await this.loadingController.create({
       message: 'Loading transactions...',
       spinner: 'crescent'
     });
     await loading.present();
 
-    // Simulate fetching data with a delay
-    setTimeout(() => {
-      this.transacciones = [
-        {
-          tipo: 'Expense',
-          fecha: 'Nov 15, 2023',
-          cuenta: 'Cuenta Corriente',
-          cantidad: '-€75.50',
-          categoria: 'Food',
-          descripcion: 'Groceries for the week'
-        },
-        {
-          tipo: 'Income',
-          fecha: 'Nov 1, 2023',
-          cuenta: 'Cuenta Corriente',
-          cantidad: '+€2200.00',
-          categoria: 'Salary',
-          descripcion: 'November Salary'
-        },
-        {
-          tipo: 'Expense',
-          fecha: 'Oct 28, 2023',
-          cuenta: 'Tarjeta Crédito',
-          cantidad: '-€120.00',
-          categoria: 'Utilities',
-          descripcion: 'Electricity Bill'
-        },
-        {
-          tipo: 'Expense',
-          fecha: 'Oct 25, 2023',
-          cuenta: 'Efectivo',
-          cantidad: '-€30.00',
-          categoria: 'Transport',
-          descripcion: 'Bus fare'
-        },
-        {
-          tipo: 'Income',
-          fecha: 'Oct 20, 2023',
-          cuenta: 'Cuenta Ahorro',
-          cantidad: '+€500.00',
-          categoria: 'Investment',
-          descripcion: 'Stock Dividend'
-        },
-        {
-          tipo: 'Expense',
-          fecha: 'Oct 18, 2023',
-          cuenta: 'Tarjeta Crédito',
-          cantidad: '-€85.00',
-          categoria: 'Entertainment',
-          descripcion: 'Concert Tickets'
+    this.transactionsSubscription = this.transactionService.transactions$.subscribe(data => {
+      this.transacciones = data;
+      this.isLoading = false;
+      loading.dismiss();
+    });
+  }
+
+  // New method to open the add/edit modal
+  async openAddEditModal(mode: 'add' | 'edit', transaction?: any) {
+    if (mode === 'add') {
+      this.isEditMode = false;
+      // Reset currentTransaction for a new entry
+      this.currentTransaction = {
+        id: '',
+        tipo: 'Expense',
+        fecha: new Date().toISOString().substring(0, 10),
+        categoria: '',
+        descripcion: '',
+        cantidad: null,
+      };
+    } else { // mode === 'edit'
+      this.isEditMode = true;
+      if (transaction) {
+        // Create a deep copy to avoid modifying the original transaction directly
+        this.currentTransaction = { ...transaction };
+
+        // Special handling for amount if it's a string with currency symbol and sign
+        if (typeof this.currentTransaction.cantidad === 'string') {
+          // Remove non-numeric characters except '.' and '-' for parseFloat
+          this.currentTransaction.cantidad = parseFloat(this.currentTransaction.cantidad.replace(/[^0-9.-]+/g, ""));
         }
-      ];
-      this.isLoading = false; // Hide skeleton loaders
-      loading.dismiss(); // Dismiss Ionic spinner
-    }, 1500); // Simulate 1.5 seconds of loading
+        console.log('Editing transaction:', this.currentTransaction);
+      }
+    }
+    await this.addEditModal.present();
   }
 
-  async mostrarOpciones(transaccion: any, ev: any) {
-    this.popoverEvent = ev;
-    await this.popover.present(ev);
+  // New method to handle form submission
+  async saveTransaction() {
+    // Basic validation
+    if (!this.currentTransaction.tipo || !this.currentTransaction.fecha || !this.currentTransaction.categoria || !this.currentTransaction.descripcion || this.currentTransaction.cantidad === null || isNaN(parseFloat(this.currentTransaction.cantidad))) {
+      this.presentToast('Please fill in all fields correctly.', 'danger');
+      return;
+    }
+
+    // Format amount with currency symbol and sign
+    let amount = parseFloat(this.currentTransaction.cantidad);
+    const formattedAmount = (this.currentTransaction.tipo === 'Expense' ? '-' : '+') + '€' + amount.toFixed(2);
+    const transactionToSave = { ...this.currentTransaction, cantidad: formattedAmount };
+
+    if (this.isEditMode) {
+      console.log('Updating transaction:', transactionToSave);
+      this.transactionService.updateTransaction(transactionToSave);
+      this.presentToast('Transaction updated successfully!', 'success');
+    } else {
+      console.log('Adding new transaction:', transactionToSave);
+      this.transactionService.addTransaction(transactionToSave);
+      this.presentToast('Transaction added successfully!', 'success');
+    }
+
+    await this.addEditModal.dismiss(); // Close the modal after saving
   }
 
-  editarTransaccion(transaccion: any) {
-    this.popover.dismiss();
-    console.log('Editar transacción:', transaccion);
-    // Implementa la lógica para editar la transacción
+  // Method to close the modal
+  async cancelModal() {
+    await this.addEditModal.dismiss();
   }
 
-  eliminarTransaccion(transaccion: any) {
-    this.popover.dismiss();
-    console.log('Eliminar transacción:', transaccion);
-    // Implementa la lógica para eliminar la transacción
+  async eliminarTransaccion(transaccion: any) {
+    const alert = await this.alertController.create({
+      header: 'Confirm Deletion',
+      message: `Are you sure you want to delete the transaction "${transaccion.descripcion}" on ${transaccion.fecha}? This action cannot be undone.`,
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          cssClass: 'secondary',
+          handler: () => {
+            console.log('Delete cancelled');
+          },
+        },
+        {
+          text: 'Delete',
+          cssClass: 'danger',
+          handler: () => {
+            this.transactionService.deleteTransaction(transaccion.id);
+            this.presentToast('Transaction deleted successfully!', 'success');
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  async presentToast(message: string, color: string = 'primary') {
+    const toast = await this.toastController.create({
+      message: message,
+      duration: 2000,
+      color: color,
+      position: 'bottom',
+    });
+    toast.present();
   }
 }

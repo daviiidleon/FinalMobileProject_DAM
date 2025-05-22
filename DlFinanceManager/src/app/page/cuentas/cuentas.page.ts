@@ -1,81 +1,57 @@
-import { Component, OnInit } from '@angular/core';
+// src/app/page/cuentas/cuentas.page.ts
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule, formatDate } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import {
+  IonBackButton,
+  IonButtons,
   IonButton,
+  IonCol,
   IonContent,
+  IonGrid,
   IonHeader,
   IonIcon,
+  IonItem, // <-- MAKE SURE THIS IS IMPORTED
+  IonList,
+  IonRow,
+  IonSearchbar,
+  IonSelect, // <-- MAKE SURE THIS IS IMPORTED
+  IonSelectOption, // <-- MAKE SURE THIS IS IMPORTED
   IonTitle,
   IonToolbar,
-  IonCol,
-  IonRow,
-  IonGrid,
-  IonModal,
+  LoadingController,
+  AlertController,
+  ToastController,
+  IonModal, // <-- MAKE SURE THIS IS IMPORTED
+  IonInput, // <-- MAKE SURE THIS IS IMPORTED
   IonCard,
   IonCardHeader,
+  IonCardContent,
   IonCardTitle,
   IonCardSubtitle,
-  IonCardContent,
   IonBadge,
-  IonLabel,
-  IonInput,
-  IonSelect,
-  IonSelectOption,
-  IonText,
-  IonButtons,
-  LoadingController,
+  IonLabel, // <-- MAKE SURE THIS IS IMPORTED
+  IonText // <-- MAKE SURE THIS IS IMPORTED
 } from '@ionic/angular/standalone';
 import { HeaderComponent } from "../../component/header/header.component";
 import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
+import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
 import {
   business,
   addCircle,
-  receiptOutline,     // CORRECTED: Changed from receiptTextOutline to receiptOutline
-  walletOutline,
-  cardOutline,
-  trendingUp,
-  cashOutline,
-  shapesOutline,
-  calendarOutline,
   pencilOutline,
   trashOutline,
-  reloadCircle,
+  walletOutline,
+  cardOutline,
+  cashOutline,
+  analyticsOutline,
+  closeOutline,
   saveOutline,
-  closeOutline
+  reloadCircle
 } from 'ionicons/icons';
-
-interface Account {
-  id: string;
-  nombre: string;
-  tipo: string;
-  saldo: number;
-  institucion?: string;
-  fechaActualizacion?: string;
-}
-
-interface AccountTypeIcons {
-  [key: string]: string; // Type is string for Ionicon names
-}
-
-const ACCOUNT_TYPES = ['Checking', 'Savings', 'Credit Card', 'Investment', 'Loan', 'Other'];
-
-const accountTypeIcons: AccountTypeIcons = {
-  Checking: 'receipt-outline',     // CORRECTED: Changed from receipt-text-outline to receipt-outline
-  Savings: 'wallet-outline',
-  'Credit Card': 'card-outline',
-  Investment: 'trending-up',
-  Loan: 'cash-outline',
-  Other: 'shapes-outline',
-};
-
-interface AccountFormValues {
-  nombre: string;
-  tipo: string;
-  saldo: number;
-  institucion?: string;
-}
+import { AccountService } from '../../services/account.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-cuentas',
@@ -83,71 +59,84 @@ interface AccountFormValues {
   styleUrls: ['./cuentas.page.scss'],
   standalone: true,
   imports: [
+    CommonModule,
+    ReactiveFormsModule, // <--- CRITICAL FOR FORMS. MUST BE HERE.
+    HeaderComponent,
+    SideMenuComponent,
+    RouterLink, // Used for navigation in side-menu, good to have it here
+
+    // ALL Ionic Components used in the template MUST be listed here.
+    // If any of these are missing or misspelled, the UI will not render.
     IonContent,
     IonHeader,
     IonTitle,
     IonToolbar,
-    CommonModule,
-    FormsModule,
-    HeaderComponent,
-    SideMenuComponent,
     IonIcon,
     IonButton,
     IonCol,
     IonRow,
     IonGrid,
-    IonModal,
-    ReactiveFormsModule,
-    IonCard,
-    IonCardHeader,
-    IonCardTitle,
-    IonCardSubtitle,
-    IonCardContent,
-    IonBadge,
-    IonLabel,
-    IonInput,
+    IonSearchbar,
     IonSelect,
     IonSelectOption,
-    IonText,
     IonButtons,
+    IonBackButton,
+    IonCard,
+    IonCardHeader,
+    IonCardContent,
+    IonCardTitle,
+    IonCardSubtitle,
+    IonBadge,
+    IonModal,
+    IonInput, // <--- IMPORTANT: For ion-input
+    IonLabel, // <--- IMPORTANT: For ion-label
+    IonText,  // <--- IMPORTANT: For ion-text (for validation messages)
+    IonItem,  // <--- IMPORTANT: For ion-item (wraps inputs/selects)
+    IonList   // If you remove IonList, ensure IonItem still works, though it's typically fine.
   ]
 })
-export class CuentasPage implements OnInit {
-  accounts: Account[] = [];
-  isLoading = true;
-  isModalOpen = false;
-  editingAccount: Account | undefined;
+export class CuentasPage implements OnInit, OnDestroy {
+  @ViewChild(IonModal) modal!: IonModal;
+
+  accounts: any[] = [];
+  isLoading: boolean = true;
+  isModalOpen: boolean = false;
+  editingAccount: any | null = null;
+
   accountForm: FormGroup;
-  accountTypes = ACCOUNT_TYPES;
-  isFormSubmitted = false;
+  isFormSubmitted: boolean = false;
+
+  accountTypes: string[] = ['Checking', 'Savings', 'Credit Card', 'Loan', 'Investment', 'Cash'];
+  private accountsSubscription!: Subscription;
 
   constructor(
-    private fb: FormBuilder,
     private loadingController: LoadingController,
+    private alertController: AlertController,
+    private toastController: ToastController,
+    private formBuilder: FormBuilder,
+    private accountService: AccountService
   ) {
-    this.accountForm = this.fb.group({
-      nombre: ['', [Validators.required, Validators.minLength(2)]],
-      tipo: ['', Validators.required],
-      saldo: [0, Validators.required],
-      institucion: [''],
-    });
-
-    // Add Ionicons to the global Ionicons library for this standalone component
     addIcons({
       business,
       addCircle,
-      receiptOutline,     // CORRECTED here too
-      walletOutline,
-      cardOutline,
-      trendingUp,
-      cashOutline,
-      shapesOutline,
-      calendarOutline,
       pencilOutline,
       trashOutline,
-      reloadCircle,
+      walletOutline,
+      cardOutline,
+      cashOutline,
+      analyticsOutline,
+      closeOutline,
       saveOutline,
-      closeOutline
+      reloadCircle
+    });
+
+    this.accountForm = this.formBuilder.group({
+      id: [null],
+      nombre: ['', [Validators.required, Validators.minLength(2)]],
+      tipo: ['', Validators.required],
+      saldo: [null, [Validators.required, Validators.pattern(/^-?\d*\.?\d*$/)]],
+      institucion: [''],
+      fechaActualizacion: [new Date().toISOString()]
     });
   }
 
@@ -155,128 +144,162 @@ export class CuentasPage implements OnInit {
     this.loadAccounts();
   }
 
+  ngOnDestroy() {
+    if (this.accountsSubscription) {
+      this.accountsSubscription.unsubscribe();
+    }
+  }
+
   async loadAccounts() {
+    this.isLoading = true;
     const loading = await this.loadingController.create({
       message: 'Loading accounts...',
       spinner: 'crescent'
     });
     await loading.present();
 
-    setTimeout(() => {
-      this.accounts = [
-        { id: 'acc1', nombre: 'Checking Account', tipo: 'Checking', saldo: 5210.75, institucion: 'City Bank', fechaActualizacion: new Date().toISOString() },
-        { id: 'acc2', nombre: 'High Yield Savings', tipo: 'Savings', saldo: 25300.10, institucion: 'Online Savings Co.', fechaActualizacion: new Date(Date.now() - 86400000 * 2).toISOString() },
-        { id: 'acc3', nombre: 'Travel Rewards Card', tipo: 'Credit Card', saldo: -750.20, institucion: 'Global Credit Inc.', fechaActualizacion: new Date(Date.now() - 86400000).toISOString() },
-        { id: 'acc4', nombre: 'Retirement Fund', tipo: 'Investment', saldo: 125000.00, institucion: 'InvestWell Group' },
-      ];
+    this.accountsSubscription = this.accountService.accounts$.subscribe(data => {
+      this.accounts = data;
       this.isLoading = false;
       loading.dismiss();
-    }, 1500);
+    });
   }
 
-  openModal(account?: Account) {
-    this.editingAccount = account ? { ...account } : undefined;
-    if (this.editingAccount) {
-      this.accountForm.patchValue({
-        nombre: this.editingAccount.nombre || '',
-        tipo: this.editingAccount.tipo || undefined,
-        saldo: this.editingAccount.saldo || 0,
-        institucion: this.editingAccount.institucion || '',
-      });
+  async openModal(account?: any) {
+    this.isFormSubmitted = false;
+    if (account) {
+      this.editingAccount = { ...account };
+      // IMPORTANT: Remove currency symbol before patching for number input
+      this.editingAccount.saldo = parseFloat(this.editingAccount.saldo.replace(/[^\d.-]/g, ''));
+      this.accountForm.patchValue(this.editingAccount);
+      console.log('Editing account:', this.editingAccount);
     } else {
-      this.accountForm.reset();
+      this.editingAccount = null;
+      this.accountForm.reset({
+        id: null,
+        nombre: '',
+        tipo: '',
+        saldo: null,
+        institucion: '',
+        fechaActualizacion: new Date().toISOString()
+      });
+      console.log('Adding new account');
     }
     this.isModalOpen = true;
-    this.isFormSubmitted = false;
   }
 
-  closeModal() {
+  async closeModal() {
     this.isModalOpen = false;
-    this.editingAccount = undefined;
-    this.isFormSubmitted = false;
+    this.accountForm.reset();
+    this.editingAccount = null;
   }
 
   async submitForm() {
     this.isFormSubmitted = true;
-    if (this.accountForm.valid) {
-      const formData = this.accountForm.value as AccountFormValues;
-      const submitLoading = await this.loadingController.create({
-        message: this.editingAccount ? 'Updating account...' : 'Creating account...',
-        spinner: 'crescent'
-      });
-      await submitLoading.present();
 
-      setTimeout(() => {
-        if (this.editingAccount) {
-          this.updateAccount(formData);
-        } else {
-          this.createAccount(formData);
-        }
-        submitLoading.dismiss();
-        this.closeModal();
-      }, 700);
+    if (this.accountForm.invalid) {
+      this.presentToast('Please fill in all required fields correctly.', 'danger');
+      return;
+    }
+
+    const formData = { ...this.accountForm.value };
+    let formattedBalance = '';
+    const balanceAmount = parseFloat(formData.saldo);
+
+    // Logic to format balance based on type (e.g., Credit Card/Loan balances are positive when owed)
+    if (this.isCreditCardOrLoan(formData) && balanceAmount > 0) {
+      formattedBalance = `+$${balanceAmount.toFixed(2)}`;
+    } else if (balanceAmount < 0) {
+      formattedBalance = `-$${Math.abs(balanceAmount).toFixed(2)}`;
     } else {
-      Object.values(this.accountForm.controls).forEach(control => {
-        control.markAsTouched();
-      });
+      formattedBalance = `$${balanceAmount.toFixed(2)}`;
     }
-  }
 
-  createAccount(formData: AccountFormValues) {
-    const newAccount: Account = {
-      ...formData,
-      id: `acc${Date.now()}`,
-      fechaActualizacion: new Date().toISOString()
-    };
-    this.accounts = [newAccount, ...this.accounts].sort((a, b) => a.nombre.localeCompare(b.nombre));
-  }
+    formData.saldo = formattedBalance;
+    formData.fechaActualizacion = new Date().toISOString();
 
-  updateAccount(formData: AccountFormValues) {
     if (this.editingAccount) {
-      this.accounts = this.accounts.map(acc =>
-        acc.id === this.editingAccount!.id ? { ...acc, ...formData, fechaActualizacion: new Date().toISOString() } : acc
-      ).sort((a, b) => a.nombre.localeCompare(b.nombre));
-      this.editingAccount = undefined;
+      console.log('Updating account:', formData);
+      this.accountService.updateAccount(formData);
+      this.presentToast('Account updated successfully!', 'success');
+    } else {
+      console.log('Adding new account:', formData);
+      this.accountService.addAccount(formData);
+      this.presentToast('Account added successfully!', 'success');
     }
+
+    await this.closeModal();
   }
 
-  async deleteAccount(accountId: string) {
-    const deleteLoading = await this.loadingController.create({
-      message: 'Deleting account...',
-      spinner: 'crescent'
+  async deleteAccount(id: string) {
+    const alert = await this.alertController.create({
+      header: 'Confirm Deletion',
+      message: 'Are you sure you want to delete this account? This action cannot be undone.',
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          cssClass: 'secondary',
+        },
+        {
+          text: 'Delete',
+          cssClass: 'danger',
+          handler: () => {
+            this.accountService.deleteAccount(id);
+            this.presentToast('Account deleted successfully!', 'success');
+          },
+        },
+      ],
     });
-    await deleteLoading.present();
 
-    setTimeout(() => {
-      this.accounts = this.accounts.filter(acc => acc.id !== accountId);
-      deleteLoading.dismiss();
-    }, 500);
+    await alert.present();
   }
 
-  getIcon(type: string): string {
-    // Mapping custom string names to valid Ionicons names
-    switch (type) {
-      case 'Checking': return 'receipt-outline'; // CORRECTED here too
-      case 'Savings': return 'wallet-outline';
-      case 'Credit Card': return 'card-outline';
-      case 'Investment': return 'trending-up';
-      case 'Loan': return 'cash-outline';
-      default: return 'shapes-outline';
+  async presentToast(message: string, color: string = 'primary') {
+    const toast = await this.toastController.create({
+      message: message,
+      duration: 2000,
+      color: color,
+      position: 'bottom',
+    });
+    toast.present();
+  }
+
+  getIcon(accountType: string): string {
+    switch (accountType) {
+      case 'Checking':
+      case 'Savings':
+        return 'wallet-outline';
+      case 'Credit Card':
+        return 'card-outline';
+      case 'Cash':
+        return 'cash-outline';
+      case 'Investment':
+        return 'analytics-outline';
+      case 'Loan':
+        return 'business-outline';
+      default:
+        return 'wallet-outline';
     }
   }
 
-  isNegativeBalance(account: Account): boolean {
-    return account.saldo < 0 && (account.tipo === 'Credit Card' || account.tipo === 'Loan');
+  isNegativeBalance(account: any): boolean {
+    const balance = parseFloat(account.saldo.replace(/[^\d.-]/g, ''));
+    return (account.tipo === 'Credit Card' || account.tipo === 'Loan') ? balance > 0 : balance < 0;
+  }
+
+  isCreditCardOrLoan(account: any): boolean {
+    return (account.tipo === 'Credit Card' || account.tipo === 'Loan');
   }
 
   formatDate(isoDate: string | undefined): string {
     if (!isoDate) {
       return '';
     }
-    return formatDate(isoDate, 'MMM d, yyyy', 'en-US');
+    return formatDate(isoDate, 'MMM d, y', 'en-US');
   }
 
   getFormControl(name: string) {
-    return this.accountForm.controls[name];
+    return this.accountForm.get(name);
   }
 }

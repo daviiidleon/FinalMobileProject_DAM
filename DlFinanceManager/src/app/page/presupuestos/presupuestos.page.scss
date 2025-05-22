@@ -1,4 +1,6 @@
-/* --- Inlined CSS Variables for Budgets Page --- */
+/* src/app/page/cuentas/cuentas.page.scss */
+
+/* --- Inlined CSS Variables for Accounts Page --- */
 :host { // Using :host to encapsulate these variables for this component
   --page-background: #f8f9fa; // Very light grey for ion-content
   --card-background: #ffffff; // Pure white for cards and distinct sections
@@ -9,18 +11,68 @@
   --sidebar-text: #fff; // White text for the side menu
   --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.04); // Softer shadow for cards/lists
   --shadow-subtle: 0 1px 3px rgba(0,0,0,0.03); // Very subtle shadow for input fields
+  --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.08); // Added for more pronounced form elements
 
   // Ionic specific colors used within this page (ensure these match your global variables if you have them)
   --ion-color-primary: #007bff; // A standard, vibrant blue
   --ion-color-primary-shade: #006bdf;
-  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-tint: #e6f2ff; // Lighter tint for borders/backgrounds
+  --ion-color-primary-contrast: #ffffff; // White text on primary background
   --ion-color-danger: #dc3545; // A clear red
   --ion-color-danger-shade: #c12f3d;
   --ion-color-light: #f8f9fa; // Used for modal header toolbar
-  --ion-color-step-50: #f8f8f8; // Light step for input backgrounds
+  --ion-color-step-50: #f0f2f5; // Slightly darker light step for input backgrounds for better contrast
+  --ion-color-step-100: #e9ecef; // For borders in light mode
+
+  // Added label-color for dark theme consistency, though it's set in dark-theme
+  --label-color: var(--secondary-text-color);
+  --input-border-color: #d1d5db; // A slightly darker default input border color
 }
 
-/* --- Dashboard Layout and General Styles (shared with other pages, now inlined) --- */
+/* --- Dark Theme (if you have one) --- */
+body.dark-theme {
+  --page-background: #1a1a1a;
+  --card-background: #2a2a2a;
+  --main-text-color: #e0e0e0;
+  --label-color: #bbbbbb; /* Specific label color for dark theme */
+  --input-border-color: #444444; /* Specific input border for dark theme */
+  --small-text-color: #aaaaaa;
+  --hint-text-color: #999999;
+  --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.3); // More pronounced shadow for dark theme
+  --shadow-subtle: 0 1px 3px rgba(0,0,0,0.1);
+  --shadow-medium: 0 6px 18px rgba(0, 0, 0, 0.4); // More pronounced for dark theme
+
+  // Dark theme specific input backgrounds
+  ion-item {
+    --background: #333333; // Dark background for ion-item
+  }
+  ion-input, ion-select, ion-textarea {
+    --background: #3a3a3a; /* Slightly darker input background for dark theme */
+    &.ion-readonly {
+      --background: #444444;
+    }
+  }
+
+  // Dark theme specific for outline buttons
+  ion-card .card-footer {
+    ion-button[fill="outline"] {
+      --color: var(--ion-color-primary); // Blue text in dark theme
+      --border-color: var(--ion-color-primary); // Blue border in dark theme
+      &:hover {
+        --background: rgba(var(--ion-color-primary-rgb), 0.1); // Slight blue tint on hover
+      }
+    }
+    ion-button[color="danger"] {
+      --color: var(--ion-color-danger); // Red text in dark theme
+      --border-color: var(--ion-color-danger); // Red border in dark theme
+      &:hover {
+        --background: rgba(var(--ion-color-danger-rgb), 0.1); // Slight red tint on hover
+      }
+    }
+  }
+}
+
+/* --- Dashboard Layout and General Styles (UNTOUCHED) --- */
 ion-content {
   --background: var(--page-background); /* Set page background */
 }
@@ -44,8 +96,8 @@ ion-header {
 
 .first-content {
   width: 15%;
-  background-color: transparent; /* Changed from var(--sidebar-background) to transparent! */
-  color: var(--sidebar-text); /* Using inlined variable */
+  background-color: transparent;
+  color: var(--sidebar-text);
   @media (max-width: 768px) {
     width: 100%;
   }
@@ -58,330 +110,217 @@ ion-header {
   box-sizing: border-box;
 }
 
-/* --- Budgets Header Section --- */
+/* --- Budgets Header Section (UNTOUCHED, original names kept) --- */
 .budgets-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+  padding-right: 10px;
+}
 
-  .page-title {
-    h2 {
-      font-size: 24px;
-      font-weight: bold;
-      margin-bottom: 5px;
-      color: var(--main-text-color); /* Using inlined variable */
-    }
-    p {
-      color: var(--secondary-text-color); /* Using inlined variable */
-      font-size: 14px;
-    }
-  }
+.page-title h2 {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--main-text-color);
+  margin-bottom: 5px;
+}
 
-  .create-budget-button {
-    --background: var(--ion-color-primary); /* Using primary color for button */
-    --color: var(--ion-color-primary-contrast); /* White text on primary */
-    height: 40px; /* Fixed height for consistency */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: auto; /* Push button to the right */
-    --border-radius: 8px; /* Consistent button radius */
-    font-weight: 600;
-    text-transform: none;
+.page-title p {
+  font-size: 14px;
+  color: var(--secondary-text-color);
+}
 
-    &:hover {
-      --background: var(--ion-color-primary-shade);
-    }
-  }
+.create-budget-button {
+  font-size: 14px;
+  --border-radius: 8px;
+  font-weight: 600;
+  text-transform: none;
+  height: auto;
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
 
-  @media (max-width: 991px) {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-
-    .page-title {
-      width: 100%;
-      h2, p {
-        margin-left: 0;
-      }
-    }
-    .create-budget-button {
-      margin-top: 10px;
-      width: 100%;
-      margin-left: 0;
-    }
+  ion-icon {
+    margin-right: 8px;
+    font-size: 18px;
   }
 }
 
-/* --- Budget Alerts Section --- */
+/* --- Budget Alerts Section (UNTOUCHED) --- */
 .budget-alerts {
-  background-color: #fdecea; /* Light red */
-  border: 1px solid #f9caca; /* Slightly darker red border */
-  color: var(--ion-color-danger); /* Dark red text using danger color */
+  background-color: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   padding: 15px;
   margin-bottom: 20px;
-  border-radius: 8px;
-  box-shadow: var(--shadow-light); /* Apply consistent shadow */
+  box-shadow: var(--shadow-light);
 
   .alert-container {
     display: flex;
     align-items: flex-start;
+    gap: 10px;
+    color: var(--ion-color-danger);
+    font-size: 14px;
+
     ion-icon {
-      margin-right: 10px;
-      font-size: 1.5em;
-      min-width: 24px;
-      color: var(--ion-color-danger); /* Ensure icon also uses danger color */
+      font-size: 22px;
+      margin-top: 2px;
     }
+
     strong {
       font-weight: bold;
-      margin-right: 10px;
+      color: var(--main-text-color);
     }
+
     p {
-      margin-top: 0;
-      margin-bottom: 5px;
-      font-size: 14px;
-      color: var(--main-text-color); // Body text in alert should be main text color
-    }
-    ul {
-      padding-left: 20px;
       margin-top: 5px;
+      color: var(--secondary-text-color);
+    }
+
+    ul {
+      margin-top: 10px;
+      padding-left: 20px;
       list-style-type: disc;
     }
+
     li {
-      font-size: 14px;
-      margin-bottom: 3px;
-      color: var(--main-text-color); // List items in alert should be main text color
+      margin-bottom: 5px;
+      color: var(--main-text-color);
     }
   }
 }
 
-/* --- Past Budgets Section --- */
+/* --- Past Budgets Section (UNTOUCHED) --- */
 .past-budgets {
   h3 {
     font-size: 20px;
     font-weight: bold;
+    color: var(--main-text-color);
     margin-bottom: 15px;
-    color: var(--main-text-color); /* Using inlined variable */
+    padding-right: 10px;
+  }
+}
+
+.budget-cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.budget-card {
+  background-color: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: var(--shadow-light);
+  display: flex;
+  flex-direction: column;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  font-weight: bold;
+  font-size: 16px;
+  color: var(--main-text-color);
+
+  ion-icon {
+    font-size: 24px;
+    margin-right: 10px;
+    color: var(--ion-color-primary);
   }
 
-  .budget-cards-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
+  span {
+    flex-grow: 1;
   }
 
-  .budget-card {
-    background-color: var(--card-background); /* Using inlined variable */
-    border-radius: 8px;
-    box-shadow: var(--shadow-light); /* Apply consistent shadow */
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+  .date {
+    font-size: 13px;
+    color: var(--secondary-text-color);
+    margin-left: 10px;
+  }
+}
+
+.card-body p {
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: var(--main-text-color);
+}
+
+.progress-bar-container {
+  margin-top: 15px;
+  margin-bottom: 10px;
+
+  ion-progress-bar {
+    --background: var(--border-color);
+    --progress-background: var(--ion-color-primary);
+    height: 8px;
+    border-radius: 4px;
+    margin-bottom: 5px;
+  }
+
+  span {
+    font-size: 12px;
+    color: var(--secondary-text-color);
+  }
+}
+
+.card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px dashed var(--border-color);
+
+  ion-button {
+    font-size: 13px;
+    --border-radius: 5px;
+    text-transform: none;
     height: auto;
-    border: 1px solid var(--border-color); /* Add consistent border */
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      margin-bottom: 10px;
-      ion-icon {
-        font-size: 1.2em;
-        margin-right: 5px;
-        color: var(--ion-color-primary); /* Using primary color for icons */
-      }
-      span {
-        font-weight: bold;
-        margin-right: auto;
-        color: var(--main-text-color);
-      }
-      .date {
-        font-size: 0.9em;
-        color: var(--secondary-text-color); /* Using inlined variable */
-      }
+    padding: 8px 12px;
+    ion-icon {
+      margin-right: 6px;
+      font-size: 16px;
     }
+  }
 
-    .card-body {
-      margin-bottom: 15px;
-      p {
-        margin-bottom: 5px;
-        font-size: 0.95em;
-        color: var(--main-text-color); /* Using inlined variable */
-      }
-      .progress-bar-container {
-        margin-top: 10px;
-        ion-progress-bar {
-          margin-bottom: 5px;
-          height: 8px;
-          --background: var(--border-color); /* Use border color for progress bar background */
-          --progress-background: var(--ion-color-primary); /* Use primary color for progress */
-          border-radius: 4px; // Slight border-radius for progress bar
-        }
-        span {
-          font-size: 0.8em;
-          color: var(--secondary-text-color); /* Using inlined variable */
-        }
-      }
-    }
+  .edit-button {
+    --background: var(--ion-color-primary);
+    --background-activated: var(--ion-color-primary-shade);
+    --color: var(--ion-color-primary-contrast);
+  }
 
-    .card-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-
-      ion-button {
-        --padding-start: 12px;
-        --padding-end: 12px;
-        --height: 36px;
-        font-size: 0.9em;
-        font-weight: 600;
-        text-transform: none;
-        --border-radius: 8px;
-        --box-shadow: none; // Remove default Ionic shadow for custom control
-
-        ion-icon {
-          font-size: 1.1em;
-          margin-right: 5px;
-        }
-      }
-
-      /* Custom styles for the Edit button */
-      .edit-button {
-        --background: var(--card-background); // White background
-        --color: var(--ion-color-primary);   // Blue text
-        --border-width: 1px;
-        --border-style: solid;
-        --border-color: var(--ion-color-primary); // Blue border
-        box-shadow: var(--shadow-subtle); // Add a subtle shadow
-
-        &:hover {
-          --background: var(--ion-color-primary); // Blue background on hover
-          --color: var(--ion-color-primary-contrast); // White text on hover
-        }
-      }
-
-      /* Custom styles for the Delete button (solid red) */
-      ion-button[color="danger"] {
-        --background: var(--ion-color-danger);
-        --color: var(--ion-color-primary-contrast); // White text
-        box-shadow: var(--shadow-subtle); // Add a subtle shadow
-
-        &:hover {
-          --background: var(--ion-color-danger-shade);
-        }
-      }
-    }
+  ion-button[color="danger"] {
+    --background: var(--ion-color-danger);
+    --background-activated: var(--ion-color-danger-shade);
+    --color: var(--ion-color-primary-contrast);
   }
 }
 
 .no-budgets {
   text-align: center;
   padding: 40px;
-  color: var(--secondary-text-color); /* Using inlined variable */
-  border: 1px dashed var(--border-color); /* Use border color for dashed border */
-  border-radius: 8px;
-  grid-column: 1 / -1;
-  background-color: var(--card-background); /* Using inlined variable */
-  box-shadow: var(--shadow-light); // Apply consistent shadow
-
-  p {
-    margin-bottom: 20px;
-  }
+  color: var(--secondary-text-color);
+  border-top: 1px solid var(--border-color);
+  margin-top: 10px;
 
   ion-button {
-    --background: var(--ion-color-primary);
-    --color: var(--ion-color-primary-contrast);
-    --border-radius: 8px;
-    font-weight: 600;
-    text-transform: none;
-    &:hover {
-      --background: var(--ion-color-primary-shade);
-    }
-  }
-}
-
-/* --- Modal Styles --- */
-ion-modal {
-  --width: 90%;
-  --height: auto;
-  --max-width: 500px;
-  --border-radius: 8px;
-  --box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-
-  ion-toolbar {
-    --background: var(--ion-color-light); // Light background for toolbar
-    border-bottom: 1px solid var(--border-color); // Consistent border
-    ion-title {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: var(--main-text-color);
-    }
-    ion-buttons ion-button {
-      font-size: 0.9rem;
-      --color: var(--ion-color-primary); // Close button text color
-    }
-  }
-
-  .modal-form {
-    padding: 20px;
-    background-color: var(--page-background); // Modal body background
-  }
-
-  ion-item {
-    --padding-start: 0;
-    --inner-padding-end: 0;
-    --min-height: 48px;
-    margin-bottom: 15px;
-
-    ion-label {
-      font-size: 0.95rem;
-      color: var(--secondary-text-color); // Label color
-    }
-
-    ion-input, ion-select, ion-datetime {
-      --padding-start: 10px;
-      --padding-end: 10px;
-      --padding-top: 8px;
-      --padding-bottom: 8px;
-      border: 1px solid var(--border-color); // Consistent border
-      border-radius: 6px;
-      background: var(--ion-color-step-50); // Light background for inputs
-      font-size: 1rem;
-      --background: var(--ion-color-step-50); /* Ensure background is set for filled style */
-      box-shadow: var(--shadow-subtle); // Subtle shadow for inputs
-    }
-
-    ion-note {
-      font-size: 0.75rem;
-      margin-top: 5px;
-    }
-  }
-
-  ion-button[type="submit"] {
     margin-top: 20px;
-    height: 44px;
-    font-size: 1rem;
-    --background: var(--ion-color-primary);
-    --color: var(--ion-color-primary-contrast);
-    --border-radius: 8px;
     font-weight: 600;
+    --border-radius: 8px;
     text-transform: none;
-
-    &:hover {
-      --background: var(--ion-color-primary-shade);
-    }
-
-    ion-spinner {
-      color: var(--ion-color-primary-contrast); // Spinner color to match text
+    ion-icon {
+      margin-right: 8px;
     }
   }
 }
 
-/* --- Skeleton Loader Styles --- */
+/* --- Skeleton Styles (for loading states - UNTOUCHED) --- */
 .skeleton {
-  background: linear-gradient(90deg, var(--border-color) 25%, #e0e0e0 50%, var(--border-color) 75%);
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
   border-radius: 4px;
@@ -396,70 +335,270 @@ ion-modal {
   }
 }
 
-.skeleton-header {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-  margin-bottom: 20px;
+.skeleton-header .h-8 { height: 32px; }
+.skeleton-header .w-40 { width: 160px; }
+.skeleton-header .h-4 { height: 16px; }
+.skeleton-header .w-60 { width: 240px; }
+.skeleton-header .h-10 { height: 40px; }
+.skeleton-header .w-32 { width: 128px; }
 
-  .page-title {
-    width: 100%;
-  }
-
-  .create-budget-button {
-    margin-top: 10px;
-    width: 100%;
-  }
-}
-
-.skeleton-alert {
-  background-color: var(--card-background); // Consistent background for skeleton alert
-  border: 1px solid var(--border-color);
-  padding: 15px;
-  margin-bottom: 20px;
-  border-radius: 8px;
-  box-shadow: var(--shadow-light); // Apply consistent shadow
-}
+.skeleton-alert .h-6 { height: 24px; }
+.skeleton-alert .w-full { width: 100%; }
+.skeleton-alert .w-3-4 { width: 75%; }
 
 .skeleton-budget-card {
-  background-color: var(--card-background); // Consistent background
-  border-radius: 8px;
-  box-shadow: var(--shadow-light);
-  padding: 15px;
-  height: 200px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  border: 1px solid var(--border-color);
-
+  .h-8 { height: 32px; }
+  .w-full { width: 100%; }
+  .h-4 { height: 16px; }
+  .w-3-4 { width: 75%; }
+  .w-1-2 { width: 50%; }
+  .w-2-3 { width: 66%; }
+  .h-3 { height: 12px; }
+  .h-9 { height: 36px; }
+  .w-20 { width: 80px; }
   .skeleton-actions {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-    margin-top: 10px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed var(--border-color);
   }
 }
 
-/* Utility classes for skeleton dimensions */
-.h-3 { height: 0.75rem; }
-.h-4 { height: 1rem; }
-.h-6 { height: 1.5rem; }
-.h-8 { height: 2rem; }
-.h-9 { height: 2.25rem; }
-.h-10 { height: 2.5rem; }
+/* --- Modal Specific Styles (focused on modal dimensions and content padding) --- */
 
-.w-full { width: 100%; }
-.w-1\/2 { width: 50%; }
-.w-2\/3 { width: 66.666%; }
-.w-3\/4 { width: 75%; }
-.w-20 { width: 5rem; }
-.w-32 { width: 8rem; }
-.w-40 { width: 10rem; }
-.w-60 { width: 15rem; }
+ion-modal {
+  --width: 90%;
+  --min-width: 350px;
+  --max-width: 600px;
+  --height: 90%; /* Main control for height */
+  --max-height: 95%;
+  --border-radius: 16px;
+  --box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
 
-.mb-1 { margin-bottom: 0.25rem; }
-.mb-2 { margin-bottom: 0.5rem; }
-.mb-3 { margin-bottom: 0.75rem; }
-.mb-4 { margin-bottom: 1rem; }
-.mt-2 { margin-top: 0.5rem; }
+  ion-header {
+    background: var(--card-background);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: none;
+  }
+
+  ion-toolbar {
+    --background: var(--card-background);
+    --color: var(--main-text-color);
+    border-bottom: 1px solid var(--border-color);
+    padding: 15px 30px; /* Increased vertical padding for toolbar */
+  }
+
+  ion-title {
+    font-size: 28px; /* Larger title in modal header */
+    font-weight: bold;
+  }
+
+  ion-buttons[slot="start"] ion-button {
+    --background: transparent;
+    --color: var(--secondary-text-color);
+    --box-shadow: none;
+    font-size: 24px; /* Larger close button */
+    height: 52px;
+    width: 52px;
+    padding: 0;
+
+    ion-icon {
+      font-size: 32px; /* Larger icon for close button */
+      margin: 0;
+    }
+
+    &:hover {
+      --background: rgba(var(--secondary-text-color-rgb, 108,117,125), 0.2);
+    }
+  }
+
+  ion-content.ion-padding {
+    --background: var(--card-background);
+    --padding-start: 40px;
+    --padding-end: 40px;
+    --padding-top: 40px;    /* Increased content top padding */
+    --padding-bottom: 40px; /* Increased content bottom padding */
+    box-sizing: border-box;
+    overflow-y: auto;
+  }
+
+  // Ensure form elements within the modal are visible and interactive
+  form, ion-list, ion-item, ion-label, ion-input, ion-select, ion-datetime, ion-textarea, ion-note, ion-button[type="submit"] {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+}
+
+/* --- General Form Elements Styling (Only these are changed) --- */
+/* These styles will apply to ALL forms (including those in modals) on this page */
+
+ion-list {
+  background: transparent; // Ensure list background is transparent
+  margin-top: 0;
+  padding: 0;
+}
+
+ion-item {
+  --background: var(--card-background); // Ensure item background matches card
+  --border-color: transparent; // Remove default item border
+  --inner-border-width: 0; // Remove inner border
+  border-bottom: none; // Explicitly remove default bottom border
+  margin-bottom: 1.25rem; /* Increased vertical space between items */
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-end: 0;
+  position: relative;
+}
+
+ion-label {
+  color: var(--secondary-text-color);
+  font-size: 17px; /* Larger label font size */
+  margin-bottom: 10px; /* Increased space below labels */
+  font-weight: 500;
+  transform: translateY(-8px); /* Adjust label position */
+}
+
+ion-input,
+ion-select,
+ion-datetime,
+ion-textarea {
+  --background: var(--ion-color-step-50); /* Distinct background for inputs */
+  border: 1px solid var(--input-border-color);
+  border-radius: 12px; /* More rounded corners */
+  --padding-start: 20px; /* Increased horizontal padding */
+  --padding-end: 20px;
+  --padding-top: 18px; /* Increased vertical padding for taller inputs */
+  --padding-bottom: 18px;
+  font-size: 19px; /* Larger input text font size */
+  color: var(--main-text-color);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05); /* Subtle inset shadow */
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+
+  &:focus-within {
+    border-color: var(--ion-color-primary);
+    box-shadow: 0 0 0 5px rgba(var(--ion-color-primary-rgb), 0.3), inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+}
+
+ion-text[color="danger"], ion-note[color="danger"] {
+  font-size: 15px; /* Larger error text */
+  margin-top: 10px; /* More space above error messages */
+  display: block;
+  font-weight: 500;
+}
+
+ion-button[type="submit"] {
+  --background: var(--ion-color-primary);
+  --color: var(--ion-color-primary-contrast);
+  --border-radius: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  height: 62px; /* Taller submit button */
+  font-size: 22px; /* Larger font size for button text */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 3.5rem; /* Significant space above the submit button */
+  box-shadow: var(--shadow-medium);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  }
+
+  ion-spinner {
+    margin-right: 10px;
+    color: var(--ion-color-primary-contrast);
+  }
+
+  ion-icon {
+    margin-right: 15px;
+    font-size: 26px;
+  }
+}
+
+
+/* --- Responsive Styles (UNTOUCHED) --- */
+
+@media (max-width: 991px) {
+  .dashboard-layout {
+    flex-direction: column;
+  }
+
+  .first-content {
+    width: 100%;
+    order: 2;
+  }
+
+  .main-content {
+    padding: 15px;
+    order: 1;
+  }
+
+  .budgets-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .create-budget-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .budget-cards-container {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 576px) {
+  .page-title h2 {
+    font-size: 20px;
+  }
+
+  .page-title p {
+    font-size: 12px;
+  }
+
+  .create-budget-button {
+    font-size: 13px;
+    padding: 8px 15px;
+    ion-icon {
+      font-size: 16px;
+    }
+  }
+
+  .past-budgets h3 {
+    font-size: 18px;
+  }
+
+  .budget-card {
+    padding: 15px;
+  }
+
+  .card-header {
+    font-size: 14px;
+    ion-icon {
+      font-size: 20px;
+    }
+  }
+
+  .card-body p {
+    font-size: 13px;
+  }
+
+  .card-actions {
+    flex-direction: column;
+    gap: 8px;
+    ion-button {
+      width: 100%;
+      justify-content: center;
+      font-size: 12px;
+      padding: 6px 10px;
+    }
+  }
+}

@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule, DatePipe, PercentPipe } from '@angular/common'; //  <-- ENSURE THESE ARE HERE
+import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
+import { CommonModule, DatePipe, PercentPipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
   IonButton,
@@ -8,10 +8,10 @@ import {
   IonIcon,
   IonTitle,
   IonToolbar,
-  IonModal,
+  IonModal, // Importado IonModal
   IonItem,
   IonLabel,
-  IonInput,
+  IonInput, // Importado IonInput
   IonDatetime,
   IonButtons,
   IonSpinner,
@@ -19,7 +19,9 @@ import {
   IonSelect,
   IonSelectOption,
   IonNote,
-  LoadingController
+  LoadingController,
+  AlertController,
+  ToastController, IonList // Añadido ToastController
 } from '@ionic/angular/standalone';
 import { HeaderComponent } from "../../component/header/header.component";
 import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
@@ -37,7 +39,8 @@ import {
   ellipsisHorizontalOutline,
   pricetagOutline,
   createOutline,
-  trashOutline
+  trashOutline,
+  close // Añadido icono de cerrar
 } from 'ionicons/icons';
 
 type CategoriaKey = 'comida' | 'transporte' | 'entretenimiento' | 'educacion' | 'salud' | 'housing' | 'utilities' | 'otros';
@@ -64,22 +67,20 @@ interface BudgetAlert {
   styleUrls: ['./presupuestos.page.scss'],
   standalone: true,
   imports: [
-    // Core Angular Modules for directives and pipes
-    CommonModule,        // <--- THIS IS CRITICAL for *ngIf, *ngFor
-    FormsModule,         // <--- Required for forms, even if reactive form is used (general good practice)
-    ReactiveFormsModule, // <--- Required for FormGroup and form controls
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
 
-    // Ionic Standalone Components
     IonContent,
     IonHeader,
     IonTitle,
     IonToolbar,
     IonIcon,
     IonButton,
-    IonModal,
+    IonModal, // Incluido en imports
     IonItem,
     IonLabel,
-    IonInput,
+    IonInput, // Incluido en imports
     IonDatetime,
     IonButtons,
     IonSpinner,
@@ -88,13 +89,12 @@ interface BudgetAlert {
     IonSelectOption,
     IonNote,
 
-    // Angular Pipes (explicitly imported for standalone components)
-    DatePipe,   // <--- Required for 'date' pipe
-    PercentPipe, // <--- Required for 'percent' pipe
+    DatePipe,
+    PercentPipe,
 
-    // Your custom components
     HeaderComponent,
-    SideMenuComponent
+    SideMenuComponent,
+    IonList
   ]
 })
 export class PresupuestosPage implements OnInit {
@@ -114,14 +114,23 @@ export class PresupuestosPage implements OnInit {
   budgetAlerts: BudgetAlert[] = [];
   isLoading: boolean = true;
 
-  isCreateBudgetModalOpen = false;
+  // CAMBIO: Referencia al modal usando @ViewChild
+  @ViewChild('budgetModal') budgetModal!: IonModal;
+  // CAMBIO: Referencia al botón "Create Budget" (para el blur, si aún lo quieres)
+  @ViewChild('createBudgetButton') createBudgetButtonRef!: ElementRef<HTMLIonButtonElement>;
+
   isEditingBudget = false;
   budgetForm: FormGroup;
   isSubmitting = false;
   editingBudgetId: string | null = null;
   currentDate = new Date();
 
-  constructor(private fb: FormBuilder, private loadingController: LoadingController) {
+  constructor(
+    private fb: FormBuilder,
+    private loadingController: LoadingController,
+    private alertController: AlertController,
+    private toastController: ToastController // Inyectado ToastController
+  ) {
     addIcons({
       addOutline,
       warningOutline,
@@ -135,7 +144,8 @@ export class PresupuestosPage implements OnInit {
       ellipsisHorizontalOutline,
       pricetagOutline,
       createOutline,
-      trashOutline
+      trashOutline,
+      close // Registrado el icono de cerrar
     });
 
     this.budgetForm = this.fb.group({
@@ -157,7 +167,6 @@ export class PresupuestosPage implements OnInit {
     });
     await loading.present();
 
-    // Simulate fetching data with a delay
     setTimeout(() => {
       this.pastBudgets = [
         {
@@ -195,9 +204,7 @@ export class PresupuestosPage implements OnInit {
         }
       ];
 
-      this.budgetAlerts = [
-        { message: 'Transport (107% used) for November 2023' }
-      ];
+      this.updateBudgetAlerts();
 
       this.isLoading = false;
       loading.dismiss();
@@ -227,17 +234,43 @@ export class PresupuestosPage implements OnInit {
     }
   }
 
-  openCreateBudgetModal() {
-    this.isEditingBudget = false;
-    this.budgetForm.reset({ mes: this.currentDate.toISOString() });
-    this.isCreateBudgetModalOpen = true;
-    this.editingBudgetId = null;
+  // Nueva función para abrir el modal, unificada para añadir y editar
+  async openBudgetModal(mode: 'add' | 'edit', budget?: PastBudget) {
+    if (mode === 'add') {
+      this.isEditingBudget = false;
+      this.budgetForm.reset({ mes: this.currentDate.toISOString() }); // Resetea el formulario
+      this.editingBudgetId = null;
+    } else { // mode === 'edit'
+      this.isEditingBudget = true;
+      if (budget) {
+        this.editingBudgetId = budget.id;
+        const dateForForm = new Date(`${budget.mes} 1, ${budget.anio}`);
+        const monthYearString = dateForForm.toISOString();
+
+        this.budgetForm.patchValue({
+          categoria: budget.categoriaValue,
+          monto: parseFloat(budget.limite.replace('€', '')),
+          mes: monthYearString
+        });
+      }
+    }
+    // Presenta el modal usando la referencia @ViewChild
+    await this.budgetModal.present();
+
+    // Lógica para desenfocar el botón si es necesario (para la advertencia aria-hidden)
+    // Esto es un parche y Ionic debería manejarlo automáticamente.
+    setTimeout(() => {
+      if (this.createBudgetButtonRef && this.createBudgetButtonRef.nativeElement) {
+        this.createBudgetButtonRef.nativeElement.blur();
+      }
+    }, 50);
   }
 
-  closeCreateBudgetModal() {
-    this.isCreateBudgetModalOpen = false;
-    this.isEditingBudget = false;
-    this.budgetForm.reset();
+  // Función para cerrar el modal usando dismiss()
+  async closeBudgetModal() {
+    await this.budgetModal.dismiss();
+    this.isEditingBudget = false; // Resetear el modo de edición
+    this.budgetForm.reset(); // Limpiar el formulario
     this.isSubmitting = false;
     this.editingBudgetId = null;
   }
@@ -250,6 +283,18 @@ export class PresupuestosPage implements OnInit {
       const month = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(monthYear);
       const year = monthYear.getFullYear().toString();
       const categoriaValue = formValue.categoria as CategoriaKey;
+      const limiteNumerico = parseFloat(formValue.monto);
+
+      let gastadoActual = '€0.00';
+      if (this.isEditingBudget && this.editingBudgetId) {
+        const existingBudget = this.getBudgetById(this.editingBudgetId);
+        if (existingBudget) {
+          gastadoActual = existingBudget.gastado;
+        }
+      }
+      const gastadoNumerico = parseFloat(gastadoActual.replace('€', ''));
+      const restanteNumerico = limiteNumerico - gastadoNumerico;
+      const porcentajeCalculado = limiteNumerico > 0 ? gastadoNumerico / limiteNumerico : 0;
 
       const newBudget: PastBudget = {
         id: this.editingBudgetId || Math.random().toString(36).substring(2, 15),
@@ -257,10 +302,10 @@ export class PresupuestosPage implements OnInit {
         categoriaDisplay: this.categoriaOptions[categoriaValue],
         mes: month,
         anio: year,
-        limite: `€${formValue.monto.toFixed(2)}`,
-        gastado: '€0.00',
-        restante: `€${formValue.monto.toFixed(2)}`,
-        porcentaje: 0
+        limite: `€${limiteNumerico.toFixed(2)}`,
+        gastado: gastadoActual,
+        restante: `€${restanteNumerico.toFixed(2)}`,
+        porcentaje: porcentajeCalculado
       };
 
       const submitLoading = await this.loadingController.create({
@@ -274,33 +319,51 @@ export class PresupuestosPage implements OnInit {
           this.pastBudgets = this.pastBudgets.map(budget =>
             budget.id === this.editingBudgetId ? newBudget : budget
           );
+          this.presentToast('Budget updated successfully!', 'success'); // Mensaje de éxito
         } else {
           this.pastBudgets.push(newBudget);
+          this.presentToast('Budget created successfully!', 'success'); // Mensaje de éxito
         }
-        this.pastBudgets.sort((a,b) => {
+        this.pastBudgets.sort((a, b) => {
           const dateA = new Date(`${a.mes} 1, ${a.anio}`);
           const dateB = new Date(`${b.mes} 1, ${b.anio}`);
           return dateB.getTime() - dateA.getTime();
         });
+
+        this.updateBudgetAlerts();
+
         this.isSubmitting = false;
         submitLoading.dismiss();
-        this.closeCreateBudgetModal();
+        this.closeBudgetModal(); // Cierra el modal usando la nueva función
       }, 700);
     } else {
       this.budgetForm.markAllAsTouched();
+      this.presentToast('Please fill in all required fields.', 'danger'); // Mensaje de error de validación
     }
   }
 
-  openEditBudgetModal(budget: PastBudget) {
-    this.isEditingBudget = true;
-    this.editingBudgetId = budget.id;
-    const monthYearString = `${budget.anio}-${(new Date(Date.parse(budget.mes + ' 1, ' + budget.anio)).getMonth() + 1).toString().padStart(2, '0')}-01`;
-    this.budgetForm.patchValue({
-      categoria: budget.categoriaValue,
-      monto: parseFloat(budget.limite.replace('€', '')),
-      mes: monthYearString
+  async confirmDeleteBudget(id: string) {
+    const alert = await this.alertController.create({
+      header: 'Confirm Deletion',
+      message: 'Are you sure you want to delete this budget? This action cannot be undone.',
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          handler: () => {
+            console.log('Delete cancelled');
+          },
+        },
+        {
+          text: 'Delete',
+          handler: () => {
+            this.deleteBudget(id);
+          },
+        },
+      ],
     });
-    this.isCreateBudgetModalOpen = true;
+
+    await alert.present();
   }
 
   async deleteBudget(id: string) {
@@ -312,7 +375,36 @@ export class PresupuestosPage implements OnInit {
 
     setTimeout(() => {
       this.pastBudgets = this.pastBudgets.filter(budget => budget.id !== id);
+
+      this.updateBudgetAlerts();
+      this.presentToast('Budget deleted successfully!', 'success'); // Mensaje de éxito
+
       deleteLoading.dismiss();
     }, 500);
+  }
+
+  private getBudgetById(id: string | null): PastBudget | undefined {
+    return this.pastBudgets.find(b => b.id === id);
+  }
+
+  private updateBudgetAlerts() {
+    this.budgetAlerts = this.pastBudgets.filter(b => {
+      const limiteNum = parseFloat(b.limite.replace('€', ''));
+      const gastadoNum = parseFloat(b.gastado.replace('€', ''));
+      return limiteNum > 0 && gastadoNum / limiteNum >= 1;
+    }).map(b => ({
+      message: `${b.categoriaDisplay} (${(b.porcentaje * 100).toFixed(0)}% used) for ${b.mes} ${b.anio}`
+    }));
+  }
+
+  // Función para mostrar Toast
+  async presentToast(message: string, color: string = 'primary') {
+    const toast = await this.toastController.create({
+      message: message,
+      duration: 2000,
+      color: color,
+      position: 'bottom',
+    });
+    toast.present();
   }
 }

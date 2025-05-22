@@ -31,7 +31,7 @@
             <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
             Import from CSV/Excel
           </ion-button>
-          <ion-button color="success" routerLink="/add-transaction">
+          <ion-button color="success" (click)="openAddEditModal('add')">
             <ion-icon name="add-circle-outline" slot="start"></ion-icon>
             Add Transaction
           </ion-button>
@@ -114,15 +114,15 @@
               {{ transaccion.cantidad }}
             </ion-col>
             <ion-col class="col-actions ion-text-right">
-              <ion-button size="small" (click)="mostrarOpciones(transaccion, $event)">
+              <ion-button size="small" [id]="'popover-trigger-' + transaccion.id">
                 <ion-icon name="ellipsis-vertical"></ion-icon>
               </ion-button>
 
-              <ion-popover [trigger]="'ellipsis-vertical'" [event]="popoverEvent" [dismissOnSelect]="true">
+              <ion-popover [trigger]="'popover-trigger-' + transaccion.id" [dismissOnSelect]="true">
                 <ng-template>
                   <ion-content>
                     <ion-list>
-                      <ion-item button (click)="editarTransaccion(transaccion)">
+                      <ion-item button (click)="openAddEditModal('edit', transaccion)">
                         <ion-icon slot="start" name="pencil-outline"></ion-icon>
                         Edit
                       </ion-item>
@@ -140,7 +140,7 @@
 
         <div *ngIf="!isLoading && transacciones.length === 0" class="no-transactions">
           <p>No transactions found. Add your first transaction!</p>
-          <ion-button color="success" routerLink="/add-transaction">
+          <ion-button color="success" (click)="openAddEditModal('add')">
             <ion-icon name="add-circle-outline" slot="start"></ion-icon>
             Add Transaction
           </ion-button>
@@ -149,4 +149,63 @@
 
     </div>
   </div>
+
+  <ion-modal #addEditModal>
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-button (click)="cancelModal()">
+              <ion-icon name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+          <ion-title>{{ isEditMode ? 'Edit Transaction' : 'Add New Transaction' }}</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <form (ngSubmit)="saveTransaction()">
+          <ion-list>
+            <ion-item>
+              <ion-select label="Type" labelPlacement="stacked" [(ngModel)]="currentTransaction.tipo" name="type" required>
+                <ion-select-option value="Income">Income</ion-select-option>
+                <ion-select-option value="Expense">Expense</ion-select-option>
+              </ion-select>
+            </ion-item>
+
+            <ion-item>
+              <ion-input label="Date" labelPlacement="stacked" type="date" [(ngModel)]="currentTransaction.fecha" name="date" required></ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-select label="Category" labelPlacement="stacked" [(ngModel)]="currentTransaction.categoria" name="category" required>
+                <ion-select-option value="Food">Food</ion-select-option>
+                <ion-select-option value="Transport">Transport</ion-select-option>
+                <ion-select-option value="Housing">Housing</ion-select-option>
+                <ion-select-option value="Utilities">Utilities</ion-select-option>
+                <ion-select-option value="Entertainment">Entertainment</ion-select-option>
+                <ion-select-option value="Healthcare">Healthcare</ion-select-option>
+                <ion-select-option value="Education">Education</ion-select-option>
+                <ion-select-option value="Salary">Salary</ion-select-option>
+                <ion-select-option value="Investment">Investment</ion-select-option>
+                <ion-select-option value="Other">Other</ion-select-option>
+              </ion-select>
+            </ion-item>
+
+            <ion-item>
+              <ion-input label="Description" labelPlacement="stacked" type="text" [(ngModel)]="currentTransaction.descripcion" name="description" required></ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-input label="Amount" labelPlacement="stacked" type="number" [(ngModel)]="currentTransaction.cantidad" name="amount" required></ion-input>
+            </ion-item>
+          </ion-list>
+
+          <ion-button expand="block" type="submit" class="ion-margin-top" [color]="isEditMode ? 'primary' : 'success'">
+            {{ isEditMode ? 'Save Changes' : 'Add Transaction' }}
+          </ion-button>
+        </form>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
 </ion-content>

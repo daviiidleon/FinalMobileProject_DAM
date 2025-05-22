@@ -20,7 +20,7 @@
 
       <div *ngIf="!isLoading" class="page-header">
         <h1 class="page-title">
-          <ion-icon name="business" class="mr-3 h-8 w-8 text-primary"></ion-icon> Accounts
+          <ion-icon name="business" class="mr-3 h-6 w-6 text-primary"></ion-icon> Accounts
         </h1>
         <p class="text-muted-foreground">Manage your financial accounts and track your balances.</p>
         <ion-button (click)="openModal()" class="add-account-button">
@@ -66,7 +66,7 @@
             <div>
               <p class="text-xs text-muted-foreground">Current Balance</p>
               <p class="text-3xl font-bold" [ngClass]="{'text-destructive': isNegativeBalance(account), 'text-foreground': !isNegativeBalance(account)}">
-                {{ account.tipo === 'Credit Card' && account.saldo > 0 ? '+' : '' }}${{ account.saldo.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+                {{ account.saldo }}
               </p>
             </div>
             <div class="flex items-center text-xs text-muted-foreground" *ngIf="account.fechaActualizacion">
@@ -104,7 +104,7 @@
   </div>
 
   <ion-modal [isOpen]="isModalOpen" (didDismiss)="closeModal()">
-    <ion-content class="modal-content">
+    <ng-template>
       <ion-header>
         <ion-toolbar>
           <ion-title>{{ editingAccount ? 'Edit Account' : 'Create New Account' }}</ion-title>
@@ -115,50 +115,46 @@
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
-      <div class="modal-body">
+      <ion-content class="modal-content ion-padding">
         <form [formGroup]="accountForm" (ngSubmit)="submitForm()" class="space-y-6">
-          <div class="space-y-2">
-            <ion-label htmlFor="name" position="floating">Account Name</ion-label>
-            <ion-input id="name" type="text" placeholder="e.g., Checking Account, Visa Card" formControlName="nombre"></ion-input>
+          <input type="hidden" formControlName="id">
+
+          <ion-item>
+            <ion-input label="Account Name" labelPlacement="floating" type="text" placeholder="e.g., Checking Account, Visa Card" formControlName="nombre"></ion-input>
             <ion-text color="danger" *ngIf="getFormControl('nombre')?.invalid && (getFormControl('nombre')?.dirty || isFormSubmitted)">
               Account name must be at least 2 characters long.
             </ion-text>
-          </div>
+          </ion-item>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="space-y-2">
-              <ion-label htmlFor="type">Account Type</ion-label>
-              <ion-select id="type" formControlName="tipo" interface="action-sheet">
-                <ion-select-option *ngFor="let type of accountTypes" [value]="type">{{ type }}</ion-select-option>
-              </ion-select>
-              <ion-text color="danger" *ngIf="getFormControl('tipo')?.invalid && (getFormControl('tipo')?.dirty || isFormSubmitted)">
-                Account type is required.
-              </ion-text>
-            </div>
+          <ion-item>
+            <ion-select label="Account Type" labelPlacement="floating" formControlName="tipo" interface="action-sheet">
+              <ion-select-option *ngFor="let type of accountTypes" [value]="type">{{ type }}</ion-select-option>
+            </ion-select>
+            <ion-text color="danger" *ngIf="getFormControl('tipo')?.invalid && (getFormControl('tipo')?.dirty || isFormSubmitted)">
+              Account type is required.
+            </ion-text>
+          </ion-item>
 
-            <div class="space-y-2">
-              <ion-label htmlFor="balance" position="floating">Current Balance (€)</ion-label>
-              <ion-input id="balance" type="number" step="0.01" placeholder="e.g., 1250.75" formControlName="saldo"></ion-input>
-              <ion-text color="danger" *ngIf="getFormControl('saldo')?.invalid && (getFormControl('saldo')?.dirty || isFormSubmitted)">
-                Balance must be a number.
-              </ion-text>
-            </div>
-          </div>
+          <ion-item>
+            <ion-input label="Current Balance (€)" labelPlacement="floating" type="number" step="0.01" placeholder="e.g., 1250.75" formControlName="saldo"></ion-input>
+            <ion-text color="danger" *ngIf="getFormControl('saldo')?.invalid && (getFormControl('saldo')?.dirty || isFormSubmitted)">
+              Balance must be a valid number.
+            </ion-text>
+          </ion-item>
 
-          <div class="space-y-2">
-            <ion-label htmlFor="institution" position="floating">Institution (Optional)</ion-label>
-            <ion-input id="institution" type="text" placeholder="e.g., Bank of America, Capital One" formControlName="institucion"></ion-input>
-          </div>
+          <ion-item>
+            <ion-input label="Institution (Optional)" labelPlacement="floating" type="text" placeholder="e.g., Bank of America, Capital One" formControlName="institucion"></ion-input>
+          </ion-item>
 
-          <ion-button type="submit" class="w-full" [disabled]="false">
+          <ion-button expand="block" type="submit" class="ion-margin-top">
             <ion-icon *ngIf="isLoading" name="reload-circle" slot="start" class="animate-spin"></ion-icon>
             <ion-icon *ngIf="!isLoading && !editingAccount" name="add-circle" slot="start"></ion-icon>
             <ion-icon *ngIf="!isLoading && editingAccount" name="save-outline" slot="start"></ion-icon>
             {{ editingAccount ? 'Update Account' : 'Create Account' }}
           </ion-button>
         </form>
-      </div>
-    </ion-content>
+      </ion-content>
+    </ng-template>
   </ion-modal>
 
 </ion-content>
