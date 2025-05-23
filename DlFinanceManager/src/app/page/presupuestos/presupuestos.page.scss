@@ -1,6 +1,6 @@
-/* src/app/page/cuentas/cuentas.page.scss */
+/* src/app/page/presupuestos/presupuestos.page.scss */
 
-/* --- Inlined CSS Variables for Accounts Page --- */
+/* --- Inlined CSS Variables for Budgets Page --- */
 :host { // Using :host to encapsulate these variables for this component
   --page-background: #f8f9fa; // Very light grey for ion-content
   --card-background: #ffffff; // Pure white for cards and distinct sections
@@ -29,6 +29,12 @@
   // Added label-color for dark theme consistency, though it's set in dark-theme
   --label-color: var(--secondary-text-color);
   --input-border-color: #d1d5db; // A slightly darker default input border color
+
+  // New Form/Modal specific variables
+  --form-item-background: var(--card-background);
+  --form-item-border: 1px solid var(--border-color);
+  --form-item-shadow: var(--shadow-subtle);
+  --form-input-border-radius: 8px;
 }
 
 /* --- Dark Theme (if you have one) --- */
@@ -74,9 +80,41 @@ body.dark-theme {
       }
     }
   }
+
+  /* Dark Theme modal specific styles */
+  ion-modal {
+    .form-item {
+      --background: var(--form-item-background) !important;
+      border: none !important; // REMOVED BORDER FOR DARK THEME
+      box-shadow: var(--form-item-shadow) !important;
+
+      // Ensure inputs/selects/datetime also have no borders in dark theme
+      ion-input, ion-select, ion-datetime {
+        --border-color: transparent !important;
+        --border-width: 0 !important;
+        border: none !important; // Fallback
+      }
+
+      // Dark theme specific for ion-datetime-button (now for selected-date-display span)
+      .selected-date-display {
+        color: var(--main-text-color) !important; /* Ensure button text is light */
+      }
+    }
+    .form-item ion-label {
+      color: var(--secondary-text-color) !important;
+    }
+    .form-item ion-input,
+    .form-item ion-select,
+    .form-item ion-datetime {
+      --color: var(--main-text-color) !important; // Ensure text color is light
+    }
+    .form-item ion-note {
+      color: var(--ion-color-danger) !important; // Error notes stay red
+    }
+  }
 }
 
-/* --- Dashboard Layout and General Styles (UNTOUCHED) --- */
+/* --- Dashboard Layout and General Styles --- */
 ion-content {
   --background: var(--page-background); /* Set page background */
 }
@@ -84,7 +122,7 @@ ion-content {
 ion-header {
   --background: var(--card-background); /* Header background */
   border-bottom: 1px solid var(--border-color); /* Subtle header border */
-  box-shadow: 0 1px 4px rgba(0,0,0,0.03); /* Subtle header shadow */
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03); /* Subtle header shadow */
 }
 
 .dashboard-layout {
@@ -114,7 +152,7 @@ ion-header {
   box-sizing: border-box;
 }
 
-/* --- Budgets Header Section (UNTOUCHED, original names kept) --- */
+/* --- Budgets Header Section --- */
 .budgets-header {
   display: flex;
   justify-content: space-between;
@@ -145,13 +183,20 @@ ion-header {
   display: flex;
   align-items: center;
 
+  // Ensure this button uses primary color (blue)
+  --background: var(--ion-color-primary);
+  --color: var(--ion-color-primary-contrast);
+  &:hover {
+    --background: var(--ion-color-primary-shade);
+  }
+
   ion-icon {
     margin-right: 8px;
     font-size: 18px;
   }
 }
 
-/* --- Budget Alerts Section (UNTOUCHED) --- */
+/* --- Budget Alerts Section --- */
 .budget-alerts {
   background-color: var(--card-background);
   border: 1px solid var(--border-color);
@@ -195,7 +240,7 @@ ion-header {
   }
 }
 
-/* --- Past Budgets Section (UNTOUCHED) --- */
+/* --- Past Budgets Section --- */
 .past-budgets {
   h3 {
     font-size: 20px;
@@ -333,10 +378,167 @@ ion-header {
     ion-icon {
       margin-right: 8px;
     }
+    // This button should also be blue
+    --background: var(--ion-color-primary);
+    --color: var(--ion-color-primary-contrast);
+    &:hover {
+      --background: var(--ion-color-primary-shade);
+    }
   }
 }
 
-/* --- Skeleton Styles (for loading states - UNTOUCHED) --- */
+/* --- Form Modal Styles --- */
+ion-modal {
+  --width: 30%;
+  --height: 70%; // Adjusted to auto to better fit content, but keep max-height
+  --border-radius: 8px;
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+  ion-header.ion-no-border {
+    ion-toolbar {
+      --background: var(--card-background);
+      --color: var(--main-text-color);
+      border-bottom: 1px solid var(--border-color);
+      padding: 0 16px;
+      ion-title {
+        text-align: left;
+        font-weight: 600;
+        font-size: 1.15em;
+      }
+      ion-buttons[slot="end"] ion-button {
+        --background: transparent;
+        --color: var(--main-text-color);
+        font-size: 1.5em;
+        height: 48px;
+        width: 48px;
+      }
+    }
+  }
+
+  ion-content {
+    --background: var(--page-background);
+    height: 100%; // Essential: Make ion-content take full available height
+    overflow-y: auto; // Essential: Allow scrolling if content exceeds height
+    box-sizing: border-box; // Ensure padding is included in height calculation
+    padding-top: 16px; // Adjust general padding for content area
+    padding-bottom: 16px;
+  }
+
+  .form-list {
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .form-item {
+    --background: var(--form-item-background);
+    border: none; // REMOVED SOLID BORDER from the container
+    border-radius: var(--form-input-border-radius);
+    box-shadow: var(--form-item-shadow);
+    margin-bottom: 15px;
+    transition: all 0.2s ease-in-out;
+    width: 100%;
+    box-sizing: border-box;
+
+    /* Explicitly reset internal Ionic item paddings to ensure visibility */
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --padding-top: 8px;
+    --padding-bottom: 8px;
+    --inner-padding-end: 0;
+    --inner-border-width: 0; // Remove default inner border
+
+    ion-label {
+      font-weight: 500;
+      color: var(--secondary-text-color);
+      font-size: 0.9em;
+    }
+
+    // Apply consistent styling to all form controls within an item
+    ion-input,
+    ion-select {
+      --border-color: transparent; // Make any internal border color transparent
+      --border-width: 0; // Set internal border width to 0
+      border: none; // Fallback for good measure (though Ionic components often use variables)
+
+      --padding-top: 0px;
+      --padding-bottom: 0px;
+      --padding-start: 0;
+      --padding-end: 0;
+      color: var(--main-text-color);
+      font-size: 1.05em;
+      min-height: 44px; /* Ensure a minimum touch target height */
+    }
+
+    // Specific styling for the selected date display span
+    .selected-date-display {
+      display: block;
+      width: 100%;
+      height: 44px; /* Give it a consistent height */
+      line-height: 44px; /* Vertically center the text */
+      text-align: left;
+      padding: 0;
+      color: var(--main-text-color);
+      font-size: 1.05em;
+      cursor: pointer; /* Indicate it's clickable */
+      // Optionally add background or border if you want it to look like an input
+      // background: var(--ion-color-step-50);
+      // border: 1px solid var(--input-border-color);
+      // border-radius: var(--form-input-border-radius);
+    }
+
+    // Specific styling for embedded ion-datetime
+    ion-datetime {
+      width: 100%;
+      // Ensure it takes full width within the item
+      --background: var(--form-item-background); // Match item background
+      --border-radius: var(--form-input-border-radius); // Match item border-radius
+      margin-top: 10px; // Give some space below the label/display span
+      box-shadow: var(--shadow-subtle); // Add a subtle shadow if desired
+      padding: 0; // Remove internal padding if ion-item is already handling it
+      // Ensure it renders correctly for month-year presentation
+      &.datetime-month-year {
+        width: 100%;
+        // You might need more specific CSS variables if you want to customize the internal appearance
+        // e.g., --background, --color, --border-color for internal buttons/selectors
+      }
+    }
+
+
+    // Re-adjust floating label for the new setup (label + span)
+    ion-label[position="floating"] + .selected-date-display {
+      margin-top: 15px; /* Adjust this value to match your desired spacing */
+    }
+
+    ion-note[color="danger"] {
+      font-size: 0.75em;
+      padding-left: 16px;
+      padding-right: 16px;
+      margin-top: 5px;
+      display: block; // Ensure it takes its own line
+    }
+  }
+
+  ion-button[type="submit"] {
+    --border-radius: 8px;
+    font-weight: 600;
+    height: 48px;
+    font-size: 1em;
+    box-shadow: var(--shadow-medium);
+    margin-top: 25px;
+
+    --background: var(--ion-color-primary);
+    --color: var(--ion-color-primary-contrast);
+
+    &:hover {
+      --background: var(--ion-color-primary-shade);
+    }
+  }
+}
+
+/* --- Skeleton Styles (for loading states) --- */
 .skeleton {
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 200% 100%;
@@ -381,274 +583,5 @@ ion-header {
     margin-top: 15px;
     padding-top: 15px;
     border-top: 1px dashed var(--border-color);
-  }
-}
-
-/* --------------------- */
-/* ESTILOS ESPECÍFICOS DEL MODAL (Ajustados para consistencia y sin bordes redondeados) */
-/* --------------------- */
-
-ion-modal {
-  --border-radius: 0; /* Remove rounded borders from the modal itself */
-  --box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
-  --width: 90%;
-  --min-width: 350px;
-  --max-width: 600px;
-  --height: 90%;
-  --max-height: 95%;
-
-  ion-header {
-    background: var(--card-background);
-    border-bottom: 1px solid var(--border-color);
-    box-shadow: none;
-  }
-
-  ion-toolbar {
-    --background: var(--card-background);
-    --color: var(--main-text-color);
-    border-bottom: 1px solid var(--border-color);
-    padding: 0 16px; /* Reset padding to be consistent with accounts modal */
-  }
-
-  ion-title {
-    font-size: 20px; /* Reset title size to be consistent with accounts modal */
-    font-weight: bold;
-  }
-
-  ion-buttons[slot="start"] ion-button { /* Changed slot="start" for close button */
-    --background: transparent !important;
-    --color: var(--main-text-color) !important;
-    --box-shadow: none !important;
-    font-size: 18px;
-    height: 44px; /* Reset height */
-    width: 44px; /* Reset width */
-    padding: 0;
-
-    ::part(native) {
-      background: transparent !important;
-      box-shadow: none !important;
-    }
-
-    ion-icon {
-      font-size: 24px; /* Reset icon size */
-      margin: 0;
-    }
-
-    &:hover {
-      --background: rgba(var(--main-text-color-rgb, 52,58,64), 0.1) !important;
-    }
-  }
-
-  ion-content.ion-padding {
-    --background: var(--page-background); /* Consistent with accounts modal background */
-    --padding-start: 20px;
-    --padding-end: 20px;
-    --padding-top: 20px;
-    --padding-bottom: 20px;
-    box-sizing: border-box;
-    overflow-y: auto;
-  }
-
-  // Ensure form elements within the modal are visible and interactive
-  form, ion-list, ion-item, ion-label, ion-input, ion-select, ion-datetime, ion-textarea, ion-note, ion-button[type="submit"] {
-    opacity: 1 !important;
-    visibility: visible !important;
-    pointer-events: auto !important;
-  }
-}
-
-/* --- General Form Elements Styling (Only these are changed) --- */
-/* These styles will apply to ALL forms (including those in modals) on this page */
-
-ion-list {
-  background: transparent; // Ensure list background is transparent
-  margin-top: 0;
-  padding: 0;
-}
-
-ion-item {
-  --background: transparent; /* Changed to transparent for ion-item background */
-  --border-width: 0 !important;
-  --inner-border-width: 0 !important;
-  --padding-start: 0;
-  --padding-end: 0;
-  --inner-padding-end: 0;
-  margin-bottom: 15px; /* Consistent spacing */
-  /* Remove flex direction column to allow standard Ionic floating label behavior */
-  /* display: flex; */
-  /* flex-direction: column; */
-  /* align-items: flex-start; */
-  font-weight: bold;
-  color: var(--main-text-color);
-  position: relative;
-  /* Allow overflow for floating label */
-  overflow: visible;
-}
-
-ion-label[position="floating"] {
-  color: var(--secondary-text-color); /* Lighter color when floating */
-  font-size: 14px; /* Consistent label font size */
-  font-weight: normal; /* Normal weight for floating */
-  /* Remove transform: none to allow Ionic to move the label */
-  /* transform: none !important; */
-}
-
-/* Add style for focused/filled floating label */
-ion-item.item-has-focus ion-label[position="floating"],
-ion-item.item-has-value ion-label[position="floating"] {
-  color: var(--ion-color-primary); /* Primary color when active */
-}
-
-
-ion-input,
-ion-select,
-ion-datetime, /* Added ion-datetime here for consistent styling */
-ion-textarea {
-  --background: var(--card-background); /* Background matches card background */
-  border: 1px solid var(--border-color); /* Consistent border */
-  border-radius: 0; /* Removed rounded borders */
-  --padding-start: 14px; /* Consistent padding */
-  --padding-end: 14px;
-  --padding-top: 10px; /* Adjust padding for floating label */
-  --padding-bottom: 10px; /* Adjust padding for floating label */
-  min-height: 50px; /* Consistent height */
-  /* height: 50px; /* Let height be auto */
-  font-size: 16px; /* Consistent font size */
-  color: var(--main-text-color);
-  box-shadow: var(--shadow-subtle); /* Consistent shadow */
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  width: 100%; /* Ensure inputs take full width */
-  margin-top: 8px; /* Add some margin for the label */
-
-
-  &:focus-within {
-    border-color: var(--ion-color-primary);
-    box-shadow: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.2), inset 0 1px 3px rgba(0, 0, 0, 0.05);
-  }
-}
-
-/* Specific adjustment for ion-datetime content alignment */
-ion-datetime {
-  display: flex; /* Enables flexbox for centering content */
-  align-items: center; /* Vertically centers content */
-}
-
-ion-text[color="danger"], ion-note[color="danger"] {
-  font-size: 14px; /* Consistent error text font size */
-  margin-top: 5px; /* Consistent spacing */
-  display: block;
-  font-weight: normal; /* Consistent font weight */
-}
-
-ion-button[type="submit"] {
-  --border-radius: 0; /* Removed rounded borders */
-  --background: var(--ion-color-primary);
-  --background-activated: var(--ion-color-primary-shade);
-  --color: var(--ion-color-primary-contrast);
-  font-weight: 600; /* Consistent font weight */
-  text-transform: none; /* Consistent text transform */
-  height: 44px; /* Consistent height */
-  font-size: 16px; /* Consistent font size */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 20px; /* Consistent spacing */
-  box-shadow: var(--shadow-light);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-medium);
-  }
-
-  ion-spinner {
-    margin-right: 8px; /* Consistent margin */
-    color: var(--ion-color-primary-contrast);
-  }
-
-  ion-icon {
-    margin-right: 8px; /* Consistent margin */
-    font-size: 18px; /* Consistent font size */
-  }
-}
-
-/* --- Responsive Styles (UNTOUCHED) --- */
-
-@media (max-width: 991px) {
-  .dashboard-layout {
-    flex-direction: column;
-  }
-
-  .first-content {
-    width: 100%;
-    order: 2;
-  }
-
-  .main-content {
-    padding: 15px;
-    order: 1;
-  }
-
-  .budgets-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .create-budget-button {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .budget-cards-container {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  }
-}
-
-@media (max-width: 576px) {
-  .page-title h2 {
-    font-size: 20px;
-  }
-
-  .page-title p {
-    font-size: 12px;
-  }
-
-  .create-budget-button {
-    font-size: 13px;
-    padding: 8px 15px;
-    ion-icon {
-      font-size: 16px;
-    }
-  }
-
-  .past-budgets h3 {
-    font-size: 18px;
-  }
-
-  .budget-card {
-    padding: 15px;
-  }
-
-  .card-header {
-    font-size: 14px;
-    ion-icon {
-      font-size: 20px;
-    }
-  }
-
-  .card-body p {
-    font-size: 13px;
-  }
-
-  .card-actions {
-    flex-direction: column;
-    gap: 8px;
-    ion-button {
-      width: 100%;
-      justify-content: center;
-      font-size: 12px;
-      padding: 6px 10px;
-    }
   }
 }

@@ -8,9 +8,10 @@
   --main-text-color: #343a40; // Dark grey for good contrast
   --secondary-text-color: #6c757d; // Medium grey for less prominent text
   --sidebar-background: #f0f0f0; // Nuevo fondo claro para el sidebar
-  --sidebar-text: #fff; // White text for the side menu
+  --sidebar-text: #343a40; // Changed for dark text on light sidebar
   --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.04); // Softer shadow for cards/lists
   --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.03); // Very subtle shadow for input fields
+  --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.08); // Added for more pronounced form elements
 
   // Ionic specific colors used within this page
   --ion-color-primary: #007bff;
@@ -20,6 +21,55 @@
   --ion-color-success-shade: #24943e;
   --ion-color-danger: #dc3545;
   --ion-color-danger-shade: #c12f3d;
+
+  // New Form/Modal specific variables
+  --form-item-background: var(--card-background);
+  --form-item-border: 1px solid var(--border-color); // This variable is still defined but overridden below
+  --form-item-shadow: var(--shadow-subtle);
+  --form-input-border-radius: 8px; // Slight rounding for inputs
+}
+
+// Dark Theme adjustments for new form elements
+body.dark-theme {
+  --page-background: #1a1a1a;
+  --card-background: #2a2a2a;
+  --main-text-color: #e0e0e0;
+  --secondary-text-color: #aaaaaa;
+  --border-color: #444444;
+  --sidebar-background: #222222;
+  --sidebar-text: #e0e0e0;
+  --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.3);
+  --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-medium: 0 6px 18px rgba(0, 0, 0, 0.4);
+
+  --form-item-background: #333333;
+  --form-item-border: 1px solid #555555; // This variable is still defined but overridden below
+  --form-item-shadow: none; // Often removed in dark themes for flatter look
+
+  // Specific dark theme styles for new form items
+  .form-item {
+    --background: var(--form-item-background) !important;
+    border: none !important; // REMOVED BORDER FOR DARK THEME
+    box-shadow: var(--form-item-shadow) !important;
+
+    // Ensure inputs/selects/datetime also have no borders in dark theme
+    ion-input, ion-select, ion-datetime {
+      --border-color: transparent !important;
+      --border-width: 0 !important;
+      border: none !important; // Fallback
+    }
+  }
+  .form-item ion-label {
+    color: var(--secondary-text-color) !important;
+  }
+  .form-item ion-input,
+  .form-item ion-select,
+  .form-item ion-datetime {
+    --color: var(--main-text-color) !important; // Ensure text color is light
+  }
+  .form-item ion-note {
+    color: var(--ion-color-danger) !important; // Error notes stay red
+  }
 }
 
 ion-content {
@@ -409,133 +459,112 @@ ion-list ion-item ion-icon {
   }
 }
 
-/* --- Transaction Modal Styles --- */
+/* --- Form Modal Styles (NEW/MODIFIED) --- */
 ion-modal {
-  --border-radius: 0; /* REMOVED ROUNDED BORDERS */
-  --box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
-  /* El fondo del modal se hereda o se define en ion-content. */
-}
-
-ion-modal ion-header ion-toolbar {
-  --background: var(--card-background); /* Fondo de la barra de título del modal */
-  --color: var(--main-text-color);
-  border-bottom: 1px solid var(--border-color);
-
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 16px;
-}
-
-ion-modal ion-header ion-toolbar ion-title {
-  text-align: left; /* Align title to the left */
-  font-weight: bold;
-  font-size: 20px;
-  flex-grow: 1;
-}
-
-ion-modal ion-header ion-toolbar ion-buttons[slot="end"] {
-  height: 44px;
-  width: 44px;
-  padding: 0;
-  margin-inline-start: 0;
-  margin-inline-end: 0;
-
-  /* ¡¡¡SOLUCIÓN FINAL PARA EL BOTÓN DE LA X!!! */
-  ion-button {
-    --background: transparent !important; /* Asegura el fondo transparente */
-    --background-activated: rgba(0, 0, 0, 0.05) !important; /* Efecto hover sutil */
-    --color: var(--main-text-color) !important; /* Fuerza el color del icono a gris oscuro */
-    --box-shadow: none !important; /* Elimina cualquier sombra */
-    // Targets the internal native button part to override any stubborn Ionic styles
-    ::part(native) {
-      background: transparent !important;
-      box-shadow: none !important;
-    }
-    ion-icon {
-      font-size: 24px;
-      margin: 0;
-    }
-  }
-}
-
-ion-modal ion-content {
-  --background: var(--page-background); /* Fondo del área de contenido del modal */
-}
-
-ion-modal ion-list {
-  background: transparent;
-}
-
-ion-modal ion-item {
-  --background: transparent;
-  --border-width: 0 0 0 0 !important;
-  --inner-border-width: 0 0 0 0 !important;
-  --padding-start: 0;
-  --padding-end: 0;
-  margin-bottom: 15px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  font-weight: bold;
-  color: var(--main-text-color);
-}
-
-ion-modal .item-native {
-  padding-left: 0 !important;
-}
-
-ion-modal ion-label {
-  margin-bottom: 5px;
-  font-size: 14px;
-  color: var(--main-text-color);
-  width: 100%;
-}
-
-ion-modal ion-input,
-ion-modal ion-select,
-ion-modal ion-textarea {
-  --background: var(--card-background);
+  --width: 30%;
+  --height: 70%;
   --border-radius: 8px;
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-subtle);
-  width: 100%;
-  color: var(--main-text-color);
-  height: 50px; /* Tamaño uniforme para todos los inputs */
-  min-height: 50px; /* Asegura que la altura mínima sea de 50px */
-  /* Ajuste de padding interno y alineación para el contenido del input */
-  --padding-start: 14px;
-  --padding-end: 14px;
-  --padding-top: 0px; /* Ajustado a 0 y centrado con flexbox */
-  --padding-bottom: 0px; /* Ajustado a 0 y centrado con flexbox */
-  display: flex; /* Asegura que el contenido sea flexible */
-  align-items: center; /* Centra el contenido verticalmente */
-  // Si el texto de placeholder/value no se centra perfectamente, podrías necesitar un line-height.
-  // Pero con display:flex y align-items:center debería ser suficiente.
-  // line-height: normal;
-}
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 
-ion-modal ion-button[type="submit"] {
-  --border-radius: 0; /* REMOVED ROUNDED BORDERS HERE */
-  --background: var(--ion-color-primary);
-  --background-activated: var(--ion-color-primary-shade);
-  --color: var(--ion-color-primary-contrast);
-  font-weight: 600;
-  text-transform: none;
-  height: 44px;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 20px;
-  box-shadow: var(--shadow-light);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  ion-header.ion-no-border {
+    ion-toolbar {
+      --background: var(--card-background);
+      --color: var(--main-text-color);
+      border-bottom: 1px solid var(--border-color);
+      padding: 0 16px;
+      ion-title {
+        text-align: left;
+        font-weight: 600;
+        font-size: 1.15em;
+      }
+      ion-buttons[slot="end"] ion-button {
+        --background: transparent;
+        --color: var(--main-text-color);
+        font-size: 1.5em;
+        height: 48px;
+        width: 48px;
+      }
+    }
+  }
 
-  &:hover {
-    transform: translateY(-2px);
+  ion-content {
+    --background: var(--page-background);
+    height: 100%;
+    overflow-y: auto;
+    box-sizing: border-box;
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+
+  .form-list {
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .form-item {
+    --background: var(--form-item-background);
+    border: none; // REMOVED SOLID BORDER from the container
+    border-radius: var(--form-input-border-radius);
+    box-shadow: var(--form-item-shadow);
+    margin-bottom: 15px;
+    transition: all 0.2s ease-in-out;
+    width: 100%;
+    box-sizing: border-box;
+
+    /* Explicitly reset internal Ionic item paddings to ensure visibility */
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --padding-top: 8px;
+    --padding-bottom: 8px;
+    --inner-padding-end: 0;
+    --inner-border-width: 0; // Remove default inner border
+
+    ion-label {
+      font-weight: 500;
+      color: var(--secondary-text-color);
+      // transform: translateY(-5px); // Re-add this only if floating label misbehaves after other fixes
+      font-size: 0.9em;
+    }
+
+    ion-input,
+    ion-select,
+    ion-datetime {
+      // These are crucial for removing internal borders of Ionic components
+      --border-color: transparent; // Make any internal border color transparent
+      --border-width: 0; // Set internal border width to 0
+      border: none; // Fallback for good measure (though Ionic components often use variables)
+
+      --padding-top: 0px;
+      --padding-bottom: 0px;
+      --padding-start: 0;
+      --padding-end: 0;
+      color: var(--main-text-color);
+      font-size: 1.05em;
+      min-height: 44px; /* Ensure a minimum touch target height */
+    }
+
+    ion-note[color="danger"] {
+      font-size: 0.75em;
+      padding-left: 16px;
+      padding-right: 16px;
+      margin-top: 5px;
+      display: block; // Ensure it takes its own line
+    }
+  }
+
+  ion-button[type="submit"] {
+    --border-radius: 8px;
+    font-weight: 600;
+    height: 48px;
+    font-size: 1em;
     box-shadow: var(--shadow-medium);
+    margin-top: 25px;
   }
 }
+
 
 /* --- Skeleton Loader Styles (using inlined variables) --- */
 .skeleton {

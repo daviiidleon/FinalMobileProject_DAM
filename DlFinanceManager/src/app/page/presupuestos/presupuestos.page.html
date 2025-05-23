@@ -23,7 +23,7 @@
           <h2>Budgets</h2>
           <p>Set and track your monthly spending limits.</p>
         </div>
-        <ion-button class="create-budget-button" (click)="openBudgetModal('add')" #createBudgetButton>
+        <ion-button class="create-budget-button" (click)="openBudgetModal('add')">
           <ion-icon name="add-outline" slot="start"></ion-icon>
           Create Budget
         </ion-button>
@@ -31,7 +31,7 @@
 
       <div *ngIf="isLoading" class="budget-alerts skeleton-alert">
         <div class="skeleton h-6 w-full mb-2"></div>
-        <div class="skeleton h-4 w-3/4"></div>
+        <div class="skeleton h-4 w-3-4"></div>
         <ul class="mt-2">
           <li *ngFor="let i of [1,2]"><div class="skeleton h-4 w-full mb-1"></div></li>
         </ul>
@@ -57,11 +57,11 @@
           <ng-container *ngIf="isLoading">
             <div class="budget-card skeleton-budget-card" *ngFor="let i of [1, 2, 3]">
               <div class="skeleton h-8 w-full mb-3"></div>
-              <div class="skeleton h-4 w-3/4 mb-2"></div>
-              <div class="skeleton h-4 w-1/2 mb-2"></div>
-              <div class="skeleton h-4 w-2/3 mb-4"></div>
+              <div class="skeleton h-4 w-3-4 mb-2"></div>
+              <div class="skeleton h-4 w-1-2 mb-2"></div>
+              <div class="skeleton h-4 w-2-3 mb-4"></div>
               <div class="skeleton h-4 w-full mb-2"></div>
-              <div class="skeleton h-3 w-1/2"></div>
+              <div class="skeleton h-3 w-1-2"></div>
               <div class="skeleton-actions">
                 <div class="skeleton h-9 w-20"></div>
                 <div class="skeleton h-9 w-20"></div>
@@ -108,68 +108,72 @@
         </div>
       </div>
 
-      <ion-modal #budgetModal (didDismiss)="closeBudgetModal()">
-        <ng-template>
-          <ion-header>
-            <ion-toolbar>
-              <ion-title>{{ isEditingBudget ? 'Edit Budget' : 'Create Budget' }}</ion-title>
-              <ion-buttons slot="end">
-                <ion-button (click)="closeBudgetModal()">
-                  <ion-icon name="close"></ion-icon>
-                </ion-button>
-              </ion-buttons>
-            </ion-toolbar>
-          </ion-header>
-          <ion-content class="modal-content ion-padding">
-            <form [formGroup]="budgetForm" (ngSubmit)="submitBudgetForm()" class="space-y-6">
-              <ion-item>
-                <ion-label position="floating">Category</ion-label>
-                <ion-select formControlName="categoria" interface="popover">
-                  <ion-select-option value="comida">Comida</ion-select-option>
-                  <ion-select-option value="transporte">Transporte</ion-select-option>
-                  <ion-select-option value="entretenimiento">Entretenimiento</ion-select-option>
-                  <ion-select-option value="educacion">Educación</ion-select-option>
-                  <ion-select-option value="salud">Salud</ion-select-option>
-                  <ion-select-option value="housing">Vivienda</ion-select-option>
-                  <ion-select-option value="utilities">Servicios</ion-select-option>
-                  <ion-select-option value="otros">Otros</ion-select-option>
-                </ion-select>
-                <ion-note color="danger" *ngIf="budgetForm.get('categoria')?.hasError('required') && budgetForm.get('categoria')?.touched">
-                  Category is required.
-                </ion-note>
-              </ion-item>
-
-              <ion-item>
-                <ion-label position="floating">Spending Limit (€)</ion-label>
-                <ion-input type="number" formControlName="monto"></ion-input>
-                <ion-note color="danger" *ngIf="budgetForm.get('monto')?.hasError('required') && budgetForm.get('monto')?.touched">
-                  Spending limit is required.
-                </ion-note>
-                <ion-note color="danger" *ngIf="budgetForm.get('monto')?.hasError('min') && budgetForm.get('monto')?.touched">
-                  Limit must be positive.
-                </ion-note>
-              </ion-item>
-
-              <ion-item>
-                <ion-label position="floating">Month</ion-label>
-                <ion-datetime
-                  formControlName="mes"
-                  presentation="month-year"
-                  displayFormat="MMMM yyyy"
-                  value="{{ currentDate | date:'yyyy-MM-01' }}"
-                  [showDefaultButtons]="true"
-                ></ion-datetime>
-              </ion-item>
-
-              <ion-button expand="block" type="submit" class="ion-margin-top" [disabled]="budgetForm.invalid || isSubmitting">
-                <ion-spinner name="crescent" *ngIf="isSubmitting"></ion-spinner>
-                <span *ngIf="!isSubmitting">{{ isEditingBudget ? 'Save Changes' : 'Create Budget' }}</span>
-              </ion-button>
-            </form>
-          </ion-content>
-        </ng-template>
-      </ion-modal>
-
     </div>
   </div>
+
+  <ion-modal #budgetModal [isOpen]="isModalOpen" (didDismiss)="closeBudgetModal()">
+    <ng-template>
+      <ion-header class="ion-no-border">
+        <ion-toolbar>
+          <ion-title>{{ isEditMode ? 'Edit Budget' : 'Add New Budget' }}</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="closeBudgetModal()">
+              <ion-icon name="close-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <form [formGroup]="budgetForm" (ngSubmit)="submitBudgetForm()">
+          <ion-list lines="none" class="form-list">
+            <ion-item class="form-item">
+              <ion-label position="floating">Category</ion-label>
+              <ion-select formControlName="categoria" interface="popover">
+                <ion-select-option *ngFor="let categoryKey of getCategoryKeys()" [value]="categoryKey">{{ categoriaOptions[categoryKey] }}</ion-select-option>
+              </ion-select>
+              <ion-note color="danger" *ngIf="budgetForm.get('categoria')?.invalid && (budgetForm.get('categoria')?.dirty || budgetForm.get('categoria')?.touched)">
+                Category is required.
+              </ion-note>
+            </ion-item>
+
+            <ion-item class="form-item">
+              <ion-label position="floating">Limit (€)</ion-label>
+              <ion-input formControlName="monto" type="number" step="0.01"></ion-input>
+              <ion-note color="danger" *ngIf="budgetForm.get('monto')?.invalid && (budgetForm.get('monto')?.dirty || budgetForm.get('monto')?.touched)">
+                Limit is required and must be a valid number (> 0).
+              </ion-note>
+            </ion-item>
+
+            <ion-item class="form-item">
+              <ion-label position="floating" (click)="toggleMonthYearPicker()">Month and Year</ion-label>
+              <span *ngIf="budgetForm.get('mes')?.value" class="selected-date-display" (click)="toggleMonthYearPicker()">
+                {{ budgetForm.get('mes')?.value | date:'MMMM yyyy' }}
+              </span>
+
+              <ion-datetime
+                *ngIf="showMonthYearPicker"
+                id="monthAndYearBudget"
+                presentation="month-year"
+                formControlName="mes"
+                (ionChange)="onMonthYearSelected($event)" (ionCancel)="showMonthYearPicker = false"
+                [showDefaultButtons]="true"
+                done-text="Confirm"
+                cancel-text="Cancel"
+              ></ion-datetime>
+
+              <ion-note color="danger" *ngIf="budgetForm.get('mes')?.invalid && (budgetForm.get('mes')?.dirty || budgetForm.get('mes')?.touched)">
+                Month and Year are required.
+              </ion-note>
+            </ion-item>
+
+          </ion-list>
+
+          <ion-button expand="block" type="submit" class="ion-margin-top" [color]="isEditMode ? 'primary' : 'primary'">
+            <ion-spinner name="crescent" *ngIf="isSubmitting"></ion-spinner>
+            <span *ngIf="!isSubmitting">{{ isEditMode ? 'Save Changes' : 'Add Budget' }}</span>
+          </ion-button>
+        </form>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-content>

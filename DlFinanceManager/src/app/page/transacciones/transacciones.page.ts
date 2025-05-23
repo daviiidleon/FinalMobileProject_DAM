@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core'; // Import ViewChild
+import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectorRef } from '@angular/core'; // Added ChangeDetectorRef
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
   IonBackButton,
   IonButtons,
@@ -22,12 +22,16 @@ import {
   LoadingController,
   AlertController,
   ToastController,
-  IonModal, // Import IonModal
-  IonInput // Import IonInput
+  IonModal,
+  IonInput,
+  IonLabel,
+  IonDatetime,
+  IonNote,
+  IonSpinner
 } from '@ionic/angular/standalone';
 import { HeaderComponent } from "../../component/header/header.component";
 import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
-import { RouterLink } from '@angular/router'; // RouterLink is still here for non-modal buttons
+import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
 import {
   cloudUploadOutline,
@@ -37,7 +41,8 @@ import {
   ellipsisVertical,
   pencilOutline,
   trashOutline,
-  close // Add close icon for the modal
+  closeOutline,
+  reloadCircle
 } from 'ionicons/icons';
 import { TransactionService } from '../../services/transaction.service';
 import { Subscription } from 'rxjs';
@@ -54,6 +59,7 @@ import { Subscription } from 'rxjs';
     IonToolbar,
     CommonModule,
     FormsModule,
+    ReactiveFormsModule,
     HeaderComponent,
     SideMenuComponent,
     IonIcon,
@@ -70,34 +76,34 @@ import { Subscription } from 'rxjs';
     IonPopover,
     IonList,
     IonItem,
-    IonModal, // Include IonModal in imports
-    IonInput // Include IonInput in imports
+    IonModal,
+    IonInput,
+    IonLabel,
+    IonDatetime,
+    IonNote,
+    IonSpinner
   ]
 })
 export class TransaccionesPage implements OnInit, OnDestroy {
-  @ViewChild('addEditModal') addEditModal!: IonModal; // Reference to the modal
+  @ViewChild('addEditModal') addEditModal!: IonModal;
 
   transacciones: any[] = [];
   isLoading: boolean = true;
   private transactionsSubscription!: Subscription;
 
-  // Properties for the add/edit form
-  currentTransaction: any = {
-    id: '',
-    tipo: 'Expense',
-    fecha: new Date().toISOString().substring(0, 10), // Default to today's date
-    categoria: '',
-    descripcion: '',
-    cantidad: null,
-  };
-  isEditMode: boolean = false; // To determine if the modal is for editing or adding
+  isModalOpen: boolean = false;
+  isEditMode: boolean = false;
+  transactionForm: FormGroup;
+  isSubmitting: boolean = false;
+  editingTransactionId: string | null = null;
 
   constructor(
     private loadingController: LoadingController,
     private alertController: AlertController,
     private toastController: ToastController,
-    // Removed Router as we are not navigating to separate pages for add/edit
-    private transactionService: TransactionService
+    private transactionService: TransactionService,
+    private fb: FormBuilder,
+    private cdRef: ChangeDetectorRef // Inject ChangeDetectorRef
   ) {
     addIcons({
       cloudUploadOutline,
@@ -107,7 +113,17 @@ export class TransaccionesPage implements OnInit, OnDestroy {
       ellipsisVertical,
       pencilOutline,
       trashOutline,
-      close // Register the close icon
+      closeOutline,
+      reloadCircle
+    });
+
+    this.transactionForm = this.fb.group({
+      id: [null],
+      tipo: ['Expense', Validators.required],
+      fecha: [new Date().toISOString(), Validators.required],
+      categoria: ['', Validators.required],
+      descripcion: ['', Validators.required],
+      cantidad: [null, [Validators.required, Validators.min(0.01)]],
     });
   }
 
@@ -136,65 +152,80 @@ export class TransaccionesPage implements OnInit, OnDestroy {
     });
   }
 
-  // New method to open the add/edit modal
   async openAddEditModal(mode: 'add' | 'edit', transaction?: any) {
-    if (mode === 'add') {
-      this.isEditMode = false;
-      // Reset currentTransaction for a new entry
-      this.currentTransaction = {
-        id: '',
+    this.isEditMode = (mode === 'edit');
+    this.isSubmitting = false;
+
+    if (this.isEditMode && transaction) {
+      this.editingTransactionId = transaction.id;
+      const amountValue = parseFloat(transaction.cantidad.replace(/[^\d.-]/g, ''));
+      this.transactionForm.patchValue({
+        id: transaction.id,
+        tipo: transaction.tipo,
+        fecha: transaction.fecha,
+        categoria: transaction.categoria,
+        descripcion: transaction.descripcion,
+        cantidad: amountValue
+      });
+    } else {
+      this.editingTransactionId = null;
+      this.transactionForm.reset({
         tipo: 'Expense',
-        fecha: new Date().toISOString().substring(0, 10),
+        fecha: new Date().toISOString(),
         categoria: '',
         descripcion: '',
-        cantidad: null,
-      };
-    } else { // mode === 'edit'
-      this.isEditMode = true;
-      if (transaction) {
-        // Create a deep copy to avoid modifying the original transaction directly
-        this.currentTransaction = { ...transaction };
-
-        // Special handling for amount if it's a string with currency symbol and sign
-        if (typeof this.currentTransaction.cantidad === 'string') {
-          // Remove non-numeric characters except '.' and '-' for parseFloat
-          this.currentTransaction.cantidad = parseFloat(this.currentTransaction.cantidad.replace(/[^0-9.-]+/g, ""));
-        }
-        console.log('Editing transaction:', this.currentTransaction);
-      }
+        cantidad: null
+      });
     }
-    await this.addEditModal.present();
+    this.isModalOpen = true;
+    this.cdRef.detectChanges(); // Force change detection after modal opens and form is updated
   }
 
-  // New method to handle form submission
   async saveTransaction() {
-    // Basic validation
-    if (!this.currentTransaction.tipo || !this.currentTransaction.fecha || !this.currentTransaction.categoria || !this.currentTransaction.descripcion || this.currentTransaction.cantidad === null || isNaN(parseFloat(this.currentTransaction.cantidad))) {
-      this.presentToast('Please fill in all fields correctly.', 'danger');
+    this.transactionForm.markAllAsTouched();
+
+    if (this.transactionForm.invalid) {
+      this.presentToast('Please fill in all required fields correctly.', 'danger');
       return;
     }
 
-    // Format amount with currency symbol and sign
-    let amount = parseFloat(this.currentTransaction.cantidad);
-    const formattedAmount = (this.currentTransaction.tipo === 'Expense' ? '-' : '+') + '€' + amount.toFixed(2);
-    const transactionToSave = { ...this.currentTransaction, cantidad: formattedAmount };
+    this.isSubmitting = true;
+    const loading = await this.loadingController.create({
+      message: this.isEditMode ? 'Saving changes...' : 'Adding transaction...',
+      spinner: 'crescent'
+    });
+    await loading.present();
 
-    if (this.isEditMode) {
-      console.log('Updating transaction:', transactionToSave);
-      this.transactionService.updateTransaction(transactionToSave);
-      this.presentToast('Transaction updated successfully!', 'success');
-    } else {
-      console.log('Adding new transaction:', transactionToSave);
-      this.transactionService.addTransaction(transactionToSave);
-      this.presentToast('Transaction added successfully!', 'success');
-    }
+    const formData = this.transactionForm.value;
+    let amount = parseFloat(formData.cantidad);
+    const formattedAmount = (formData.tipo === 'Expense' ? '-€' : '+€') + amount.toFixed(2);
 
-    await this.addEditModal.dismiss(); // Close the modal after saving
+    const transactionToSave = {
+      ...formData,
+      id: this.editingTransactionId || this.generateUniqueId(),
+      cantidad: formattedAmount
+    };
+
+    setTimeout(async () => {
+      if (this.isEditMode) {
+        this.transactionService.updateTransaction(transactionToSave);
+        this.presentToast('Transaction updated successfully!', 'success');
+      } else {
+        this.transactionService.addTransaction(transactionToSave);
+        this.presentToast('Transaction added successfully!', 'success');
+      }
+      this.isSubmitting = false;
+      await loading.dismiss();
+      this.cancelModal();
+    }, 700);
   }
 
-  // Method to close the modal
   async cancelModal() {
-    await this.addEditModal.dismiss();
+    this.isModalOpen = false;
+    this.isEditMode = false;
+    this.isSubmitting = false;
+    this.editingTransactionId = null;
+    this.transactionForm.reset();
   }
 
   async eliminarTransaccion(transaccion: any) {
@@ -232,5 +263,9 @@ export class TransaccionesPage implements OnInit, OnDestroy {
       position: 'bottom',
     });
     toast.present();
+  }
+
+  private generateUniqueId(): string {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   }
 }

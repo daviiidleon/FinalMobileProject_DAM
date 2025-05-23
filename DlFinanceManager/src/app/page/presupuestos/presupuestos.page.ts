@@ -8,20 +8,12 @@ import {
   IonIcon,
   IonTitle,
   IonToolbar,
-  IonModal, // Importado IonModal
-  IonItem,
-  IonLabel,
-  IonInput, // Importado IonInput
-  IonDatetime,
-  IonButtons,
-  IonSpinner,
+  IonModal,
+  IonItem, IonLabel, IonInput, IonDatetime, IonButtons, IonSpinner, IonSelect, IonSelectOption, IonNote, IonList,
   IonProgressBar,
-  IonSelect,
-  IonSelectOption,
-  IonNote,
   LoadingController,
   AlertController,
-  ToastController, IonList // Añadido ToastController
+  ToastController,
 } from '@ionic/angular/standalone';
 import { HeaderComponent } from "../../component/header/header.component";
 import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
@@ -40,7 +32,7 @@ import {
   pricetagOutline,
   createOutline,
   trashOutline,
-  close // Añadido icono de cerrar
+  closeOutline
 } from 'ionicons/icons';
 
 type CategoriaKey = 'comida' | 'transporte' | 'entretenimiento' | 'educacion' | 'salud' | 'housing' | 'utilities' | 'otros';
@@ -77,24 +69,15 @@ interface BudgetAlert {
     IonToolbar,
     IonIcon,
     IonButton,
-    IonModal, // Incluido en imports
-    IonItem,
-    IonLabel,
-    IonInput, // Incluido en imports
-    IonDatetime,
-    IonButtons,
-    IonSpinner,
+    IonModal,
+    IonItem, IonLabel, IonInput, IonDatetime, IonButtons, IonSpinner, IonSelect, IonSelectOption, IonNote, IonList,
     IonProgressBar,
-    IonSelect,
-    IonSelectOption,
-    IonNote,
 
     DatePipe,
     PercentPipe,
 
     HeaderComponent,
     SideMenuComponent,
-    IonList
   ]
 })
 export class PresupuestosPage implements OnInit {
@@ -114,22 +97,23 @@ export class PresupuestosPage implements OnInit {
   budgetAlerts: BudgetAlert[] = [];
   isLoading: boolean = true;
 
-  // CAMBIO: Referencia al modal usando @ViewChild
   @ViewChild('budgetModal') budgetModal!: IonModal;
-  // CAMBIO: Referencia al botón "Create Budget" (para el blur, si aún lo quieres)
   @ViewChild('createBudgetButton') createBudgetButtonRef!: ElementRef<HTMLIonButtonElement>;
 
-  isEditingBudget = false;
+  isModalOpen: boolean = false;
+  isEditMode: boolean = false;
   budgetForm: FormGroup;
-  isSubmitting = false;
+  isSubmitting: boolean = false;
   editingBudgetId: string | null = null;
   currentDate = new Date();
+
+  showMonthYearPicker: boolean = false; // New property to control datetime visibility
 
   constructor(
     private fb: FormBuilder,
     private loadingController: LoadingController,
     private alertController: AlertController,
-    private toastController: ToastController // Inyectado ToastController
+    private toastController: ToastController
   ) {
     addIcons({
       addOutline,
@@ -145,13 +129,13 @@ export class PresupuestosPage implements OnInit {
       pricetagOutline,
       createOutline,
       trashOutline,
-      close // Registrado el icono de cerrar
+      closeOutline,
     });
 
     this.budgetForm = this.fb.group({
       categoria: ['', Validators.required],
       monto: [null, [Validators.required, Validators.min(0.01)]],
-      mes: [this.currentDate.toISOString()],
+      mes: [this.currentDate.toISOString(), Validators.required],
     });
   }
 
@@ -234,112 +218,111 @@ export class PresupuestosPage implements OnInit {
     }
   }
 
-  // Nueva función para abrir el modal, unificada para añadir y editar
-  async openBudgetModal(mode: 'add' | 'edit', budget?: PastBudget) {
-    if (mode === 'add') {
-      this.isEditingBudget = false;
-      this.budgetForm.reset({ mes: this.currentDate.toISOString() }); // Resetea el formulario
-      this.editingBudgetId = null;
-    } else { // mode === 'edit'
-      this.isEditingBudget = true;
-      if (budget) {
-        this.editingBudgetId = budget.id;
-        const dateForForm = new Date(`${budget.mes} 1, ${budget.anio}`);
-        const monthYearString = dateForForm.toISOString();
-
-        this.budgetForm.patchValue({
-          categoria: budget.categoriaValue,
-          monto: parseFloat(budget.limite.replace('€', '')),
-          mes: monthYearString
-        });
-      }
-    }
-    // Presenta el modal usando la referencia @ViewChild
-    await this.budgetModal.present();
-
-    // Lógica para desenfocar el botón si es necesario (para la advertencia aria-hidden)
-    // Esto es un parche y Ionic debería manejarlo automáticamente.
-    setTimeout(() => {
-      if (this.createBudgetButtonRef && this.createBudgetButtonRef.nativeElement) {
-        this.createBudgetButtonRef.nativeElement.blur();
-      }
-    }, 50);
+  // Helper to get category keys for ngFor in select
+  getCategoryKeys(): CategoriaKey[] {
+    return Object.keys(this.categoriaOptions) as CategoriaKey[];
   }
 
-  // Función para cerrar el modal usando dismiss()
-  async closeBudgetModal() {
-    await this.budgetModal.dismiss();
-    this.isEditingBudget = false; // Resetear el modo de edición
-    this.budgetForm.reset(); // Limpiar el formulario
-    this.isSubmitting = false;
+  async openBudgetModal(mode: 'add' | 'edit', budget?: PastBudget) {
+    this.isModalOpen = true;
+    this.isEditMode = mode === 'edit';
+    this.budgetForm.reset();
     this.editingBudgetId = null;
+    this.showMonthYearPicker = false; // Ensure picker is hidden when modal opens
+
+    if (this.isEditMode && budget) {
+      this.editingBudgetId = budget.id;
+      const limitAsNumber = parseFloat(budget.limite.replace('€', ''));
+      // Construct a valid date string for parsing, ensuring month and year
+      // Make sure this construction results in a valid ISO string recognized by ion-datetime
+      const budgetDate = new Date(`${budget.mes} 1, ${budget.anio}`); // Example: "December 1, 2023"
+      this.budgetForm.patchValue({
+        categoria: budget.categoriaValue,
+        monto: limitAsNumber,
+        mes: budgetDate.toISOString(), // Ensure it's an ISO string
+      });
+    } else {
+      this.budgetForm.patchValue({ mes: new Date().toISOString() }); // Default to current date as ISO string
+    }
+  }
+
+  async closeBudgetModal() {
+    this.isModalOpen = false;
+    this.isEditMode = false;
+    this.isSubmitting = false;
+    this.budgetForm.reset();
+    this.editingBudgetId = null;
+    this.showMonthYearPicker = false; // Reset picker visibility when modal closes
+  }
+
+  toggleMonthYearPicker() {
+    this.showMonthYearPicker = !this.showMonthYearPicker;
+  }
+
+  // This method will be called when the user confirms the date selection (clicks "Confirm")
+  // The 'ionChange' event on ion-datetime fires when the value is selected and confirmed
+  // (if showDefaultButtons is true)
+  onMonthYearSelected(event: any) {
+    // The formControlName="mes" already handles updating the form's value.
+    // We just need to hide the picker.
+    this.showMonthYearPicker = false;
   }
 
   async submitBudgetForm() {
-    if (this.budgetForm.valid) {
-      this.isSubmitting = true;
-      const formValue = this.budgetForm.value;
-      const monthYear = new Date(formValue.mes);
-      const month = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(monthYear);
-      const year = monthYear.getFullYear().toString();
-      const categoriaValue = formValue.categoria as CategoriaKey;
-      const limiteNumerico = parseFloat(formValue.monto);
-
-      let gastadoActual = '€0.00';
-      if (this.isEditingBudget && this.editingBudgetId) {
-        const existingBudget = this.getBudgetById(this.editingBudgetId);
-        if (existingBudget) {
-          gastadoActual = existingBudget.gastado;
-        }
-      }
-      const gastadoNumerico = parseFloat(gastadoActual.replace('€', ''));
-      const restanteNumerico = limiteNumerico - gastadoNumerico;
-      const porcentajeCalculado = limiteNumerico > 0 ? gastadoNumerico / limiteNumerico : 0;
-
-      const newBudget: PastBudget = {
-        id: this.editingBudgetId || Math.random().toString(36).substring(2, 15),
-        categoriaValue: categoriaValue,
-        categoriaDisplay: this.categoriaOptions[categoriaValue],
-        mes: month,
-        anio: year,
-        limite: `€${limiteNumerico.toFixed(2)}`,
-        gastado: gastadoActual,
-        restante: `€${restanteNumerico.toFixed(2)}`,
-        porcentaje: porcentajeCalculado
-      };
-
-      const submitLoading = await this.loadingController.create({
-        message: this.isEditingBudget ? 'Saving changes...' : 'Creating budget...',
-        spinner: 'crescent'
-      });
-      await submitLoading.present();
-
-      setTimeout(() => {
-        if (this.isEditingBudget && this.editingBudgetId) {
-          this.pastBudgets = this.pastBudgets.map(budget =>
-            budget.id === this.editingBudgetId ? newBudget : budget
-          );
-          this.presentToast('Budget updated successfully!', 'success'); // Mensaje de éxito
-        } else {
-          this.pastBudgets.push(newBudget);
-          this.presentToast('Budget created successfully!', 'success'); // Mensaje de éxito
-        }
-        this.pastBudgets.sort((a, b) => {
-          const dateA = new Date(`${a.mes} 1, ${a.anio}`);
-          const dateB = new Date(`${b.mes} 1, ${b.anio}`);
-          return dateB.getTime() - dateA.getTime();
-        });
-
-        this.updateBudgetAlerts();
-
-        this.isSubmitting = false;
-        submitLoading.dismiss();
-        this.closeBudgetModal(); // Cierra el modal usando la nueva función
-      }, 700);
-    } else {
-      this.budgetForm.markAllAsTouched();
-      this.presentToast('Please fill in all required fields.', 'danger'); // Mensaje de error de validación
+    this.budgetForm.markAllAsTouched();
+    if (this.budgetForm.invalid) {
+      await this.presentToast('Please fill all required fields correctly.', 'danger');
+      return;
     }
+
+    this.isSubmitting = true;
+    const loading = await this.loadingController.create({
+      message: this.isEditMode ? 'Saving changes...' : 'Adding budget...',
+      spinner: 'crescent'
+    });
+    await loading.present();
+
+    const formValue = this.budgetForm.value;
+    const selectedDate = new Date(formValue.mes); // Should already be a valid ISO string from the picker
+    const month = selectedDate.toLocaleString('en-US', { month: 'long' });
+    const year = selectedDate.getFullYear().toString();
+
+    const newBudget: PastBudget = {
+      id: this.isEditMode && this.editingBudgetId ? this.editingBudgetId : Date.now().toString(),
+      categoriaValue: formValue.categoria,
+      categoriaDisplay: this.categoriaOptions[formValue.categoria as CategoriaKey],
+      mes: month,
+      anio: year,
+      limite: `€${formValue.monto.toFixed(2)}`,
+      gastado: '€0.00',
+      restante: `€${formValue.monto.toFixed(2)}`,
+      porcentaje: 0
+    };
+
+    setTimeout(async () => {
+      if (this.isEditMode && this.editingBudgetId) {
+        const index = this.pastBudgets.findIndex(b => b.id === this.editingBudgetId);
+        if (index !== -1) {
+          const oldBudget = this.pastBudgets[index];
+          const oldGastadoNum = parseFloat(oldBudget.gastado.replace('€', ''));
+
+          newBudget.gastado = `€${oldGastadoNum.toFixed(2)}`;
+          newBudget.restante = `€${(formValue.monto - oldGastadoNum).toFixed(2)}`;
+          newBudget.porcentaje = oldGastadoNum / formValue.monto;
+
+          this.pastBudgets[index] = newBudget;
+          await this.presentToast('Budget updated successfully!', 'success');
+        }
+      } else {
+        this.pastBudgets.unshift(newBudget);
+        await this.presentToast('Budget added successfully!', 'success');
+      }
+
+      this.updateBudgetAlerts();
+      this.isSubmitting = false;
+      loading.dismiss();
+      this.closeBudgetModal();
+    }, 1000);
   }
 
   async confirmDeleteBudget(id: string) {
@@ -377,7 +360,7 @@ export class PresupuestosPage implements OnInit {
       this.pastBudgets = this.pastBudgets.filter(budget => budget.id !== id);
 
       this.updateBudgetAlerts();
-      this.presentToast('Budget deleted successfully!', 'success'); // Mensaje de éxito
+      this.presentToast('Budget deleted successfully!', 'success');
 
       deleteLoading.dismiss();
     }, 500);
@@ -388,16 +371,16 @@ export class PresupuestosPage implements OnInit {
   }
 
   private updateBudgetAlerts() {
+    // Only include alerts for budgets where the limit is greater than 0
     this.budgetAlerts = this.pastBudgets.filter(b => {
       const limiteNum = parseFloat(b.limite.replace('€', ''));
       const gastadoNum = parseFloat(b.gastado.replace('€', ''));
-      return limiteNum > 0 && gastadoNum / limiteNum >= 1;
+      return limiteNum > 0 && gastadoNum / limiteNum >= 1; // Alert if 100% or more is used
     }).map(b => ({
       message: `${b.categoriaDisplay} (${(b.porcentaje * 100).toFixed(0)}% used) for ${b.mes} ${b.anio}`
     }));
   }
 
-  // Función para mostrar Toast
   async presentToast(message: string, color: string = 'primary') {
     const toast = await this.toastController.create({
       message: message,

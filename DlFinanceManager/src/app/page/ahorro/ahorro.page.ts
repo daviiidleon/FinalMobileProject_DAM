@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms'; // <--- ¡ASEGÚRATE DE QUE ESTAS ESTÁN AQUÍ!
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms'; // Re-added Forms Modules
 
 import {
   IonButton,
@@ -13,21 +13,16 @@ import {
   IonRow,
   IonGrid,
   IonProgressBar,
-  IonModal,
-  IonItem,
-  IonLabel,
-  IonInput,
-  IonDatetime,
-  IonButtons,
-  IonNote,
+  IonModal, // Re-added IonModal
+  IonItem, IonLabel, IonInput, IonDatetime, IonButtons, IonNote, IonSpinner, IonList, IonSelect, IonSelectOption, // Re-added Modal related components
   LoadingController,
-  IonMenuButton,
-  IonSpinner,
-  IonList,
-} from '@ionic/angular/standalone'; // <--- ¡Y TODAS LAS COMPONENTES IONIC USADAS EN TU HTML!
+  IonMenuButton, // Keep if needed for menu, otherwise remove
+  AlertController, // Added AlertController for delete confirmation
+  ToastController // Added ToastController for notifications
+} from '@ionic/angular/standalone';
 
-import { HeaderComponent } from '../../component/header/header.component'; // Asegúrate de que la ruta sea correcta
-import { SideMenuComponent } from '../../component/side-menu/side-menu.component'; // Asegúrate de que la ruta sea correcta
+import { HeaderComponent } from '../../component/header/header.component';
+import { SideMenuComponent } from '../../component/side-menu/side-menu.component';
 import { Subscription } from 'rxjs';
 import { addIcons } from 'ionicons';
 import {
@@ -37,7 +32,7 @@ import {
   addCircleOutline,
   createOutline,
   trashOutline,
-  close
+  closeOutline // Re-added close icon
 } from 'ionicons/icons';
 
 
@@ -46,7 +41,7 @@ interface ObjetivoAhorro {
   nombre: string;
   montoMeta: number;
   montoActual: number;
-  fechaLimite?: string | null;
+  fechaLimite?: string | null; // Optional deadline
   progreso: number;
 }
 
@@ -54,58 +49,58 @@ interface ObjetivoAhorro {
   selector: 'app-ahorro',
   templateUrl: './ahorro.page.html',
   styleUrls: ['./ahorro.page.scss'],
-  standalone: true, // Esto es crucial para componentes standalone
-  imports: [ // ¡Esta lista debe contener todos los módulos y componentes standalone que usas!
+  standalone: true,
+  imports: [
     CommonModule,
-    FormsModule,         // Necesario para ngModel (usado en fundsToAdd) y formularios básicos
-    ReactiveFormsModule, // Necesario para FormGroup, FormBuilder y formControlName
+    FormsModule, // Re-added FormsModule
+    ReactiveFormsModule, // Re-added ReactiveFormsModule
 
-    // Componentes Ionic (¡asegúrate de que todos los que usas en el HTML están aquí!)
     IonContent,
     IonHeader,
     IonTitle,
     IonToolbar,
     IonIcon,
     IonButton,
-    IonCol,
-    IonRow,
-    IonGrid,
+    IonCol, // Keep if you use Grid, otherwise remove
+    IonRow, // Keep if you use Grid, otherwise remove
+    IonGrid, // Keep if you use Grid, otherwise remove
     IonProgressBar,
-    IonModal,
-    IonItem,
-    IonLabel,
-    IonInput,
-    IonDatetime,
-    IonButtons,
-    IonNote,
-    IonMenuButton,
-    IonSpinner,
-    IonList,
+    IonModal, // Re-added IonModal
+    IonItem, IonLabel, IonInput, IonDatetime, IonButtons, IonNote, IonSpinner, IonList, IonSelect, IonSelectOption, // Re-added modal components
 
-    // Pipes de Angular para formateo
     DatePipe,
     CurrencyPipe,
 
-    // Tus componentes personalizados
     HeaderComponent,
     SideMenuComponent,
   ],
 })
 export class AhorroPage implements OnInit, OnDestroy {
   objetivos: ObjetivoAhorro[] = [];
-  isCreateGoalModalOpen = false;
-  isAddFundsModalOpen = false;
-  isEditingGoal = false;
-  selectedGoal: ObjetivoAhorro | null = null;
-  fundsToAdd: number | null = null;
-  goalForm: FormGroup;
-  isSubmitting = false;
-  isLoading = true; // Controla el esqueleto de carga y la visibilidad del botón "Create New Goal"
+  isLoading = true;
+
+  // New properties for the Goal Modal
+  @ViewChild('goalModal') goalModal!: IonModal; // Reference to the goal modal
+  @ViewChild('addFundsModal') addFundsModal!: IonModal; // Reference to the add funds modal
+
+  isGoalModalOpen: boolean = false;
+  isAddFundsModalOpen: boolean = false;
+  isEditMode: boolean = false;
+  goalForm: FormGroup; // Re-added FormGroup
+  isSubmitting: boolean = false;
+  editingGoalId: string | null = null;
+  fundsToAdd: number | null = null; // Re-added fundsToAdd
+  showDatePicker: boolean = false; // New property to control datetime visibility for goals
 
   private storageKey = 'objetivosAhorro';
   private storageSubscription: Subscription | undefined;
 
-  constructor(private fb: FormBuilder, private loadingCtrl: LoadingController) {
+  constructor(
+    private fb: FormBuilder, // Re-added FormBuilder
+    private loadingCtrl: LoadingController,
+    private alertController: AlertController, // Re-added AlertController
+    private toastController: ToastController // Re-added ToastController
+  ) {
     addIcons({
       addOutline,
       cashOutline,
@@ -113,21 +108,21 @@ export class AhorroPage implements OnInit, OnDestroy {
       addCircleOutline,
       createOutline,
       trashOutline,
-      close
+      closeOutline, // Re-added close icon
     });
 
-    // Inicialización del formulario reactivo con validadores
+    // Re-initialize goalForm
     this.goalForm = this.fb.group({
-      id: [''],
+      id: [''], // Will be set on edit or generated on add
       nombre: ['', [Validators.required, Validators.minLength(3)]],
       montoMeta: [null, [Validators.required, Validators.min(0.01)]],
       montoActual: [0, Validators.min(0)],
-      fechaLimite: [null],
+      fechaLimite: [null], // No initial value, can be null
     });
   }
 
   ngOnInit() {
-    // ionViewWillEnter es preferido en Ionic para cargar datos al entrar a la vista
+    // ionViewWillEnter is preferred in Ionic for loading data when entering the view
   }
 
   async ionViewWillEnter() {
@@ -142,7 +137,7 @@ export class AhorroPage implements OnInit, OnDestroy {
   }
 
   async loadObjetivos() {
-    this.isLoading = true; // Activa el estado de carga
+    this.isLoading = true;
     console.log('loadObjetivos: isLoading =', this.isLoading);
 
     const loading = await this.loadingCtrl.create({
@@ -151,16 +146,20 @@ export class AhorroPage implements OnInit, OnDestroy {
     });
     await loading.present();
 
-    // Simula un retraso para ver el esqueleto de carga
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     try {
       const storedObjetivos = localStorage.getItem(this.storageKey);
       if (storedObjetivos) {
-        this.objetivos = JSON.parse(storedObjetivos).map((obj: ObjetivoAhorro) => ({
-          ...obj,
-          progreso: (obj.montoActual / obj.montoMeta) * 100,
-        }));
+        this.objetivos = JSON.parse(storedObjetivos).map((obj: ObjetivoAhorro) => {
+          // Ensure montoActual doesn't exceed montoMeta, and calculate progress
+          const montoActualClamped = Math.min(obj.montoActual, obj.montoMeta);
+          return {
+            ...obj,
+            montoActual: montoActualClamped, // Clamp saved amount
+            progreso: (montoActualClamped / obj.montoMeta) * 100,
+          };
+        });
         console.log('Metas cargadas desde localStorage:', this.objetivos.length);
       } else {
         this.objetivos = [];
@@ -170,8 +169,8 @@ export class AhorroPage implements OnInit, OnDestroy {
       console.error('Error al cargar metas:', error);
       this.objetivos = [];
     } finally {
-      this.isLoading = false; // Desactiva el estado de carga
-      await loading.dismiss(); // Cierra el spinner de carga
+      this.isLoading = false;
+      await loading.dismiss();
       console.log('loadObjetivos: Carga finalizada, isLoading =', this.isLoading);
     }
   }
@@ -181,7 +180,7 @@ export class AhorroPage implements OnInit, OnDestroy {
       this.storageKey,
       JSON.stringify(
         this.objetivos.map((obj) => {
-          const { progreso, ...rest } = obj;
+          const { progreso, ...rest } = obj; // Exclude 'progreso' as it's derived
           return rest;
         })
       )
@@ -198,6 +197,7 @@ export class AhorroPage implements OnInit, OnDestroy {
       return null;
     }
     const dateObj = new Date(date);
+    // Use 'shortDate' or specify format 'yyyy-MM-dd' for consistency
     const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
     return new Intl.DateTimeFormat('en-US', options).format(dateObj);
   }
@@ -207,136 +207,216 @@ export class AhorroPage implements OnInit, OnDestroy {
       return false;
     }
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0); // Normalize to start of day
 
     const deadline = new Date(fechaLimite);
-    deadline.setHours(0, 0, 0, 0);
+    deadline.setHours(0, 0, 0, 0); // Normalize to start of day
 
     return deadline < today;
   }
 
-  // Abre el modal de creación/edición de metas
-  openCreateGoalModal(goalToEdit?: ObjetivoAhorro) {
-    this.isEditingGoal = !!goalToEdit;
-    if (goalToEdit) {
+  // --- Goal Modal Methods ---
+
+  async openGoalModal(mode: 'add' | 'edit', goal?: ObjetivoAhorro) {
+    this.isGoalModalOpen = true;
+    this.isEditMode = mode === 'edit';
+    this.goalForm.reset();
+    this.editingGoalId = null;
+    this.showDatePicker = false; // Ensure picker is hidden when modal opens
+
+    if (this.isEditMode && goal) {
+      this.editingGoalId = goal.id;
       this.goalForm.patchValue({
-        id: goalToEdit.id,
-        nombre: goalToEdit.nombre,
-        montoMeta: goalToEdit.montoMeta,
-        montoActual: goalToEdit.montoActual,
-        fechaLimite: goalToEdit.fechaLimite ? new Date(goalToEdit.fechaLimite).toISOString() : null,
+        id: goal.id,
+        nombre: goal.nombre,
+        montoMeta: goal.montoMeta,
+        montoActual: goal.montoActual, // Existing amount for edit mode
+        fechaLimite: goal.fechaLimite ? new Date(goal.fechaLimite).toISOString() : null,
       });
-      console.log('Abriendo modal para editar meta:', goalToEdit.nombre);
+      // Disable montoActual if editing, as it should only be changed via "Add Funds"
+      this.goalForm.get('montoActual')?.disable();
     } else {
-      this.goalForm.reset({ montoActual: 0 }); // Reinicia el formulario para nueva meta
-      console.log('Abriendo modal para crear nueva meta.');
+      // Set default value for montoActual for new goals
+      this.goalForm.get('montoActual')?.enable(); // Ensure it's enabled for new goals
+      this.goalForm.patchValue({ montoActual: 0 });
+      this.goalForm.get('id')?.setValue(this.generateId()); // Assign new ID
     }
-    this.isCreateGoalModalOpen = true; // Esto es lo que hace visible el modal
-    console.log('isCreateGoalModalOpen se estableció a TRUE. El modal debería ser visible ahora.');
   }
 
-  // Cierra el modal de creación/edición de metas
-  closeCreateGoalModal() {
-    this.isCreateGoalModalOpen = false;
-    this.isEditingGoal = false;
-    this.goalForm.reset(); // Reinicia el formulario
-    console.log('isCreateGoalModalOpen se estableció a FALSE. El modal debería estar oculto.');
+  async closeGoalModal() {
+    this.isGoalModalOpen = false;
+    this.isEditMode = false;
+    this.isSubmitting = false;
+    this.goalForm.reset();
+    this.editingGoalId = null;
+    this.showDatePicker = false; // Reset picker visibility
+    this.goalForm.get('montoActual')?.enable(); // Re-enable montoActual for next potential 'add'
   }
 
-  // Envía el formulario de meta (creación o edición)
+  toggleDatePicker() {
+    this.showDatePicker = !this.showDatePicker;
+  }
+
+  // This method is called when the user confirms the date selection (clicks "Confirm")
+  onDateSelected(event: any) {
+    // The formControlName="fechaLimite" already handles updating the form's value.
+    // We just need to hide the picker.
+    this.showDatePicker = false;
+  }
+
   async submitGoalForm() {
-    if (this.goalForm.valid) {
-      this.isSubmitting = true;
-      const loading = await this.loadingCtrl.create({
-        message: this.isEditingGoal ? 'Guardando cambios...' : 'Creando meta...',
-      });
-      await loading.present();
+    this.goalForm.markAllAsTouched();
+    if (this.goalForm.invalid) {
+      await this.presentToast('Please fill all required fields correctly.', 'danger');
+      return;
+    }
 
-      const formValue = this.goalForm.value;
-      const fechaLimiteFormatted = formValue.fechaLimite ? new Date(formValue.fechaLimite).toISOString() : null;
+    this.isSubmitting = true;
+    const loading = await this.loadingCtrl.create({
+      message: this.isEditMode ? 'Saving changes...' : 'Adding goal...',
+      spinner: 'crescent'
+    });
+    await loading.present();
 
-      const nuevoObjetivo: ObjetivoAhorro = {
-        id: formValue.id || this.generateId(),
-        nombre: formValue.nombre,
-        montoMeta: formValue.montoMeta,
-        montoActual: formValue.montoActual || 0,
-        fechaLimite: fechaLimiteFormatted,
-        progreso: (formValue.montoActual || 0) / formValue.montoMeta * 100,
-      };
+    const formValue = this.goalForm.getRawValue(); // Use getRawValue to get disabled field values
+    const newGoal: ObjetivoAhorro = {
+      id: formValue.id || this.generateId(), // Ensure ID is present
+      nombre: formValue.nombre,
+      montoMeta: parseFloat(formValue.montoMeta),
+      montoActual: parseFloat(formValue.montoActual),
+      fechaLimite: formValue.fechaLimite ? new Date(formValue.fechaLimite).toISOString() : null,
+      progreso: 0 // Will be calculated after adding/updating
+    };
 
-      if (this.isEditingGoal) {
-        this.objetivos = this.objetivos.map((obj) => (obj.id === nuevoObjetivo.id ? nuevoObjetivo : obj));
-        console.log('Meta actualizada:', nuevoObjetivo.nombre);
+    // Calculate progress
+    newGoal.progreso = (newGoal.montoActual / newGoal.montoMeta) * 100;
+    if (newGoal.progreso > 100) newGoal.progreso = 100; // Cap at 100%
+
+    setTimeout(async () => {
+      if (this.isEditMode && this.editingGoalId) {
+        const index = this.objetivos.findIndex(g => g.id === this.editingGoalId);
+        if (index !== -1) {
+          // Keep the current montoActual if not explicitly adding funds
+          const currentMontoActual = this.objetivos[index].montoActual;
+          newGoal.montoActual = currentMontoActual; // Preserve existing saved amount
+          newGoal.progreso = (newGoal.montoActual / newGoal.montoMeta) * 100;
+          if (newGoal.progreso > 100) newGoal.progreso = 100;
+
+          this.objetivos[index] = newGoal;
+          await this.presentToast('Goal updated successfully!', 'success');
+        }
       } else {
-        this.objetivos.push(nuevoObjetivo);
-        console.log('Nueva meta creada:', nuevoObjetivo.nombre);
+        this.objetivos.unshift(newGoal); // Add to the beginning for visibility
+        await this.presentToast('Goal added successfully!', 'success');
       }
 
       this.saveObjetivos();
-      this.closeCreateGoalModal();
-      await loading.dismiss();
       this.isSubmitting = false;
-    } else {
-      // Marca todos los controles como 'touched' para mostrar los mensajes de validación
-      this.goalForm.markAllAsTouched();
-      console.warn('Formulario inválido. No se puede enviar.', this.goalForm.errors, this.goalForm.value);
-    }
+      loading.dismiss();
+      this.closeGoalModal();
+      this.loadObjetivos(); // Reload to ensure UI is updated with new calculations
+    }, 1000);
   }
 
-  openEditGoalModal(goal: ObjetivoAhorro) {
-    this.openCreateGoalModal(goal);
-  }
+  // --- Add Funds Modal Methods ---
 
   openAddFundsModal(goal: ObjetivoAhorro) {
-    this.selectedGoal = goal;
-    this.fundsToAdd = null;
     this.isAddFundsModalOpen = true;
-    console.log('Abriendo modal para añadir fondos a:', goal.nombre);
+    this.selectedGoal = goal; // Set the selected goal for adding funds
+    this.fundsToAdd = null; // Reset funds to add
+    this.isSubmitting = false; // Reset submitting state
   }
 
   closeAddFundsModal() {
     this.isAddFundsModalOpen = false;
     this.selectedGoal = null;
     this.fundsToAdd = null;
-    console.log('Modal de añadir fondos cerrado.');
+    this.isSubmitting = false;
   }
+
+  selectedGoal: ObjetivoAhorro | null = null; // Declare selectedGoal property
 
   async addFunds() {
-    if (this.selectedGoal && this.fundsToAdd !== null && this.fundsToAdd > 0) {
-      const loading = await this.loadingCtrl.create({
-        message: 'Añadiendo fondos...',
-      });
-      await loading.present();
-
-      this.objetivos = this.objetivos.map((obj) => {
-        if (obj.id === this.selectedGoal!.id) {
-          const nuevoMontoActual = obj.montoActual + this.fundsToAdd!;
-          return {
-            ...obj,
-            montoActual: nuevoMontoActual,
-            progreso: (nuevoMontoActual / obj.montoMeta) * 100,
-          };
-        }
-        return obj;
-      });
-
-      this.saveObjetivos();
-      this.closeAddFundsModal();
-      await loading.dismiss();
-      console.log(`Añadidos ${this.fundsToAdd} a ${this.selectedGoal.nombre}.`);
-    } else {
-      console.warn('Cantidad inválida o no hay meta seleccionada para añadir fondos.');
+    if (!this.selectedGoal || typeof this.fundsToAdd !== 'number' || this.fundsToAdd <= 0) {
+      await this.presentToast('Please enter a valid amount to add.', 'danger');
+      return;
     }
-  }
 
-  async deleteGoal(goalId: string) {
+    this.isSubmitting = true;
     const loading = await this.loadingCtrl.create({
-      message: 'Eliminando meta...',
+      message: 'Adding funds...',
+      spinner: 'crescent'
     });
     await loading.present();
-    this.objetivos = this.objetivos.filter((obj) => obj.id !== goalId);
-    this.saveObjetivos();
-    await loading.dismiss();
-    console.log(`Meta con ID ${goalId} eliminada.`);
+
+    setTimeout(async () => {
+      const index = this.objetivos.findIndex(g => g.id === this.selectedGoal?.id);
+      if (index !== -1) {
+        const goal = this.objetivos[index];
+        goal.montoActual += this.fundsToAdd!; // Add funds
+        if (goal.montoActual > goal.montoMeta) {
+          goal.montoActual = goal.montoMeta; // Cap at target amount
+        }
+        goal.progreso = (goal.montoActual / goal.montoMeta) * 100;
+        if (goal.progreso > 100) goal.progreso = 100; // Cap at 100%
+
+        this.objetivos[index] = { ...goal }; // Ensure change detection fires
+        this.saveObjetivos();
+        await this.presentToast('Funds added successfully!', 'success');
+      } else {
+        await this.presentToast('Goal not found.', 'danger');
+      }
+
+      this.isSubmitting = false;
+      loading.dismiss();
+      this.closeAddFundsModal();
+      this.loadObjetivos(); // Reload to ensure UI is updated
+    }, 1000);
+  }
+
+
+  // --- General Methods ---
+
+  async deleteGoal(goalId: string) {
+    const alert = await this.alertController.create({
+      header: 'Confirm Deletion',
+      message: 'Are you sure you want to delete this goal? This action cannot be undone.',
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          handler: () => {
+            console.log('Delete cancelled');
+          },
+        },
+        {
+          text: 'Delete',
+          handler: async () => { // Make handler async
+            const loading = await this.loadingCtrl.create({
+              message: 'Deleting goal...',
+            });
+            await loading.present();
+            this.objetivos = this.objetivos.filter((obj) => obj.id !== goalId);
+            this.saveObjetivos();
+            await loading.dismiss();
+            await this.presentToast('Goal deleted successfully!', 'success'); // Use await
+            console.log(`Meta con ID ${goalId} eliminada.`);
+            this.loadObjetivos(); // Reload to ensure UI is updated
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  async presentToast(message: string, color: string = 'primary') {
+    const toast = await this.toastController.create({
+      message: message,
+      duration: 2000,
+      color: color,
+      position: 'bottom',
+    });
+    toast.present();
   }
 }

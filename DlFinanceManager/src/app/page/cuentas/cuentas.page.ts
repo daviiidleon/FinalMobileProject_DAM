@@ -1,7 +1,6 @@
-// src/app/page/cuentas/cuentas.page.ts
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, formatDate } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms'; // RE-ADDED Reactive Forms imports
 import {
   IonBackButton,
   IonButtons,
@@ -11,27 +10,29 @@ import {
   IonGrid,
   IonHeader,
   IonIcon,
-  IonItem, // <-- MAKE SURE THIS IS IMPORTED
+  IonItem,
   IonList,
   IonRow,
   IonSearchbar,
-  IonSelect, // <-- MAKE SURE THIS IS IMPORTED
-  IonSelectOption, // <-- MAKE SURE THIS IS IMPORTED
+  IonSelect,
+  IonSelectOption,
   IonTitle,
   IonToolbar,
   LoadingController,
   AlertController,
   ToastController,
-  IonModal, // <-- MAKE SURE THIS IS IMPORTED
-  IonInput, // <-- MAKE SURE THIS IS IMPORTED
   IonCard,
   IonCardHeader,
   IonCardContent,
   IonCardTitle,
   IonCardSubtitle,
   IonBadge,
-  IonLabel, // <-- MAKE SURE THIS IS IMPORTED
-  IonText // <-- MAKE SURE THIS IS IMPORTED
+  IonModal, // RE-ADDED IonModal
+  IonInput, // RE-ADDED IonInput
+  IonLabel, // RE-ADDED IonLabel
+  IonDatetime, // RE-ADDED IonDatetime
+  IonNote, // RE-ADDED IonNote
+  IonSpinner // RE-ADDED IonSpinner
 } from '@ionic/angular/standalone';
 import { HeaderComponent } from "../../component/header/header.component";
 import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
@@ -46,9 +47,11 @@ import {
   cardOutline,
   cashOutline,
   analyticsOutline,
-  closeOutline,
-  saveOutline,
-  reloadCircle
+  closeOutline, // RE-ADDED for modal
+  // saveOutline, // Not used but could be for consistency
+  // reloadCircle, // Not used but could be for consistency
+  businessOutline, // For loan type
+  calendarOutline // For last updated date
 } from 'ionicons/icons';
 import { AccountService } from '../../services/account.service';
 import { Subscription } from 'rxjs';
@@ -60,13 +63,12 @@ import { Subscription } from 'rxjs';
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule, // <--- CRITICAL FOR FORMS. MUST BE HERE.
+    FormsModule, // Keep FormsModule if you have any template-driven forms, otherwise can remove
+    ReactiveFormsModule, // RE-ADDED
     HeaderComponent,
     SideMenuComponent,
-    RouterLink, // Used for navigation in side-menu, good to have it here
+    RouterLink,
 
-    // ALL Ionic Components used in the template MUST be listed here.
-    // If any of these are missing or misspelled, the UI will not render.
     IonContent,
     IonHeader,
     IonTitle,
@@ -87,34 +89,39 @@ import { Subscription } from 'rxjs';
     IonCardTitle,
     IonCardSubtitle,
     IonBadge,
-    IonModal,
-    IonInput, // <--- IMPORTANT: For ion-input
-    IonLabel, // <--- IMPORTANT: For ion-label
-    IonText,  // <--- IMPORTANT: For ion-text (for validation messages)
-    IonItem,  // <--- IMPORTANT: For ion-item (wraps inputs/selects)
-    IonList   // If you remove IonList, ensure IonItem still works, though it's typically fine.
+    IonItem,
+    IonList,
+    IonModal, // RE-ADDED
+    IonInput, // RE-ADDED
+    IonLabel, // RE-ADDED
+    IonDatetime, // RE-ADDED
+    IonNote, // RE-ADDED
+    IonSpinner // RE-ADDED
   ]
 })
 export class CuentasPage implements OnInit, OnDestroy {
-  @ViewChild(IonModal) modal!: IonModal;
+  @ViewChild('accountModal') accountModal!: IonModal; // RE-ADDED ViewChild for modal
 
   accounts: any[] = [];
   isLoading: boolean = true;
-  isModalOpen: boolean = false;
-  editingAccount: any | null = null;
+  private accountsSubscription!: Subscription;
 
+  // Properties for the add/edit form - RE-ADDED AND ADAPTED
+  isModalOpen: boolean = false;
+  isEditMode: boolean = false;
   accountForm: FormGroup;
-  isFormSubmitted: boolean = false;
+  isSubmitting: boolean = false;
+  editingAccountId: string | null = null; // To hold the ID of the account being edited
 
   accountTypes: string[] = ['Checking', 'Savings', 'Credit Card', 'Loan', 'Investment', 'Cash'];
-  private accountsSubscription!: Subscription;
 
   constructor(
     private loadingController: LoadingController,
     private alertController: AlertController,
     private toastController: ToastController,
-    private formBuilder: FormBuilder,
-    private accountService: AccountService
+    private fb: FormBuilder, // RE-ADDED FormBuilder
+    private accountService: AccountService,
+    private cdRef: ChangeDetectorRef // RE-ADDED ChangeDetectorRef
   ) {
     addIcons({
       business,
@@ -125,18 +132,19 @@ export class CuentasPage implements OnInit, OnDestroy {
       cardOutline,
       cashOutline,
       analyticsOutline,
-      closeOutline,
-      saveOutline,
-      reloadCircle
+      closeOutline, // RE-ADDED
+      businessOutline,
+      calendarOutline
     });
 
-    this.accountForm = this.formBuilder.group({
-      id: [null],
+    // Initialize the Reactive Form for Accounts - RE-ADDED AND ADAPTED
+    this.accountForm = this.fb.group({
+      id: [null], // Hidden field for ID, null for new accounts
       nombre: ['', [Validators.required, Validators.minLength(2)]],
       tipo: ['', Validators.required],
-      saldo: [null, [Validators.required, Validators.pattern(/^-?\d*\.?\d*$/)]],
-      institucion: [''],
-      fechaActualizacion: [new Date().toISOString()]
+      saldo: [null, [Validators.required, Validators.pattern(/^-?\d*\.?\d*$/)]], // Allows positive/negative decimals
+      institucion: [''], // Optional
+      fechaActualizacion: [new Date().toISOString()] // Default to today
     });
   }
 
@@ -165,70 +173,92 @@ export class CuentasPage implements OnInit, OnDestroy {
     });
   }
 
-  async openModal(account?: any) {
-    this.isFormSubmitted = false;
-    if (account) {
-      this.editingAccount = { ...account };
-      // IMPORTANT: Remove currency symbol before patching for number input
-      this.editingAccount.saldo = parseFloat(this.editingAccount.saldo.replace(/[^\d.-]/g, ''));
-      this.accountForm.patchValue(this.editingAccount);
-      console.log('Editing account:', this.editingAccount);
+  // Method to open the add/edit modal - RE-ADDED AND ADAPTED
+  async openAccountModal(mode: 'add' | 'edit', account?: any) {
+    this.isEditMode = (mode === 'edit');
+    this.isSubmitting = false; // Reset submitting state
+
+    if (this.isEditMode && account) {
+      this.editingAccountId = account.id;
+      // Parse saldo to a number, removing currency symbols if present
+      const saldoValue = parseFloat(account.saldo.replace(/[^\d.-]/g, ''));
+      this.accountForm.patchValue({
+        id: account.id,
+        nombre: account.nombre,
+        tipo: account.tipo,
+        saldo: saldoValue,
+        institucion: account.institucion,
+        fechaActualizacion: account.fechaActualizacion // Assuming already compatible format
+      });
     } else {
-      this.editingAccount = null;
+      this.editingAccountId = null;
       this.accountForm.reset({
-        id: null,
         nombre: '',
-        tipo: '',
+        tipo: '', // No default type, user must select
         saldo: null,
         institucion: '',
         fechaActualizacion: new Date().toISOString()
-      });
-      console.log('Adding new account');
+      }); // Reset for new account
     }
-    this.isModalOpen = true;
+    this.isModalOpen = true; // Open the modal
+    this.cdRef.detectChanges(); // Force change detection after modal opens and form is updated
   }
 
-  async closeModal() {
-    this.isModalOpen = false;
-    this.accountForm.reset();
-    this.editingAccount = null;
-  }
-
-  async submitForm() {
-    this.isFormSubmitted = true;
+  // Method to handle form submission - RE-ADDED AND ADAPTED
+  async submitAccountForm() {
+    this.accountForm.markAllAsTouched(); // Mark all fields as touched to show validation errors
 
     if (this.accountForm.invalid) {
       this.presentToast('Please fill in all required fields correctly.', 'danger');
       return;
     }
 
-    const formData = { ...this.accountForm.value };
-    let formattedBalance = '';
-    const balanceAmount = parseFloat(formData.saldo);
+    this.isSubmitting = true;
+    const loading = await this.loadingController.create({
+      message: this.isEditMode ? 'Saving changes...' : 'Adding account...',
+      spinner: 'crescent'
+    });
+    await loading.present();
 
-    // Logic to format balance based on type (e.g., Credit Card/Loan balances are positive when owed)
-    if (this.isCreditCardOrLoan(formData) && balanceAmount > 0) {
-      formattedBalance = `+$${balanceAmount.toFixed(2)}`;
-    } else if (balanceAmount < 0) {
-      formattedBalance = `-$${Math.abs(balanceAmount).toFixed(2)}`;
+    const formData = this.accountForm.value;
+    let balance = parseFloat(formData.saldo);
+
+    // Format balance with currency symbol based on account type
+    let formattedBalance: string;
+    if (formData.tipo === 'Credit Card' || formData.tipo === 'Loan') {
+      formattedBalance = `€${balance.toFixed(2)}`; // Credit card/loan might not have negative symbol in raw data
     } else {
-      formattedBalance = `$${balanceAmount.toFixed(2)}`;
+      formattedBalance = `€${balance.toFixed(2)}`;
     }
 
-    formData.saldo = formattedBalance;
-    formData.fechaActualizacion = new Date().toISOString();
 
-    if (this.editingAccount) {
-      console.log('Updating account:', formData);
-      this.accountService.updateAccount(formData);
-      this.presentToast('Account updated successfully!', 'success');
-    } else {
-      console.log('Adding new account:', formData);
-      this.accountService.addAccount(formData);
-      this.presentToast('Account added successfully!', 'success');
-    }
+    const accountToSave = {
+      ...formData,
+      id: this.editingAccountId || this.generateUniqueId(), // Use existing ID or generate new
+      saldo: formattedBalance // Store formatted balance
+    };
 
-    await this.closeModal();
+    setTimeout(async () => { // Simulate API call delay
+      if (this.isEditMode) {
+        this.accountService.updateAccount(accountToSave);
+        this.presentToast('Account updated successfully!', 'success');
+      } else {
+        this.accountService.addAccount(accountToSave);
+        this.presentToast('Account added successfully!', 'success');
+      }
+      this.isSubmitting = false;
+      await loading.dismiss();
+      this.closeAccountModal(); // Close the modal
+    }, 700);
+  }
+
+  // Method to close the modal - RE-ADDED AND ADAPTED
+  async closeAccountModal() {
+    this.isModalOpen = false;
+    this.isEditMode = false;
+    this.isSubmitting = false;
+    this.editingAccountId = null;
+    this.accountForm.reset(); // Reset form state
   }
 
   async deleteAccount(id: string) {
@@ -277,7 +307,7 @@ export class CuentasPage implements OnInit, OnDestroy {
       case 'Investment':
         return 'analytics-outline';
       case 'Loan':
-        return 'business-outline';
+        return 'business-outline'; // Using business-outline for loans
       default:
         return 'wallet-outline';
     }
@@ -285,21 +315,19 @@ export class CuentasPage implements OnInit, OnDestroy {
 
   isNegativeBalance(account: any): boolean {
     const balance = parseFloat(account.saldo.replace(/[^\d.-]/g, ''));
+    // Credit card and Loan accounts are "negative" if they have a positive balance (meaning you owe money)
     return (account.tipo === 'Credit Card' || account.tipo === 'Loan') ? balance > 0 : balance < 0;
-  }
-
-  isCreditCardOrLoan(account: any): boolean {
-    return (account.tipo === 'Credit Card' || account.tipo === 'Loan');
   }
 
   formatDate(isoDate: string | undefined): string {
     if (!isoDate) {
       return '';
     }
+    // Ensure 'en-US' locale if you want month abbreviation, otherwise use a more generic format
     return formatDate(isoDate, 'MMM d, y', 'en-US');
   }
 
-  getFormControl(name: string) {
-    return this.accountForm.get(name);
+  private generateUniqueId(): string {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   }
 }
