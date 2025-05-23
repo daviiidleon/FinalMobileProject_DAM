@@ -7,8 +7,8 @@
   --border-color: #e9ecef; // Light grey for subtle separation
   --main-text-color: #343a40; // Dark grey for good contrast
   --secondary-text-color: #6c757d; // Medium grey for less prominent text
-  --sidebar-background: #222; // Dark background for the side menu
-  --sidebar-text: #fff; // White text for the side menu
+  --sidebar-background: #f0f0f0; // Adjusted to match Transactions page's light sidebar
+  --sidebar-text: #343a40; // Adjusted for dark text on light sidebar
   --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.04); // Softer shadow for cards/lists
   --shadow-subtle: 0 1px 3px rgba(0,0,0,0.03); // Very subtle shadow for input fields
   --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.08); // Added for more pronounced form elements
@@ -18,6 +18,8 @@
   --ion-color-primary-shade: #006bdf;
   --ion-color-primary-tint: #e6f2ff; // Lighter tint for borders/backgrounds
   --ion-color-primary-contrast: #ffffff; // White text on primary background
+  --ion-color-success: #28a745; // Green for success
+  --ion-color-success-shade: #24943e; // Darker green for success shade
   --ion-color-danger: #dc3545; // A clear red
   --ion-color-danger-shade: #c12f3d;
   --ion-color-light: #f8f9fa; // Used for modal header toolbar
@@ -46,7 +48,7 @@ body.dark-theme {
   ion-item {
     --background: #333333; // Dark background for ion-item
   }
-  ion-input, ion-select, ion-textarea {
+  ion-input, ion-select, ion-textarea, ion-datetime { /* Added ion-datetime here */
     --background: #3a3a3a; /* Slightly darker input background for dark theme */
     &.ion-readonly {
       --background: #444444;
@@ -98,8 +100,8 @@ ion-header {
 
 .first-content {
   width: 15%;
-  background-color: transparent;
-  color: var(--sidebar-text);
+  background-color: var(--sidebar-background); /* Adjusted to match Transactions page's light sidebar */
+  color: var(--sidebar-text); /* Adjusted for dark text on light sidebar */
   @media (max-width: 768px) {
     width: 100%;
   }
@@ -382,16 +384,18 @@ ion-header {
   }
 }
 
-/* --- Modal Specific Styles (focused on modal dimensions and content padding) --- */
+/* --------------------- */
+/* ESTILOS ESPECÍFICOS DEL MODAL (Ajustados para consistencia y sin bordes redondeados) */
+/* --------------------- */
 
 ion-modal {
+  --border-radius: 0; /* Remove rounded borders from the modal itself */
+  --box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
   --width: 90%;
   --min-width: 350px;
   --max-width: 600px;
-  --height: 90%; /* Main control for height */
+  --height: 90%;
   --max-height: 95%;
-  --border-radius: 16px;
-  --box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
 
   ion-header {
     background: var(--card-background);
@@ -403,39 +407,44 @@ ion-modal {
     --background: var(--card-background);
     --color: var(--main-text-color);
     border-bottom: 1px solid var(--border-color);
-    padding: 15px 30px; /* Increased vertical padding for toolbar */
+    padding: 0 16px; /* Reset padding to be consistent with accounts modal */
   }
 
   ion-title {
-    font-size: 28px; /* Larger title in modal header */
+    font-size: 20px; /* Reset title size to be consistent with accounts modal */
     font-weight: bold;
   }
 
-  ion-buttons[slot="start"] ion-button {
-    --background: transparent;
-    --color: var(--secondary-text-color);
-    --box-shadow: none;
-    font-size: 24px; /* Larger close button */
-    height: 52px;
-    width: 52px;
+  ion-buttons[slot="start"] ion-button { /* Changed slot="start" for close button */
+    --background: transparent !important;
+    --color: var(--main-text-color) !important;
+    --box-shadow: none !important;
+    font-size: 18px;
+    height: 44px; /* Reset height */
+    width: 44px; /* Reset width */
     padding: 0;
 
+    ::part(native) {
+      background: transparent !important;
+      box-shadow: none !important;
+    }
+
     ion-icon {
-      font-size: 32px; /* Larger icon for close button */
+      font-size: 24px; /* Reset icon size */
       margin: 0;
     }
 
     &:hover {
-      --background: rgba(var(--secondary-text-color-rgb, 108,117,125), 0.2);
+      --background: rgba(var(--main-text-color-rgb, 52,58,64), 0.1) !important;
     }
   }
 
   ion-content.ion-padding {
-    --background: var(--card-background);
-    --padding-start: 40px;
-    --padding-end: 40px;
-    --padding-top: 40px;    /* Increased content top padding */
-    --padding-bottom: 40px; /* Increased content bottom padding */
+    --background: var(--page-background); /* Consistent with accounts modal background */
+    --padding-start: 20px;
+    --padding-end: 20px;
+    --padding-top: 20px;
+    --padding-bottom: 20px;
     box-sizing: border-box;
     overflow-y: auto;
   }
@@ -458,85 +467,94 @@ ion-list {
 }
 
 ion-item {
-  --background: var(--card-background); // Ensure item background matches card
-  --border-color: transparent; // Remove default item border
-  --inner-border-width: 0; // Remove inner border
-  border-bottom: none; // Explicitly remove default bottom border
-  margin-bottom: 1.25rem; /* Increased vertical space between items */
+  --background: transparent; /* Changed to transparent for ion-item background */
+  --border-width: 0 !important;
+  --inner-border-width: 0 !important;
   --padding-start: 0;
   --padding-end: 0;
   --inner-padding-end: 0;
+  margin-bottom: 15px; /* Consistent spacing */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-weight: bold;
+  color: var(--main-text-color);
   position: relative;
 }
 
 ion-label {
-  color: var(--secondary-text-color);
-  font-size: 17px; /* Larger label font size */
-  margin-bottom: 10px; /* Increased space below labels */
-  font-weight: 500;
-  transform: translateY(-8px); /* Adjust label position */
+  color: var(--main-text-color); /* Adjusted label color */
+  font-size: 14px; /* Consistent label font size */
+  margin-bottom: 5px; /* Consistent spacing */
+  font-weight: bold; /* Consistent label font weight */
+  transform: none !important; /* Reset transform */
 }
 
 ion-input,
 ion-select,
-ion-datetime,
+ion-datetime, /* Added ion-datetime here for consistent styling */
 ion-textarea {
-  --background: var(--ion-color-step-50); /* Distinct background for inputs */
-  border: 1px solid var(--input-border-color);
-  border-radius: 12px; /* More rounded corners */
-  --padding-start: 20px; /* Increased horizontal padding */
-  --padding-end: 20px;
-  --padding-top: 18px; /* Increased vertical padding for taller inputs */
-  --padding-bottom: 18px;
-  font-size: 19px; /* Larger input text font size */
+  --background: var(--card-background); /* Background matches card background */
+  border: 1px solid var(--border-color); /* Consistent border */
+  border-radius: 0; /* Removed rounded borders */
+  --padding-start: 14px; /* Consistent padding */
+  --padding-end: 14px;
+  --padding-top: 0px; /* Crucial for vertical centering */
+  --padding-bottom: 0px; /* Crucial for vertical centering */
+  min-height: 50px; /* Consistent height */
+  height: 50px;
+  font-size: 16px; /* Consistent font size */
   color: var(--main-text-color);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05); /* Subtle inset shadow */
+  box-shadow: var(--shadow-subtle); /* Consistent shadow */
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  display: flex; /* Enables flexbox for centering content */
+  align-items: center; /* Vertically centers content */
+
 
   &:focus-within {
     border-color: var(--ion-color-primary);
-    box-shadow: 0 0 0 5px rgba(var(--ion-color-primary-rgb), 0.3), inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.2), inset 0 1px 3px rgba(0, 0, 0, 0.05);
   }
 }
 
 ion-text[color="danger"], ion-note[color="danger"] {
-  font-size: 15px; /* Larger error text */
-  margin-top: 10px; /* More space above error messages */
+  font-size: 14px; /* Consistent error text font size */
+  margin-top: 5px; /* Consistent spacing */
   display: block;
-  font-weight: 500;
+  font-weight: normal; /* Consistent font weight */
 }
 
 ion-button[type="submit"] {
-  --background: var(--ion-color-primary);
+  --border-radius: 0; /* Removed rounded borders */
+--background: var(--ion-color-primary);
+  --background-activated: var(--ion-color-primary-shade);
   --color: var(--ion-color-primary-contrast);
-  --border-radius: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  height: 62px; /* Taller submit button */
-  font-size: 22px; /* Larger font size for button text */
+  font-weight: 600; /* Consistent font weight */
+  text-transform: none; /* Consistent text transform */
+  height: 44px; /* Consistent height */
+  font-size: 16px; /* Consistent font size */
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 3.5rem; /* Significant space above the submit button */
-  box-shadow: var(--shadow-medium);
+  margin-top: 20px; /* Consistent spacing */
+  box-shadow: var(--shadow-light);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
   }
 
   ion-spinner {
-    margin-right: 10px;
+    margin-right: 8px; /* Consistent margin */
     color: var(--ion-color-primary-contrast);
   }
 
   ion-icon {
-    margin-right: 15px;
-    font-size: 26px;
+    margin-right: 8px; /* Consistent margin */
+    font-size: 18px; /* Consistent font size */
   }
 }
-
 
 /* --- Responsive Styles (UNTOUCHED) --- */
 

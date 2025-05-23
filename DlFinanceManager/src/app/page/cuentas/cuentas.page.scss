@@ -1,4 +1,5 @@
 /* src/app/page/cuentas/cuentas.page.scss */
+
 /* --- Inlined CSS Variables for Accounts Page --- */
 :host { // Using :host to encapsulate these variables for this component
   --page-background: #f8f9fa; // Very light grey for ion-content
@@ -6,8 +7,8 @@
   --border-color: #e9ecef; // Light grey for subtle separation
   --main-text-color: #343a40; // Dark grey for good contrast
   --secondary-text-color: #6c757d; // Medium grey for less prominent text
-  --sidebar-background: #222; // Dark background for the side menu
-  --sidebar-text: #fff; // White text for the side menu
+  --sidebar-background: #f0f0f0; // Adjusted to match Transactions page's light sidebar
+  --sidebar-text: #343a40; // Adjusted for dark text on light sidebar
   --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.04); // Softer shadow for cards/lists
   --shadow-subtle: 0 1px 3px rgba(0,0,0,0.03); // Very subtle shadow for input fields
   --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.08); // Added for more pronounced form elements
@@ -17,6 +18,8 @@
   --ion-color-primary-shade: #006bdf;
   --ion-color-primary-tint: #e6f2ff; // Lighter tint for borders/backgrounds
   --ion-color-primary-contrast: #ffffff; // White text on primary background
+  --ion-color-success: #28a745; // Green for success
+  --ion-color-success-shade: #24943e; // Darker green for success shade
   --ion-color-danger: #dc3545; // A clear red
   --ion-color-danger-shade: #c12f3d;
   --ion-color-light: #f8f9fa; // Used for modal header toolbar
@@ -79,7 +82,7 @@ ion-content {
 ion-header {
   --background: var(--card-background); /* Header background */
   border-bottom: 1px solid var(--border-color); /* Subtle header border */
-  box-shadow: 0 1px 4px rgba(0,0,0,0.03); /* Subtle header shadow */
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03); /* Subtle header shadow */
 }
 
 .dashboard-layout {
@@ -95,8 +98,8 @@ ion-header {
 
 .first-content {
   width: 15%;
-  background-color: transparent;
-  color: var(--sidebar-text);
+  background-color: var(--sidebar-background); /* Adjusted to match Transactions page's light sidebar */
+  color: var(--sidebar-text); /* Adjusted for dark text on light sidebar */
   @media (max-width: 768px) {
     width: 100%;
   }
@@ -116,6 +119,7 @@ ion-header {
   align-items: center;
   margin-bottom: 20px;
   flex-wrap: wrap; /* Allow wrapping on smaller screens */
+  padding-right: 10px; /* Added for consistency with transactions header */
 
   .page-title {
     font-size: 24px;
@@ -151,6 +155,7 @@ ion-header {
     --border-radius: 8px;
     font-weight: 600;
     text-transform: none;
+    padding: 10px 18px; /* Added padding for consistency */
 
     &:hover {
       --background: var(--ion-color-primary-shade);
@@ -279,6 +284,7 @@ ion-card {
     justify-content: flex-end;
     gap: 0.5rem;
 
+    // ORIGINAL STYLES FOR EDIT/DELETE BUTTONS REINSTATED
     ion-button {
       height: 32px;
       font-size: 0.75rem;
@@ -299,32 +305,38 @@ ion-card {
       }
     }
 
+    // Styles for the "Edit" button (fill="outline" in HTML)
     ion-button[fill="outline"] {
       --background: none !important;
       --color: var(--ion-color-primary);
       --border-width: 1px;
       --border-color: var(--ion-color-primary);
-      margin-left: 0.75rem;
-      margin-right: 0.75rem;
-
+      // margin-left: 0.75rem; // Removed these specific margins, let gap handle it
+      // margin-right: 0.75rem;
       &:hover {
         --background: var(--ion-color-primary-tint) !important;
       }
     }
 
+    // Styles for the "Delete" button (color="danger" in HTML)
     ion-button[color="danger"] {
       --background: none !important;
       --color: var(--ion-color-danger);
       --border-width: 1px;
       --border-color: var(--ion-color-danger);
-      margin-left: 0.75rem;
-      margin-right: 0.75rem;
-
+      // margin-left: 0.75rem; // Removed these specific margins
+      // margin-right: 0.75rem;
       &:hover {
         --background: rgba(var(--ion-color-danger-rgb), 0.1) !important;
       }
     }
   }
+}
+
+// Popover specific styles for consistency (only apply if you keep the popover for edit/delete)
+ion-list ion-item ion-icon {
+  margin-right: 10px;
+  font-size: 18px;
 }
 
 /* --- No Accounts Card --- */
@@ -380,24 +392,16 @@ ion-card.border-dashed {
 }
 
 /* --------------------- */
-/* ESTILOS ESPECÍFICOS DEL MODAL (Aumentado de tamaño verticalmente) */
+/* ESTILOS ESPECÍFICOS DEL MODAL (Ajustados para consistencia y sin bordes redondeados) */
 /* --------------------- */
 
 ion-modal {
-  --width: 90%; /* Keep width reasonable to not make it too wide */
-  --min-width: 350px;
-  --max-width: 600px; /* Slightly reduced max-width as the focus is height */
-  --height: 90%; /* Explicitly make it tall, occupying 90% of screen height */
-  --max-height: 95%; /* Allow it to be very tall if needed */
-  --border-radius: 16px;
-  --box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
-  // Ensure the modal aligns to the center or top, if desired
-  // align-items: center; // Default for vertical center
-  // justify-content: center; // Default for horizontal center
+  --border-radius: 0;
+  --box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
 }
 
 .modal-content {
-  --background: var(--card-background);
+  --background: var(--page-background);
   color: var(--main-text-color);
 }
 
@@ -405,131 +409,136 @@ ion-toolbar {
   --background: var(--card-background);
   --color: var(--main-text-color);
   border-bottom: 1px solid var(--border-color);
-  padding: 15px 30px; /* Increased padding in the toolbar for more height */
+  padding: 0 16px;
 }
 
 ion-title {
   font-weight: bold;
-  font-size: 28px; /* Slightly larger title font size */
+  font-size: 20px;
 }
 
-ion-content.modal-content.ion-padding {
-  --padding-start: 40px;
-  --padding-end: 40px;
-  --padding-top: 40px; /* Increased top padding significantly */
-  --padding-bottom: 40px; /* Increased bottom padding significantly */
-  overflow-y: auto; /* Ensure content can scroll if it exceeds modal height */
+ion-content.ion-padding {
+  --padding-start: 20px;
+  --padding-end: 20px;
+  --padding-top: 20px;
+  --padding-bottom: 20px;
+  overflow-y: auto;
 }
 
 .space-y-6 > :not([hidden]) ~ :not([hidden]) {
-  margin-top: 2rem; /* Even more space between major form groups */
+  margin-top: 15px; /* Ensures consistent spacing between items */
 }
-
 .space-y-2 > :not([hidden]) ~ :not([hidden]) {
-  margin-top: 1rem; /* More space between minor form elements */
+  margin-top: 0.5rem; /* Keep this if it's for card content, not modal items */
 }
 
-.grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
-.md\:grid-cols-2 {
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-.gap-4 { gap: 1.5rem; /* Increased gap in grid layouts */ }
 
 ion-item {
-  --background: var(--card-background);
-  --border-color: transparent;
+  --background: transparent;
+  --border-width: 0 !important;
+  --inner-border-width: 0 !important;
   --padding-start: 0;
   --padding-end: 0;
-  --inner-padding-end: 0;
-  --inner-border-width: 0;
-  margin-bottom: 1.25rem; /* Increased space between items for vertical elongation */
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-weight: bold;
+  color: var(--main-text-color);
 }
 
 ion-label {
-  color: var(--secondary-text-color);
-  font-size: 17px; /* Slightly larger label font size */
-  margin-bottom: 10px; /* Increased space below labels */
-  font-weight: 500;
-  transform: translateY(-8px);
+  margin-bottom: 5px;
+  font-size: 14px;
+  color: var(--main-text-color);
+  width: 100%;
+  transform: none !important;
 }
 
 ion-input,
 ion-select,
 ion-textarea {
-  --background: var(--ion-color-step-50);
-  border: 1px solid var(--input-border-color);
-  border-radius: 12px;
-  --padding-start: 20px; /* Increased padding inside inputs */
-  --padding-end: 20px;
-  --padding-top: 18px; /* Further increased vertical padding */
-  --padding-bottom: 18px;
-  font-size: 19px; /* Further larger input font size */
+  --background: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 0; /* Removed rounded borders here */
+  --padding-start: 14px;
+  --padding-end: 14px;
+  --padding-top: 0px; /* Crucial for vertical centering */
+  --padding-bottom: 0px; /* Crucial for vertical centering */
+  min-height: 50px;
+  height: 50px; /* Explicit height for consistency */
+  font-size: 16px;
   color: var(--main-text-color);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-subtle);
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  display: flex; /* Enables flexbox for centering content */
+  align-items: center; /* Vertically centers content */
 
   &:focus-within {
     border-color: var(--ion-color-primary);
-    box-shadow: 0 0 0 5px rgba(var(--ion-color-primary-rgb), 0.3), inset 0 1px 3px rgba(0, 0, 0, 0.1); /* Slightly stronger focus glow */
+    box-shadow: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.2), inset 0 1px 3px rgba(0, 0, 0, 0.05);
   }
 }
 
 ion-text[color="danger"] {
-  font-size: 15px; /* Slightly larger error text */
-  margin-top: 10px; /* More space above error messages */
+  font-size: 14px;
+  margin-top: 5px;
   display: block;
-  font-weight: 500;
+  font-weight: normal;
 }
 
-.w-full { width: 100%; }
-
 ion-button[type="submit"] {
+  --border-radius: 0; /* Removed rounded borders here for the submit button */
   --background: var(--ion-color-primary);
+  --background-activated: var(--ion-color-primary-shade);
   --color: var(--ion-color-primary-contrast);
-  --border-radius: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  height: 62px; /* Even taller button */
-  font-size: 22px; /* Even larger font size for the button text */
+  font-weight: 600;
+  text-transform: none;
+  height: 44px;
+  font-size: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 3.5rem; /* Even more space above the submit button */
-  box-shadow: var(--shadow-medium);
+  margin-top: 20px;
+  box-shadow: var(--shadow-light);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
-    transform: translateY(-3px); /* Stronger lift on hover */
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); /* More pronounced shadow on hover */
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
   }
 
   ion-icon {
-    margin-right: 15px; /* More space for icon */
-    font-size: 26px; /* Even larger icon */
+    margin-right: 8px;
+    font-size: 18px;
   }
 }
 
 // Styles for the close button in the modal header
 ion-buttons[slot="end"] ion-button {
-  --background: transparent;
-  --color: var(--secondary-text-color);
-  --box-shadow: none;
-  font-size: 24px; /* Larger close icon button */
-  height: 52px; /* Larger button area */
-  width: 52px;
+  --background: transparent !important;
+  --color: var(--main-text-color) !important;
+  --box-shadow: none !important;
+  font-size: 18px;
+  height: 44px;
+  width: 44px;
   padding: 0;
 
+  ::part(native) {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
   ion-icon {
-    font-size: 32px; /* Even larger icon for close button */
+    font-size: 24px;
     margin: 0;
   }
 
   &:hover {
-    --background: rgba(var(--secondary-text-color-rgb, 108,117,125), 0.2); /* Slightly more prominent hover */
+    --background: rgba(var(--main-text-color-rgb, 52,58,64), 0.1) !important;
   }
 }
+
 
 /* --- Skeleton Loader Styles (using inlined variables) --- */
 .skeleton {
@@ -583,7 +592,7 @@ ion-card.shadow-md {
   box-shadow: var(--shadow-light);
   border: 1px solid var(--border-color);
   background-color: var(--card-background);
-  border-radius: 8px;
+  border-radius: 8px; /* Keep card border-radius as per original image */
 }
 
 ion-card-header {
@@ -618,30 +627,4 @@ ion-card-content {
   .gap-2 { gap: 0.5rem; }
   .h-9 { height: 2.25rem; }
   .w-20 { width: 5rem; }
-}
-
-// Styles for the "Edit" button (fill="outline" in HTML)
-ion-button[fill="outline"] {
-  --background: none !important;
-  --color: var(--ion-color-primary);
-  --border-width: 1px;
-  --border-color: var(--ion-color-primary);
-  margin-left: 0.75rem;
-  margin-right: 0.75rem;
-  &:hover {
-    --background: var(--ion-color-primary-tint) !important;
-  }
-}
-
-// Styles for the "Delete" button (color="danger" in HTML)
-ion-button[color="danger"] {
-  --background: none !important;
-  --color: var(--ion-color-danger);
-  --border-width: 1px;
-  --border-color: var(--ion-color-danger);
-  margin-left: 0.75rem;
-  margin-right: 0.75rem;
-  &:hover {
-    --background: rgba(var(--ion-color-danger-rgb), 0.1) !important;
-  }
 }

@@ -127,8 +127,7 @@
           </ion-item>
 
           <ion-item>
-            <ion-select label="Account Type" labelPlacement="floating" formControlName="tipo" interface="action-sheet">
-              <ion-select-option *ngFor="let type of accountTypes" [value]="type">{{ type }}</ion-select-option>
+            <ion-select label="Account Type" labelPlacement="floating" formControlName="tipo" interface="popover"> <ion-select-option *ngFor="let type of accountTypes" [value]="type">{{ type }}</ion-select-option>
             </ion-select>
             <ion-text color="danger" *ngIf="getFormControl('tipo')?.invalid && (getFormControl('tipo')?.dirty || isFormSubmitted)">
               Account type is required.
