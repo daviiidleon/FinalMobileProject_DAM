@@ -112,55 +112,60 @@
         <ng-template>
           <ion-header>
             <ion-toolbar>
-              <ion-buttons slot="start">
+              <ion-title>{{ isEditingBudget ? 'Edit Budget' : 'Create Budget' }}</ion-title>
+              <ion-buttons slot="end">
                 <ion-button (click)="closeBudgetModal()">
                   <ion-icon name="close"></ion-icon>
                 </ion-button>
               </ion-buttons>
-              <ion-title>{{ isEditingBudget ? 'Edit Budget' : 'Create Budget' }}</ion-title>
             </ion-toolbar>
           </ion-header>
-          <ion-content class="modal-content ion-padding"> <form [formGroup]="budgetForm" (ngSubmit)="submitBudgetForm()" class="space-y-6"> <ion-item>
-            <ion-label position="stacked">Category</ion-label>
-            <ion-select formControlName="categoria" interface="popover"> <ion-select-option value="comida">Comida</ion-select-option>
-              <ion-select-option value="transporte">Transporte</ion-select-option>
-              <ion-select-option value="entretenimiento">Entretenimiento</ion-select-option>
-              <ion-select-option value="educacion">Educación</ion-select-option>
-              <ion-select-option value="salud">Salud</ion-select-option>
-              <ion-select-option value="housing">Vivienda</ion-select-option>
-              <ion-select-option value="utilities">Servicios</ion-select-option>
-              <ion-select-option value="otros">Otros</ion-select-option>
-            </ion-select>
-            <ion-note color="danger" *ngIf="budgetForm.get('categoria')?.hasError('required') && budgetForm.get('categoria')?.touched">
-              Category is required.
-            </ion-note>
-          </ion-item>
-            <ion-item>
-              <ion-label position="stacked">Spending Limit (€)</ion-label>
-              <ion-input type="number" formControlName="monto"></ion-input>
-              <ion-note color="danger" *ngIf="budgetForm.get('monto')?.hasError('required') && budgetForm.get('monto')?.touched">
-                Spending limit is required.
-              </ion-note>
-              <ion-note color="danger" *ngIf="budgetForm.get('monto')?.hasError('min') && budgetForm.get('monto')?.touched">
-                Limit must be positive.
-              </ion-note>
-            </ion-item>
-            <ion-item>
-              <ion-label position="stacked">Month</ion-label>
-              <ion-datetime
-                formControlName="mes"
-                presentation="month-year"
-                displayFormat="MMMM YYYY"
-                value="{{ currentDate | date:'yyyy-MM-01' }}"
-                [showDefaultButtons]="true"
-              ></ion-datetime>
-            </ion-item>
+          <ion-content class="modal-content ion-padding">
+            <form [formGroup]="budgetForm" (ngSubmit)="submitBudgetForm()" class="space-y-6">
+              <ion-item>
+                <ion-label position="floating">Category</ion-label>
+                <ion-select formControlName="categoria" interface="popover">
+                  <ion-select-option value="comida">Comida</ion-select-option>
+                  <ion-select-option value="transporte">Transporte</ion-select-option>
+                  <ion-select-option value="entretenimiento">Entretenimiento</ion-select-option>
+                  <ion-select-option value="educacion">Educación</ion-select-option>
+                  <ion-select-option value="salud">Salud</ion-select-option>
+                  <ion-select-option value="housing">Vivienda</ion-select-option>
+                  <ion-select-option value="utilities">Servicios</ion-select-option>
+                  <ion-select-option value="otros">Otros</ion-select-option>
+                </ion-select>
+                <ion-note color="danger" *ngIf="budgetForm.get('categoria')?.hasError('required') && budgetForm.get('categoria')?.touched">
+                  Category is required.
+                </ion-note>
+              </ion-item>
 
-            <ion-button expand="block" type="submit" class="ion-margin-top" [disabled]="budgetForm.invalid || isSubmitting">
-              <ion-spinner name="crescent" *ngIf="isSubmitting"></ion-spinner>
-              <span *ngIf="!isSubmitting">{{ isEditingBudget ? 'Save Changes' : 'Create Budget' }}</span>
-            </ion-button>
-          </form>
+              <ion-item>
+                <ion-label position="floating">Spending Limit (€)</ion-label>
+                <ion-input type="number" formControlName="monto"></ion-input>
+                <ion-note color="danger" *ngIf="budgetForm.get('monto')?.hasError('required') && budgetForm.get('monto')?.touched">
+                  Spending limit is required.
+                </ion-note>
+                <ion-note color="danger" *ngIf="budgetForm.get('monto')?.hasError('min') && budgetForm.get('monto')?.touched">
+                  Limit must be positive.
+                </ion-note>
+              </ion-item>
+
+              <ion-item>
+                <ion-label position="floating">Month</ion-label>
+                <ion-datetime
+                  formControlName="mes"
+                  presentation="month-year"
+                  displayFormat="MMMM yyyy"
+                  value="{{ currentDate | date:'yyyy-MM-01' }}"
+                  [showDefaultButtons]="true"
+                ></ion-datetime>
+              </ion-item>
+
+              <ion-button expand="block" type="submit" class="ion-margin-top" [disabled]="budgetForm.invalid || isSubmitting">
+                <ion-spinner name="crescent" *ngIf="isSubmitting"></ion-spinner>
+                <span *ngIf="!isSubmitting">{{ isEditingBudget ? 'Save Changes' : 'Create Budget' }}</span>
+              </ion-button>
+            </form>
           </ion-content>
         </ng-template>
       </ion-modal>

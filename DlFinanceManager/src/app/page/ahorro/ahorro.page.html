@@ -99,19 +99,18 @@
         <ng-template>
           <ion-header>
             <ion-toolbar>
-              <ion-buttons slot="start">
+              <ion-buttons slot="end">
                 <ion-button (click)="closeCreateGoalModal()">
                   <ion-icon name="close"></ion-icon>
                 </ion-button>
               </ion-buttons>
-              <ion-title>{{ isEditingGoal ? 'Edit Goal' : 'Create New Goal' }}</ion-title>
             </ion-toolbar>
           </ion-header>
           <ion-content class="ion-padding">
             <form [formGroup]="goalForm" (ngSubmit)="submitGoalForm()">
               <ion-list>
                 <ion-item>
-                  <ion-label position="stacked">Goal Name</ion-label>
+                  <ion-label position="floating">Goal Name</ion-label>
                   <ion-input formControlName="nombre"></ion-input>
                   <ion-note color="danger" *ngIf="goalForm.get('nombre')?.hasError('required') && goalForm.get('nombre')?.touched">
                     Name is required.
@@ -121,7 +120,7 @@
                   </ion-note>
                 </ion-item>
                 <ion-item>
-                  <ion-label position="stacked">Target Amount (€)</ion-label>
+                  <ion-label position="floating">Target Amount (€)</ion-label>
                   <ion-input type="number" formControlName="montoMeta"></ion-input>
                   <ion-note color="danger" *ngIf="goalForm.get('montoMeta')?.hasError('required') && goalForm.get('montoMeta')?.touched">
                     Target amount is required.
@@ -131,14 +130,14 @@
                   </ion-note>
                 </ion-item>
                 <ion-item>
-                  <ion-label position="stacked">Current Amount (€)</ion-label>
+                  <ion-label position="floating">Current Amount (€)</ion-label>
                   <ion-input type="number" formControlName="montoActual"></ion-input>
                   <ion-note color="danger" *ngIf="goalForm.get('montoActual')?.hasError('min') && goalForm.get('montoActual')?.touched">
                     Amount cannot be negative.
                   </ion-note>
                 </ion-item>
                 <ion-item>
-                  <ion-label position="stacked">Deadline (Optional)</ion-label>
+                  <ion-label position="floating">Deadline (Optional)</ion-label>
                   <ion-datetime formControlName="fechaLimite" presentation="date" displayFormat="DD MMMYYYY" [showDefaultButtons]="true"></ion-datetime>
                 </ion-item>
               </ion-list>
@@ -156,18 +155,17 @@
         <ng-template>
           <ion-header>
             <ion-toolbar>
-              <ion-buttons slot="start">
+              <ion-buttons slot="end">
                 <ion-button (click)="closeAddFundsModal()">
                   <ion-icon name="close"></ion-icon>
                 </ion-button>
               </ion-buttons>
-              <ion-title>Add Funds to "{{ selectedGoal.nombre }}"</ion-title>
             </ion-toolbar>
           </ion-header>
           <ion-content class="ion-padding">
             <ion-list>
               <ion-item>
-                <ion-label position="stacked">Amount to Add (€)</ion-label>
+                <ion-label position="floating">Amount to Add (€)</ion-label>
                 <ion-input type="number" [(ngModel)]="fundsToAdd"></ion-input>
               </ion-item>
             </ion-list>

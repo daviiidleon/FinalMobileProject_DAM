@@ -474,21 +474,31 @@ ion-item {
   --padding-end: 0;
   --inner-padding-end: 0;
   margin-bottom: 15px; /* Consistent spacing */
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  /* Remove flex direction column to allow standard Ionic floating label behavior */
+  /* display: flex; */
+  /* flex-direction: column; */
+  /* align-items: flex-start; */
   font-weight: bold;
   color: var(--main-text-color);
   position: relative;
+  /* Allow overflow for floating label */
+  overflow: visible;
 }
 
-ion-label {
-  color: var(--main-text-color); /* Adjusted label color */
+ion-label[position="floating"] {
+  color: var(--secondary-text-color); /* Lighter color when floating */
   font-size: 14px; /* Consistent label font size */
-  margin-bottom: 5px; /* Consistent spacing */
-  font-weight: bold; /* Consistent label font weight */
-  transform: none !important; /* Reset transform */
+  font-weight: normal; /* Normal weight for floating */
+  /* Remove transform: none to allow Ionic to move the label */
+  /* transform: none !important; */
 }
+
+/* Add style for focused/filled floating label */
+ion-item.item-has-focus ion-label[position="floating"],
+ion-item.item-has-value ion-label[position="floating"] {
+  color: var(--ion-color-primary); /* Primary color when active */
+}
+
 
 ion-input,
 ion-select,
@@ -499,22 +509,28 @@ ion-textarea {
   border-radius: 0; /* Removed rounded borders */
   --padding-start: 14px; /* Consistent padding */
   --padding-end: 14px;
-  --padding-top: 0px; /* Crucial for vertical centering */
-  --padding-bottom: 0px; /* Crucial for vertical centering */
+  --padding-top: 10px; /* Adjust padding for floating label */
+  --padding-bottom: 10px; /* Adjust padding for floating label */
   min-height: 50px; /* Consistent height */
-  height: 50px;
+  /* height: 50px; /* Let height be auto */
   font-size: 16px; /* Consistent font size */
   color: var(--main-text-color);
   box-shadow: var(--shadow-subtle); /* Consistent shadow */
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  display: flex; /* Enables flexbox for centering content */
-  align-items: center; /* Vertically centers content */
+  width: 100%; /* Ensure inputs take full width */
+  margin-top: 8px; /* Add some margin for the label */
 
 
   &:focus-within {
     border-color: var(--ion-color-primary);
     box-shadow: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.2), inset 0 1px 3px rgba(0, 0, 0, 0.05);
   }
+}
+
+/* Specific adjustment for ion-datetime content alignment */
+ion-datetime {
+  display: flex; /* Enables flexbox for centering content */
+  align-items: center; /* Vertically centers content */
 }
 
 ion-text[color="danger"], ion-note[color="danger"] {
@@ -526,7 +542,7 @@ ion-text[color="danger"], ion-note[color="danger"] {
 
 ion-button[type="submit"] {
   --border-radius: 0; /* Removed rounded borders */
---background: var(--ion-color-primary);
+  --background: var(--ion-color-primary);
   --background-activated: var(--ion-color-primary-shade);
   --color: var(--ion-color-primary-contrast);
   font-weight: 600; /* Consistent font weight */
