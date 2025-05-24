@@ -1,70 +1,75 @@
 /* src/app/page/goals/goals.page.scss */
 
 /* --- Variables CSS en línea para la página de Metas --- */
-:host { // Usando :host para encapsular estas variables para este componente
-  --page-background: #f8f9fa; // Gris muy claro para ion-content
-  --card-background: #ffffff; // Blanco puro para tarjetas y secciones
-  --border-color: #e9ecef; // Gris claro para separación sutil
-  --main-text-color: #343a40; // Gris oscuro para buen contraste
-  --secondary-text-color: #6c757d; // Gris medio para texto menos prominente
-  --sidebar-background: #f0f0f0; // Adjusted to match Transactions page's light sidebar
-  --sidebar-text: #343a40; // Adjusted for dark text on light sidebar
-  --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.04); // Sombra más suave para tarjetas/listas
-  --shadow-subtle: 0 1px 3px rgba(0,0,0,0.03); // Sombra muy sutil para campos de entrada
-  --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.08); // Added for more pronounced form elements
+:host {
+  --page-background: #f8f9fa;
+  --card-background: #ffffff;
+  --border-color: #e9ecef;
+  --main-text-color: #343a40;
+  --secondary-text-color: #6c757d;
+  --sidebar-background: #f0f0f0;
+  --sidebar-text: #343a40;
+  --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-subtle: 0 1px 3px rgba(0,0,0,0.03);
+  --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.08);
 
-  // Colores específicos de Ionic usados en esta página (asegúrate de que coincidan con tus variables globales si las tienes)
-  --ion-color-primary: #007bff; // Un azul estándar y vibrante
+  --ion-color-primary: #007bff;
   --ion-color-primary-shade: #006bdf;
-  --ion-color-primary-tint: #e6f2ff; // Lighter tint for borders/backgrounds
+  --ion-color-primary-tint: #e6f2ff;
   --ion-color-primary-contrast: #ffffff;
-  --ion-color-danger: #dc3545; // Un rojo claro
+  --ion-color-danger: #dc3545;
   --ion-color-danger-shade: #c12f3d;
-  --ion-color-warning: #ffc107; // Un amarillo estándar para advertencias
+  --ion-color-warning: #ffc107;
   --ion-color-warning-shade: #e0a800;
-  --ion-color-light: #f8f9fa; // Usado para la barra de herramientas del encabezado del modal
-  --ion-color-step-50: #f0f2f5; // Slightly darker light step for input backgrounds for better contrast
-  --ion-color-step-100: #e9ecef; // For borders in light mode
-  --ion-color-medium: #92949c; // Para el icono de estado vacío
+  --ion-color-light: #f8f9fa;
+  --ion-color-step-50: #f0f2f5;
+  --ion-color-step-100: #e9ecef;
+  --ion-color-medium: #92949c;
 
-  // Added label-color for dark theme consistency
   --label-color: var(--secondary-text-color);
-  --input-border-color: #d1d5db; // A slightly darker default input border color
+  --input-border-color: #d1d5db;
 
-  // New Form/Modal specific variables (ADD THESE FROM PRESUPUESTOS.PAGE.SCSS)
   --form-item-background: var(--card-background);
   --form-item-border: 1px solid var(--border-color);
   --form-item-shadow: var(--shadow-subtle);
   --form-input-border-radius: 8px;
+
+  // New variables for aesthetic improvements
+  --card-border-radius: 10px;
+  --shadow-card: 0 4px 15px rgba(0, 0, 0, 0.08);
+  --shadow-input-focus: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.2);
+
+  --progress-bar-height: 10px;
+  --progress-bar-border-radius: 5px;
 }
 
-/* --- Dark Theme (if you have one) --- */
+/* --- Dark Theme --- */
 body.dark-theme {
   --page-background: #1a1a1a;
   --card-background: #2a2a2a;
   --main-text-color: #e0e0e0;
-  --label-color: #bbbbbb; /* Specific label color for dark theme */
-  --input-border-color: #444444; /* Specific input border for dark theme */
+  --label-color: #bbbbbb;
+  --input-border-color: #444444;
   --small-text-color: #aaaaaa;
   --hint-text-color: #999999;
-  --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.3); // More pronounced shadow for dark theme
+  --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.3);
   --shadow-subtle: 0 1px 3px rgba(0,0,0,0.1);
-  --shadow-medium: 0 6px 18px rgba(0, 0, 0, 0.4); // More pronounced for dark theme
+  --shadow-medium: 0 6px 18px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 6px 20px rgba(0, 0, 0, 0.5); // More pronounced for dark cards
+  --shadow-input-focus: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.3);
 
-  // Dark theme specific input backgrounds
   ion-item {
-    --background: #333333; // Dark background for ion-item
+    --background: #333333;
   }
-  ion-input, ion-select, ion-textarea, ion-datetime { /* Added ion-datetime here */
-    --background: #3a3a3a; /* Slightly darker input background for dark theme */
+  ion-input, ion-select, ion-textarea, ion-datetime {
+    --background: #3a3a3a;
     &.ion-readonly {
       --background: #444444;
     }
   }
 
-  // Dark theme specific for outline buttons on cards
   .goal-actions {
-    .add-button { // Re-added dark theme styles for add button
+    .add-button {
       --background: rgba(var(--ion-color-primary-rgb), 0.1) !important;
       --color: var(--ion-color-primary) !important;
       --border-color: var(--ion-color-primary) !important;
@@ -81,16 +86,16 @@ body.dark-theme {
       }
     }
     ion-button[color="danger"] {
-      --background: var(--ion-color-danger) !important; /* Keep solid background for dark theme */
+      --background: var(--ion-color-danger) !important;
       --color: var(--ion-color-primary-contrast) !important;
-      --border-color: var(--ion-color-danger) !important; /* Add border for consistency if needed */
+      --border-color: var(--ion-color-danger) !important;
       &:hover {
         --background: var(--ion-color-danger-shade) !important;
       }
     }
   }
 
-  /* Dark Theme modal specific styles (ADD THESE FROM PRESUPUESTOS.PAGE.SCSS) */
+  /* REVERTED: Dark Theme modal specific styles to previous working version */
   ion-modal {
     .form-item {
       --background: var(--form-item-background) !important;
@@ -102,11 +107,13 @@ body.dark-theme {
         --border-color: transparent !important;
         --border-width: 0 !important;
         border: none !important; // Fallback
+        --background: var(--ion-color-step-50) !important; // Restore step background for dark inputs
       }
 
       // Dark theme specific for ion-datetime-button (now for selected-date-display span)
       .selected-date-display {
         color: var(--main-text-color) !important; /* Ensure button text is light */
+        background: var(--ion-color-step-50) !important; // Restore step background for dark date display
       }
     }
     .form-item ion-label {
@@ -123,15 +130,15 @@ body.dark-theme {
   }
 }
 
-/* --- Dashboard Layout and General Styles (UNTOUCHED - from your provided code) --- */
+/* --- Dashboard Layout and General Styles --- */
 ion-content {
-  --background: var(--page-background); /* Fondo de la página */
+  --background: var(--page-background);
 }
 
 ion-header {
-  --background: var(--card-background); /* Fondo del encabezado */
-  border-bottom: 1px solid var(--border-color); /* Borde sutil del encabezado */
-  box-shadow: 0 1px 4px rgba(0,0,0,0.03); /* Sombra sutil del encabezado */
+  --background: var(--card-background);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
 }
 
 .dashboard-layout {
@@ -146,9 +153,9 @@ ion-header {
 }
 
 .first-content {
-  width: 15%; /* Ajustar según sea necesario */
-  background-color: var(--sidebar-background); /* Adjusted to match Transactions page's light sidebar */
-  color: var(--sidebar-text); /* Adjusted for dark text on light sidebar */
+  width: 15%;
+  background-color: var(--sidebar-background);
+  color: var(--sidebar-text);
   @media (max-width: 768px) {
     width: 100%;
   }
@@ -161,18 +168,17 @@ ion-header {
   box-sizing: border-box;
 }
 
-/* Encabezado de metas para alinear título y botón */
 .goals-header {
   display: flex;
-  justify-content: space-between; /* Empuja los elementos a extremos opuestos */
-  align-items: center; /* Centra verticalmente */
-  margin-bottom: 20px; /* Espacio entre el encabezado y las tarjetas de metas */
-  padding-right: 10px; /* Espacio a la derecha, consistente con .goals-actions-top anterior */
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-right: 10px;
 
   .page-title {
     font-size: 24px;
     font-weight: bold;
-    margin-bottom: 5px; /* Eliminar margen inferior para alinear con el botón */
+    margin-bottom: 5px;
     color: var(--main-text-color);
     text-align: left;
 
@@ -208,8 +214,6 @@ ion-header {
   }
 }
 
-
-/* Esqueleto para la sección superior de acciones */
 .skeleton-actions-top {
   display: flex;
   align-items: center;
@@ -220,34 +224,53 @@ ion-header {
   }
 }
 
+/* Updated Empty State Styles */
 .empty-goals {
   text-align: center;
-  padding: 40px;
+  padding: 30px; /* Reduced from 40px */
   color: var(--secondary-text-color);
-  border-top: 1px solid var(--border-color);
-  margin-top: 10px;
+  border-top: 1px solid var(--border-color); /* Kept for separation from header area */
+  margin-top: 30px; /* Adjusted margin */
+  /* Added styles for a more contained, card-like look */
+  max-width: 600px; /* Example max-width, adjust as needed */
+  margin-left: auto; /* Center horizontally */
+  margin-right: auto; /* Center horizontally */
+  background-color: var(--card-background); /* Give it a card background */
+  border-radius: var(--card-border-radius); /* Use existing card border radius */
+  box-shadow: var(--shadow-light); /* Apply a light shadow to make it a distinct block */
+  display: flex; /* Use flexbox to center content vertically within the card */
+  align-items: center;
+  justify-content: center;
+  min-height: 250px; /* Give it a minimum height, adjust if needed */
+  flex-direction: column; /* Ensure content stacks vertically */
 }
 
 .empty-state {
   text-align: center;
   color: var(--secondary-text-color);
+  padding: 0 20px; /* Add some horizontal padding inside */
 
 
   ion-icon {
-    font-size: 3em;
-    margin-bottom: 10px;
+    font-size: 2.5em; /* Slightly smaller icon */
+    margin-bottom: 8px; /* Reduced margin */
     color: var(--ion-color-medium);
   }
 
   h2 {
     margin-top: 0;
-    margin-bottom: 10px;
+    margin-bottom: 8px; /* Reduced margin */
     font-weight: bold;
     color: var(--main-text-color);
+    font-size: 1.5em; /* Slightly smaller heading */
   }
 
   p {
-    margin-bottom: 20px;
+    margin-bottom: 15px; /* Reduced margin */
+    font-size: 0.95em; /* Slightly smaller paragraph text */
+    max-width: 400px; /* Constrain paragraph width for better readability */
+    margin-left: auto;
+    margin-right: auto;
   }
 
   ion-button {
@@ -256,6 +279,10 @@ ion-header {
     --border-radius: 8px;
     font-weight: 600;
     text-transform: none;
+    padding: 8px 16px; /* Slightly less padding to make the button more compact */
+    height: auto; /* Allow button height to adjust based on padding */
+    font-size: 0.9em; /* Slightly smaller button text */
+
     &:hover {
       --background: var(--ion-color-primary-shade);
     }
@@ -272,9 +299,9 @@ ion-header {
 
   .goal-card {
     background-color: var(--card-background);
-    border-radius: 8px;
-    box-shadow: var(--shadow-light);
-    padding: 20px;
+    border-radius: var(--card-border-radius);
+    box-shadow: var(--shadow-card);
+    padding: 24px; // Slightly more padding
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -282,114 +309,116 @@ ion-header {
     border: 1px solid var(--border-color);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 
-
     &:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-medium);
     }
   }
 
   .goal-header {
     display: flex;
     align-items: center;
-    margin-bottom: 15px;
-    font-weight: bold;
-    font-size: 16px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    font-size: 18px;
     color: var(--main-text-color);
 
-
     h3 {
-      font-size: 1.2em;
-      margin-right: 10px;
+      font-size: 1.3em;
+      margin-right: 12px;
       margin-bottom: 0;
       flex-grow: 1;
       color: var(--main-text-color);
     }
 
     ion-icon {
-      font-size: 24px;
-      margin-right: 10px;
+      font-size: 20px;
       color: var(--ion-color-primary);
     }
 
     span {
       font-size: 13px;
       color: var(--secondary-text-color);
-      margin-left: 10px;
+      margin-left: 8px;
     }
   }
 
   .goal-body {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+    flex-grow: 1;
 
     p {
-      margin-bottom: 8px;
-      font-size: 14px;
+      margin-bottom: 10px;
+      font-size: 15px;
       color: var(--main-text-color);
 
-
       strong {
-        font-weight: bold;
+        font-weight: 600;
       }
     }
 
     .progress-container {
-      margin-top: 15px;
-      margin-bottom: 10px;
+      margin-top: 18px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
 
       ion-progress-bar {
         flex-grow: 1;
-        --background: var(--border-color);
+        --background: var(--ion-color-step-100);
         --progress-background: var(--ion-color-primary);
-        height: 8px;
-        border-radius: 4px;
-        margin-bottom: 5px;
+        height: var(--progress-bar-height);
+        border-radius: var(--progress-bar-border-radius);
         margin-right: 10px;
       }
 
       .progress-percentage {
-        min-width: 40px;
+        min-width: 45px;
         text-align: right;
-        font-size: 12px;
+        font-size: 13px;
         color: var(--secondary-text-color);
-
+        font-weight: 500;
       }
     }
 
     .deadline-passed {
       color: var(--ion-color-danger);
       font-size: 12px;
-      margin-top: 5px;
+      margin-top: 8px;
       font-weight: 500;
     }
   }
 
   .goal-actions {
     display: flex;
-    gap: 10px;
-    justify-content: flex-end; /* Align buttons to the right */
-    flex-wrap: nowrap; /* Ensure buttons stay in a single row */
-    align-items: center; /* Align buttons vertically if heights differ */
+    gap: 8px;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    align-items: center;
     margin-top: 15px;
     padding-top: 15px;
     border-top: 1px dashed var(--border-color);
 
     ion-button {
-      font-size: 13px;
-      --padding-start: 12px;
-      --padding-end: 12px;
-      --border-radius: 5px;
-      height: auto;
+      font-size: 12.5px;
+      --padding-start: 10px;
+      --padding-end: 10px;
+      --border-radius: 6px;
+      height: 36px;
       font-weight: 600;
       text-transform: none;
       --box-shadow: none;
       ion-icon {
-        margin-right: 6px;
-        font-size: 16px;
+        margin-right: 5px;
+        font-size: 15px;
       }
     }
 
-    .add-button { /* RESTORED ADD BUTTON STYLES */
+    .add-button, .edit-button, ion-button[color="danger"] {
+      transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .add-button {
       --background: var(--ion-color-primary);
       --color: var(--ion-color-primary-contrast);
       box-shadow: var(--shadow-subtle);
@@ -425,12 +454,25 @@ ion-header {
   }
 }
 
-/* --- Modal specific styles (COPIED FROM PRESUPUESTOS.PAGE.SCSS) --- */
+/* --- Modal specific styles (REVERTED TO PREVIOUS VERSION) --- */
 ion-modal {
   --width: 30%;
   --height: 74%; // Adjusted to auto to better fit content, but keep max-height
   --border-radius: 8px;
   --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+  // Mobile responsiveness for modals
+  @media (max-width: 768px) {
+    --width: 95%; // Almost full width on mobile
+    --height: auto; // Let height adjust to content
+    --max-height: 95%; // Ensure it doesn't overflow
+    --border-radius: 12px; // Match overall mobile aesthetic
+  }
+
+  // Adjust for smaller desktop screens if needed, otherwise stick to 30%
+  @media (min-width: 769px) and (max-width: 1024px) {
+    --width: 45%;
+  }
 
   ion-header.ion-no-border {
     ion-toolbar {
@@ -576,7 +618,7 @@ ion-modal {
   }
 }
 
-/* --- Skeleton Styles (UNTOUCHED - from your provided code) */
+/* --- Skeleton Styles --- */
 .skeleton {
   background: linear-gradient(90deg, var(--border-color) 25%, #e0e0e0 50%, var(--border-color) 75%);
   background-size: 200% 100%;
@@ -593,7 +635,6 @@ ion-modal {
   }
 }
 
-/* Clases de utilidad para dimensiones de esqueleto */
 .h-4 { height: 1rem; }
 .h-6 { height: 1.5rem; }
 .h-8 { height: 2rem; }
@@ -617,7 +658,6 @@ ion-modal {
 .mb-4 { margin-bottom: 1rem; }
 .ml-2 { margin-left: 0.5rem; }
 
-/* Ajustes específicos de diseño para esqueleto de tarjeta */
 .skeleton-goal-card {
   background-color: var(--card-background);
   border: 1px solid var(--border-color);

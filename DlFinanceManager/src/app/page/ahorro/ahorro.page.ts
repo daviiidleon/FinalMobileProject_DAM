@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms'; // Re-added Forms Modules
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 import {
   IonButton,
@@ -13,12 +13,12 @@ import {
   IonRow,
   IonGrid,
   IonProgressBar,
-  IonModal, // Re-added IonModal
-  IonItem, IonLabel, IonInput, IonDatetime, IonButtons, IonNote, IonSpinner, IonList, IonSelect, IonSelectOption, // Re-added Modal related components
+  IonModal,
+  IonItem, IonLabel, IonInput, IonDatetime, IonButtons, IonNote, IonSpinner, IonList, IonSelect, IonSelectOption,
   LoadingController,
-  IonMenuButton, // Keep if needed for menu, otherwise remove
-  AlertController, // Added AlertController for delete confirmation
-  ToastController // Added ToastController for notifications
+  IonMenuButton,
+  AlertController,
+  ToastController
 } from '@ionic/angular/standalone';
 
 import { HeaderComponent } from '../../component/header/header.component';
@@ -32,7 +32,7 @@ import {
   addCircleOutline,
   createOutline,
   trashOutline,
-  closeOutline // Re-added close icon
+  closeOutline
 } from 'ionicons/icons';
 
 
@@ -41,7 +41,7 @@ interface ObjetivoAhorro {
   nombre: string;
   montoMeta: number;
   montoActual: number;
-  fechaLimite?: string | null; // Optional deadline
+  fechaLimite?: string | null;
   progreso: number;
 }
 
@@ -52,8 +52,8 @@ interface ObjetivoAhorro {
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule, // Re-added FormsModule
-    ReactiveFormsModule, // Re-added ReactiveFormsModule
+    FormsModule,
+    ReactiveFormsModule,
 
     IonContent,
     IonHeader,
@@ -61,12 +61,12 @@ interface ObjetivoAhorro {
     IonToolbar,
     IonIcon,
     IonButton,
-    IonCol, // Keep if you use Grid, otherwise remove
-    IonRow, // Keep if you use Grid, otherwise remove
-    IonGrid, // Keep if you use Grid, otherwise remove
+    IonCol,
+    IonRow,
+    IonGrid,
     IonProgressBar,
-    IonModal, // Re-added IonModal
-    IonItem, IonLabel, IonInput, IonDatetime, IonButtons, IonNote, IonSpinner, IonList, IonSelect, IonSelectOption, // Re-added modal components
+    IonModal,
+    IonItem, IonLabel, IonInput, IonDatetime, IonButtons, IonNote, IonSpinner, IonList, IonSelect, IonSelectOption,
 
     DatePipe,
     CurrencyPipe,
@@ -79,27 +79,27 @@ export class AhorroPage implements OnInit, OnDestroy {
   objetivos: ObjetivoAhorro[] = [];
   isLoading = true;
 
-  // New properties for the Goal Modal
-  @ViewChild('goalModal') goalModal!: IonModal; // Reference to the goal modal
-  @ViewChild('addFundsModal') addFundsModal!: IonModal; // Reference to the add funds modal
+  @ViewChild('goalModal') goalModal!: IonModal;
+  @ViewChild('addFundsModal') addFundsModal!: IonModal;
 
   isGoalModalOpen: boolean = false;
   isAddFundsModalOpen: boolean = false;
   isEditMode: boolean = false;
-  goalForm: FormGroup; // Re-added FormGroup
+  goalForm: FormGroup;
   isSubmitting: boolean = false;
   editingGoalId: string | null = null;
-  fundsToAdd: number | null = null; // Re-added fundsToAdd
-  showDatePicker: boolean = false; // New property to control datetime visibility for goals
+  fundsToAdd: number | null = null;
+  showDatePicker: boolean = false;
+  selectedGoal: ObjetivoAhorro | null = null; // Ensure this is declared
 
   private storageKey = 'objetivosAhorro';
   private storageSubscription: Subscription | undefined;
 
   constructor(
-    private fb: FormBuilder, // Re-added FormBuilder
+    private fb: FormBuilder,
     private loadingCtrl: LoadingController,
-    private alertController: AlertController, // Re-added AlertController
-    private toastController: ToastController // Re-added ToastController
+    private alertController: AlertController,
+    private toastController: ToastController
   ) {
     addIcons({
       addOutline,
@@ -108,21 +108,21 @@ export class AhorroPage implements OnInit, OnDestroy {
       addCircleOutline,
       createOutline,
       trashOutline,
-      closeOutline, // Re-added close icon
+      closeOutline,
     });
 
-    // Re-initialize goalForm
     this.goalForm = this.fb.group({
-      id: [''], // Will be set on edit or generated on add
+      id: [''],
       nombre: ['', [Validators.required, Validators.minLength(3)]],
       montoMeta: [null, [Validators.required, Validators.min(0.01)]],
       montoActual: [0, Validators.min(0)],
-      fechaLimite: [null], // No initial value, can be null
+      fechaLimite: [null],
     });
   }
 
   ngOnInit() {
-    // ionViewWillEnter is preferred in Ionic for loading data when entering the view
+    // ngOnInit is typically for component initialization, not data loading for Ionic pages.
+    // Data loading is handled in ionViewWillEnter.
   }
 
   async ionViewWillEnter() {
@@ -146,17 +146,17 @@ export class AhorroPage implements OnInit, OnDestroy {
     });
     await loading.present();
 
+    // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     try {
       const storedObjetivos = localStorage.getItem(this.storageKey);
       if (storedObjetivos) {
         this.objetivos = JSON.parse(storedObjetivos).map((obj: ObjetivoAhorro) => {
-          // Ensure montoActual doesn't exceed montoMeta, and calculate progress
           const montoActualClamped = Math.min(obj.montoActual, obj.montoMeta);
           return {
             ...obj,
-            montoActual: montoActualClamped, // Clamp saved amount
+            montoActual: montoActualClamped,
             progreso: (montoActualClamped / obj.montoMeta) * 100,
           };
         });
@@ -180,7 +180,7 @@ export class AhorroPage implements OnInit, OnDestroy {
       this.storageKey,
       JSON.stringify(
         this.objetivos.map((obj) => {
-          const { progreso, ...rest } = obj; // Exclude 'progreso' as it's derived
+          const { progreso, ...rest } = obj;
           return rest;
         })
       )
@@ -197,7 +197,6 @@ export class AhorroPage implements OnInit, OnDestroy {
       return null;
     }
     const dateObj = new Date(date);
-    // Use 'shortDate' or specify format 'yyyy-MM-dd' for consistency
     const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
     return new Intl.DateTimeFormat('en-US', options).format(dateObj);
   }
@@ -207,10 +206,10 @@ export class AhorroPage implements OnInit, OnDestroy {
       return false;
     }
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize to start of day
+    today.setHours(0, 0, 0, 0);
 
     const deadline = new Date(fechaLimite);
-    deadline.setHours(0, 0, 0, 0); // Normalize to start of day
+    deadline.setHours(0, 0, 0, 0);
 
     return deadline < today;
   }
@@ -222,7 +221,7 @@ export class AhorroPage implements OnInit, OnDestroy {
     this.isEditMode = mode === 'edit';
     this.goalForm.reset();
     this.editingGoalId = null;
-    this.showDatePicker = false; // Ensure picker is hidden when modal opens
+    this.showDatePicker = false;
 
     if (this.isEditMode && goal) {
       this.editingGoalId = goal.id;
@@ -230,7 +229,7 @@ export class AhorroPage implements OnInit, OnDestroy {
         id: goal.id,
         nombre: goal.nombre,
         montoMeta: goal.montoMeta,
-        montoActual: goal.montoActual, // Existing amount for edit mode
+        montoActual: goal.montoActual,
         fechaLimite: goal.fechaLimite ? new Date(goal.fechaLimite).toISOString() : null,
       });
       // Disable montoActual if editing, as it should only be changed via "Add Funds"
@@ -333,8 +332,6 @@ export class AhorroPage implements OnInit, OnDestroy {
     this.fundsToAdd = null;
     this.isSubmitting = false;
   }
-
-  selectedGoal: ObjetivoAhorro | null = null; // Declare selectedGoal property
 
   async addFunds() {
     if (!this.selectedGoal || typeof this.fundsToAdd !== 'number' || this.fundsToAdd <= 0) {
