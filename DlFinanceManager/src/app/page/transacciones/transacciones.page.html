@@ -16,10 +16,11 @@
           <div class="skeleton h-4 w-1/2"></div>
         </div>
         <div class="header-right">
-          <div class="skeleton h-10 w-40"></div>
           <div class="skeleton h-10 w-40 ml-2"></div>
+          <div class="skeleton h-10 w-40"></div>
         </div>
       </div>
+      <input type="file" #fileInput hidden accept=".xlsx" (change)="handleFileSelect($event)">
 
       <div *ngIf="!isLoading" class="transactions-header">
         <div class="header-left">
@@ -27,9 +28,9 @@
           <p>Manage your income and expenses.</p>
         </div>
         <div class="header-right">
-          <ion-button>
+          <ion-button (click)="fileInput.click()">
             <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
-            Import from CSV/Excel
+            Import from Excel
           </ion-button>
           <ion-button color="success" (click)="openAddEditModal('add')">
             <ion-icon name="add-circle-outline" slot="start"></ion-icon>

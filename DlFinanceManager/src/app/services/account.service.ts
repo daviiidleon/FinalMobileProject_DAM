@@ -11,6 +11,9 @@ export class AccountService {
   private _accounts = new BehaviorSubject<any[]>([]);
   public readonly accounts$: Observable<any[]> = this._accounts.asObservable();
 
+  private selectedAccountSubject: BehaviorSubject<any | null> = new BehaviorSubject(null);
+  public selectedAccount$: Observable<any | null> = this.selectedAccountSubject.asObservable();
+
   constructor() {
     this.loadInitialAccounts();
   }
@@ -56,5 +59,13 @@ export class AccountService {
     return this.accounts$.pipe(
       map(accounts => accounts.find(a => a.id === id))
     );
+  }
+
+  setSelectedAccount(account: any | null) {
+    this.selectedAccountSubject.next(account);
+  }
+
+  getSelectedAccount(): any | null {
+    return this.selectedAccountSubject.getValue();
   }
 }

@@ -1,18 +1,36 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common'; // Asegúrate de CommonModule si usas directivas básicas como NgIf, NgFor
-import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone'; // Importa los componentes de Ionic necesarios
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
+import { AccountService } from './services/account.service';
+import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-root', // Este es el selector de tu componente raíz
-  templateUrl: 'app.component.html', // La plantilla donde irá el ion-router-outlet
-  styleUrls: ['app.component.scss'], // Tus estilos globales para el app-root
-  standalone: true, // Indica que es un componente standalone
+  selector: 'app-root',
+  templateUrl: 'app.component.html',
+  styleUrls: ['app.component.scss'],
+  standalone: true,
   imports: [
-    CommonModule, // Necesario para directivas estructurales y pipes
-    IonApp, // Contenedor principal de la aplicación Ionic
-    IonRouterOutlet, // El "outlet" donde el router carga los componentes de la ruta activa
+    CommonModule,
+    IonApp,
+    IonRouterOutlet,
   ],
 })
-export class AppComponent {
-  constructor() {}
+export class AppComponent implements OnInit, OnDestroy {
+  selectedAccountName: string = 'Select Account';
+  private accountSubscription!: Subscription;
+
+  constructor(private accountService: AccountService) {}
+
+  ngOnInit() {
+    this.accountSubscription = this.accountService.selectedAccount$.subscribe(account => {
+      console.log('Selected account updated in AppComponent:', account);
+      this.selectedAccountName = account ? account.nombre : 'Select Account';
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.accountSubscription) {
+      this.accountSubscription.unsubscribe();
+    }
+  }
 }

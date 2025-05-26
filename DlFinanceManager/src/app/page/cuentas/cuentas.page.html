@@ -49,7 +49,10 @@
       </div>
 
       <div *ngIf="!isLoading && accounts.length > 0" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        <ion-card class="shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-column" *ngFor="let account of accounts">
+        <ion-card
+          class="shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-column cursor-pointer"
+          [ngClass]="{'border-2 border-primary': selectedAccount && selectedAccount.id === account.id}"
+          *ngFor="let account of accounts" (click)="selectAccount(account)">
           <ion-card-header>
             <div class="flex items-start justify-between gap-2">
               <div class="flex items-center">

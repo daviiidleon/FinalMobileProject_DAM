@@ -36,7 +36,7 @@ import {
 } from 'ionicons/icons';
 
 
-interface ObjetivoAhorro {
+export interface ObjetivoAhorro {
   id: string;
   nombre: string;
   montoMeta: number;
@@ -154,6 +154,7 @@ export class AhorroPage implements OnInit, OnDestroy {
       if (storedObjetivos) {
         this.objetivos = JSON.parse(storedObjetivos).map((obj: ObjetivoAhorro) => {
           const montoActualClamped = Math.min(obj.montoActual, obj.montoMeta);
+          console.log('Loaded objetivo:', obj);
           return {
             ...obj,
             montoActual: montoActualClamped,
@@ -296,6 +297,7 @@ export class AhorroPage implements OnInit, OnDestroy {
     if (newGoal.progreso > 100) newGoal.progreso = 100; // Cap at 100%
 
     setTimeout(async () => {
+      console.log('Saving new/updated goal:', newGoal);
       if (this.isEditMode && this.editingGoalId) {
         const index = this.objetivos.findIndex(g => g.id === this.editingGoalId);
         if (index !== -1) {

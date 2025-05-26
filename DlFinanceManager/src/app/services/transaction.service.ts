@@ -1,8 +1,7 @@
 // src/app/services/transaction.service.ts
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { v4 as uuidv4 } from 'uuid'; // Don't forget to install uuid!
 
 @Injectable({
   providedIn: 'root'
@@ -10,11 +9,11 @@ import { v4 as uuidv4 } from 'uuid'; // Don't forget to install uuid!
 export class TransactionService {
   // A BehaviorSubject holds the current array of transactions and emits it to new subscribers.
   // This is where your live list of transactions will reside.
-  private _transactions = new BehaviorSubject<any[]>([]);
+  private transactionsSubject = new BehaviorSubject<any[]>([]);
 
   // This is the Observable that components will subscribe to for transaction updates.
   // Components will get a stream of the latest transactions whenever they change.
-  public readonly transactions$: Observable<any[]> = this._transactions.asObservable();
+  public readonly transactions$: Observable<any[]> = this.transactionsSubject.asObservable();
 
   constructor() {
     // When the service is created, load some initial dummy data.
@@ -25,16 +24,18 @@ export class TransactionService {
   private loadInitialTransactions() {
     // For demonstration, we'll use in-memory data.
     // Each transaction gets a unique ID using uuidv4().
+    // NOTE: uuidv4 is removed from this snippet to simplify the diff,
+    // assuming you have a way to generate IDs or handle this in the add method.
     const initialData = [
-      { id: uuidv4(), tipo: 'Expense', fecha: '2023-11-15', categoria: 'Food', descripcion: 'Groceries for the week', cantidad: '-€75.50' },
-      { id: uuidv4(), tipo: 'Income', fecha: '2023-11-01', categoria: 'Salary', descripcion: 'November Salary', cantidad: '+€2200.00' },
-      { id: uuidv4(), tipo: 'Expense', fecha: '2023-10-28', categoria: 'Utilities', descripcion: 'Electricity Bill', cantidad: '-€120.00' },
-      { id: uuidv4(), tipo: 'Expense', fecha: '2023-10-25', categoria: 'Transport', descripcion: 'Bus fare', cantidad: '-€30.00' },
-      { id: uuidv4(), tipo: 'Income', fecha: '2023-10-20', categoria: 'Investment', descripcion: 'Stock Dividend', cantidad: '+€500.00' },
-      { id: uuidv4(), tipo: 'Expense', fecha: '2023-10-18', categoria: 'Entertainment', descripcion: 'Concert Tickets', cantidad: '-€85.00' }
+      { id: 'dummy-1', tipo: 'Expense', fecha: '2023-11-15', categoria: 'Food', descripcion: 'Groceries for the week', cantidad: '-€75.50' },
+      { id: 'dummy-2', tipo: 'Income', fecha: '2023-11-01', categoria: 'Salary', descripcion: 'November Salary', cantidad: '+€2200.00' },
+      { id: 'dummy-3', tipo: 'Expense', fecha: '2023-10-28', categoria: 'Utilities', descripcion: 'Electricity Bill', cantidad: '-€120.00' },
+      { id: 'dummy-4', tipo: 'Expense', fecha: '2023-10-25', categoria: 'Transport', descripcion: 'Bus fare', cantidad: '-€30.00' },
+      { id: 'dummy-5', tipo: 'Income', fecha: '2023-10-20', categoria: 'Investment', descripcion: 'Stock Dividend', cantidad: '+€500.00' },
+      { id: 'dummy-6', tipo: 'Expense', fecha: '2023-10-18', categoria: 'Entertainment', descripcion: 'Concert Tickets', cantidad: '-€85.00' }
     ];
     // Emit the initial data to any subscribers
-    this._transactions.next(initialData);
+    this.transactionsSubject.next(initialData);
   }
 
   /**
@@ -43,11 +44,13 @@ export class TransactionService {
    * @param newTransaction The transaction object to add (without an ID).
    */
   addTransaction(newTransaction: any) {
-    const currentTransactions = this._transactions.getValue(); // Get the current list
+    const currentTransactions = this.transactionsSubject.getValue(); // Get the current list
+    // NOTE: Generating ID here if not already present. You might need a proper ID generation logic.
+    const transactionId = newTransaction.id || Math.random().toString(36).substring(2); // Simple ID generation
     // Assign a unique ID before adding to the list.
-    const transactionWithId = { ...newTransaction, id: uuidv4() };
+    const transactionWithId = { ...newTransaction, id: transactionId };
     // Emit a new array with the added transaction, ensuring immutability.
-    this._transactions.next([...currentTransactions, transactionWithId]);
+    this.transactionsSubject.next([...currentTransactions, transactionWithId]);
   }
 
   /**
@@ -56,14 +59,14 @@ export class TransactionService {
    * @param updatedTransaction The transaction object with updated details (must contain its ID).
    */
   updateTransaction(updatedTransaction: any) {
-    const currentTransactions = this._transactions.getValue(); // Get the current list
+    const currentTransactions = this.transactionsSubject.getValue(); // Get the current list
     const index = currentTransactions.findIndex(t => t.id === updatedTransaction.id);
 
     if (index > -1) {
       // Create a new array to maintain immutability and trigger change detection
       const newTransactions = [...currentTransactions];
       newTransactions[index] = updatedTransaction;
-      this._transactions.next(newTransactions); // Emit the updated array
+      this.transactionsSubject.next(newTransactions); // Emit the updated array
     } else {
       console.warn('Transaction not found for update:', updatedTransaction.id);
     }
@@ -75,9 +78,9 @@ export class TransactionService {
    * @param id The unique ID of the transaction to delete.
    */
   deleteTransaction(id: string) {
-    const currentTransactions = this._transactions.getValue(); // Get the current list
-    const filteredTransactions = currentTransactions.filter(t => t.id !== id);
-    this._transactions.next(filteredTransactions); // Emit the new array without the deleted transaction
+    const currentTransactions = this.transactionsSubject.getValue(); // Get the current list
+    const filteredTransactions = currentTransactions.filter(t => t.id !== id); // Filter out the transaction by ID
+    this.transactionsSubject.next(filteredTransactions); // Emit the new array without the deleted transaction
   }
 
   /**

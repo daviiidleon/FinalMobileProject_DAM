@@ -105,6 +105,7 @@ export class CuentasPage implements OnInit, OnDestroy {
   accounts: any[] = [];
   isLoading: boolean = true;
   private accountsSubscription!: Subscription;
+  selectedAccount: any | null = null; // Variable to hold the selected account
 
   // Properties for the add/edit form - RE-ADDED AND ADAPTED
   isModalOpen: boolean = false;
@@ -149,7 +150,13 @@ export class CuentasPage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    // Subscribe to the selected account changes
+    this.accountService.selectedAccount$.subscribe(account => {
+      this.selectedAccount = account;
+      this.cdRef.detectChanges(); // Update view when selected account changes
+    });
     this.loadAccounts();
+
   }
 
   ngOnDestroy() {
@@ -283,6 +290,11 @@ export class CuentasPage implements OnInit, OnDestroy {
     });
 
     await alert.present();
+  }
+
+  selectAccount(account: any) {
+    console.log('Account selected:', account);
+    this.accountService.setSelectedAccount(account);
   }
 
   async presentToast(message: string, color: string = 'primary') {

@@ -13,6 +13,7 @@ import {
 import { HeaderComponent } from "../../component/header/header.component";
 import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
 import { Chart, registerables } from 'chart.js';
+import { ObjetivoAhorro } from '../ahorro/ahorro.page';
 import {RouterLink} from "@angular/router";
 Chart.register(...registerables);
 
@@ -35,13 +36,6 @@ interface Transaction {
   description: string;
   amount: number;
   date: Date;
-}
-
-interface SavingsGoal {
-  id: number;
-  name: string;
-  currentAmount: number;
-  targetAmount: number;
 }
 
 @Component({
@@ -76,7 +70,7 @@ export class DashboardPage implements OnInit, AfterViewInit {
 
   // Data for Recent Transactions and Savings Goals
   recentTransactions: Transaction[] = [];
-  savingsGoals: SavingsGoal[] = [];
+  savingsGoals: ObjetivoAhorro[] = [];
 
   isLoading: boolean = true; // Initialize to true to show skeletons on load
 
@@ -84,6 +78,7 @@ export class DashboardPage implements OnInit, AfterViewInit {
 
   ngOnInit() {
     this.loadDashboardData();
+    this.loadSavingsGoals(); // Load savings goals on init
   }
 
   ngAfterViewInit(): void {
@@ -198,16 +193,25 @@ export class DashboardPage implements OnInit, AfterViewInit {
     });
   }
 
-  async fetchSavingsGoals(): Promise<SavingsGoal[]> {
+  // Note: The return type is now ObjetivoAhorro[] to match the interface from ahorro.page.ts
+  async fetchSavingsGoals(): Promise<ObjetivoAhorro[]> {
     return new Promise(resolve => {
       setTimeout(() => {
+        // This is mock data. Replace this with actual logic to load goals from your data source.
         resolve([
-          { id: 1, name: 'Fondo de Vacaciones', currentAmount: 750, targetAmount: 2000 },
-          { id: 2, name: 'Nueva computadora portátil', currentAmount: 1200, targetAmount: 1500 },
-          { id: 3, name: 'Enganche de coche', currentAmount: 3000, targetAmount: 5000 },
+          { id: 'mock-1', nombre: 'Fondo de Vacaciones', montoActual: 750, montoMeta: 2000, progreso: (750/2000)*100, fechaLimite: '2024-12-31T23:59:59.999Z' },
+          { id: 'mock-2', nombre: 'Nueva computadora portátil', montoActual: 1200, montoMeta: 1500, progreso: (1200/1500)*100, fechaLimite: null },
+          { id: 'mock-3', nombre: 'Enganche de coche', montoActual: 3000, montoMeta: 5000, progreso: (3000/5000)*100, fechaLimite: '2025-06-30T23:59:59.999Z' },
         ]);
       }, 800);
     });
+  }
+
+  async loadSavingsGoals() {
+    // TODO: Implement actual logic to load savings goals
+    // Example: Fetch from localStorage or a service
+    // this.savingsGoals = await this.yourSavingsService.getGoals();
+    console.log('Placeholder: loadSavingsGoals method called.');
   }
 
   createIncomeExpenseChart(): void {

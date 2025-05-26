@@ -241,12 +241,22 @@ ion-header {
   margin-bottom: 15px; /* Espacio entre el texto y el botón */
 }
 
-.no-data-container > div {
-  width: 100%; /* Asegura que el div que contiene el botón ocupe todo el ancho para centrarlo */
-  display: flex;
-  justify-content: center; /* Centra el botón dentro de su div */
+/* Estilos para el contenedor del botón en la parte inferior de los widgets */
+.button-container-bottom {
+  display: flex; /* Convierte el contenedor en un flex container */
+  justify-content: center; /* Centra los elementos hijos (el botón) horizontalmente */
+  width: 100%; /* Asegura que el contenedor ocupe todo el ancho disponible */
+  margin-top: 15px; /* Añade un margen superior para separarlo del contenido de arriba */
+  padding-top: 15px; /* Añade padding superior */
+  border-top: 1px dashed var(--border-color); /* Línea divisoria, similar a la de Transacciones */
 }
 
+/* Estilo para el botón dentro de button-container-bottom (opcional, para hacerlo más compacto) */
+.button-container-bottom ion-button {
+  --padding-start: 20px;
+  --padding-end: 20px;
+  --font-size: 14px;
+}
 
 .section-header ion-button {
   --padding-top: 5px;
