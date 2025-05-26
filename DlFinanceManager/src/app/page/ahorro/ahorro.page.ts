@@ -41,7 +41,7 @@ interface ObjetivoAhorro {
   nombre: string;
   montoMeta: number;
   montoActual: number;
-  fechaLimite?: string | null;
+  fechaLimite?: string | null; // Optional deadline
   progreso: number;
 }
 
@@ -89,7 +89,7 @@ export class AhorroPage implements OnInit, OnDestroy {
   isSubmitting: boolean = false;
   editingGoalId: string | null = null;
   fundsToAdd: number | null = null;
-  showDatePicker: boolean = false;
+  showDatePicker: boolean = false; // New property to control date picker visibility
   selectedGoal: ObjetivoAhorro | null = null; // Ensure this is declared
 
   private storageKey = 'objetivosAhorro';
@@ -116,7 +116,7 @@ export class AhorroPage implements OnInit, OnDestroy {
       nombre: ['', [Validators.required, Validators.minLength(3)]],
       montoMeta: [null, [Validators.required, Validators.min(0.01)]],
       montoActual: [0, Validators.min(0)],
-      fechaLimite: [null],
+      fechaLimite: [null], // Add fechaLimite to the form group
     });
   }
 
@@ -197,6 +197,7 @@ export class AhorroPage implements OnInit, OnDestroy {
       return null;
     }
     const dateObj = new Date(date);
+    // Use a custom format for display, e.g., "Jan 1, 2024"
     const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
     return new Intl.DateTimeFormat('en-US', options).format(dateObj);
   }
@@ -206,10 +207,10 @@ export class AhorroPage implements OnInit, OnDestroy {
       return false;
     }
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0); // Normalize today to start of day
 
     const deadline = new Date(fechaLimite);
-    deadline.setHours(0, 0, 0, 0);
+    deadline.setHours(0, 0, 0, 0); // Normalize deadline to start of day
 
     return deadline < today;
   }
@@ -221,7 +222,7 @@ export class AhorroPage implements OnInit, OnDestroy {
     this.isEditMode = mode === 'edit';
     this.goalForm.reset();
     this.editingGoalId = null;
-    this.showDatePicker = false;
+    this.showDatePicker = false; // Hide date picker initially when opening modal
 
     if (this.isEditMode && goal) {
       this.editingGoalId = goal.id;
@@ -230,6 +231,7 @@ export class AhorroPage implements OnInit, OnDestroy {
         nombre: goal.nombre,
         montoMeta: goal.montoMeta,
         montoActual: goal.montoActual,
+        // Convert stored date string to ISO string for ion-datetime
         fechaLimite: goal.fechaLimite ? new Date(goal.fechaLimite).toISOString() : null,
       });
       // Disable montoActual if editing, as it should only be changed via "Add Funds"
@@ -248,15 +250,16 @@ export class AhorroPage implements OnInit, OnDestroy {
     this.isSubmitting = false;
     this.goalForm.reset();
     this.editingGoalId = null;
-    this.showDatePicker = false; // Reset picker visibility
+    this.showDatePicker = false; // Reset date picker visibility
     this.goalForm.get('montoActual')?.enable(); // Re-enable montoActual for next potential 'add'
   }
 
+  // Toggles the visibility of the ion-datetime component
   toggleDatePicker() {
     this.showDatePicker = !this.showDatePicker;
   }
 
-  // This method is called when the user confirms the date selection (clicks "Confirm")
+  // Called when the user selects a date and clicks "Confirm" in the ion-datetime
   onDateSelected(event: any) {
     // The formControlName="fechaLimite" already handles updating the form's value.
     // We just need to hide the picker.
@@ -283,6 +286,7 @@ export class AhorroPage implements OnInit, OnDestroy {
       nombre: formValue.nombre,
       montoMeta: parseFloat(formValue.montoMeta),
       montoActual: parseFloat(formValue.montoActual),
+      // Store date as ISO string or null
       fechaLimite: formValue.fechaLimite ? new Date(formValue.fechaLimite).toISOString() : null,
       progreso: 0 // Will be calculated after adding/updating
     };
@@ -295,7 +299,8 @@ export class AhorroPage implements OnInit, OnDestroy {
       if (this.isEditMode && this.editingGoalId) {
         const index = this.objetivos.findIndex(g => g.id === this.editingGoalId);
         if (index !== -1) {
-          // Keep the current montoActual if not explicitly adding funds
+          // When editing, montoActual should typically only be changed via "Add Funds".
+          // So, we preserve the existing montoActual unless you have another mechanism.
           const currentMontoActual = this.objetivos[index].montoActual;
           newGoal.montoActual = currentMontoActual; // Preserve existing saved amount
           newGoal.progreso = (newGoal.montoActual / newGoal.montoMeta) * 100;
