@@ -227,25 +227,20 @@ export class CuentasPage implements OnInit, OnDestroy {
     });
     await loading.present();
 
-    const formData = this.accountForm.value;
-    let balance = parseFloat(formData.saldo);
+    const formData = { ...this.accountForm.value }; // Create a copy to avoid modifying the form value directly
 
-    // Format balance with currency symbol based on account type
-    let formattedBalance: string;
-    if (formData.tipo === 'Credit Card' || formData.tipo === 'Loan') {
-      formattedBalance = `€${balance.toFixed(2)}`; // Credit card/loan might not have negative symbol in raw data
-    } else {
-      formattedBalance = `€${balance.toFixed(2)}`;
-    }
-
+    // Clean and convert the saldo to a number before using it
+    // This handles cases where the user might enter currency symbols or commas in the input
+    const cleanedBalanceString = String(formData.saldo).replace(/[^\d.-]/g, ''); // Remove non-numeric characters except decimal point and hyphen
+    const numericBalance = parseFloat(cleanedBalanceString); // Convert to number
 
     const accountToSave = {
       ...formData,
       id: this.editingAccountId || this.generateUniqueId(), // Use existing ID or generate new
-      saldo: formattedBalance // Store formatted balance
+      saldo: numericBalance, // Store the cleaned and converted numeric balance
     };
 
-    setTimeout(async () => { // Simulate API call delay
+    setTimeout(async () => { // Simulate API call delay, using the numeric balance
       if (this.isEditMode) {
         this.accountService.updateAccount(accountToSave);
         this.presentToast('Account updated successfully!', 'success');
@@ -326,9 +321,12 @@ export class CuentasPage implements OnInit, OnDestroy {
   }
 
   isNegativeBalance(account: any): boolean {
-    const balance = parseFloat(account.saldo.replace(/[^\d.-]/g, ''));
-    // Credit card and Loan accounts are "negative" if they have a positive balance (meaning you owe money)
-    return (account.tipo === 'Credit Card' || account.tipo === 'Loan') ? balance > 0 : balance < 0;
+    if (account && (typeof account.saldo === 'string' || typeof account.saldo === 'number')) {
+      const balance = parseFloat(account.saldo.toString().replace(/[^\d.-]/g, ''));
+      // Credit card and Loan accounts are "negative" if they have a positive balance (meaning you owe money)
+      return (account.tipo === 'Credit Card' || account.tipo === 'Loan') ? !isNaN(balance) && balance > 0 : !isNaN(balance) && balance < 0;
+    }
+    return false; // Consider 0 or nulo/indefinido no negativo
   }
 
   formatDate(isoDate: string | undefined): string {

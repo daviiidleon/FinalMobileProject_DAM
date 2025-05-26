@@ -81,27 +81,21 @@
             <ng-container *ngTemplateOutlet="noTransactions"></ng-container>
           </div>
         </div>
+
         <div class="savings-goals-section">
           <div class="section-header">
             <div class="card-title2">Metas de ahorro</div>
           </div>
           <div class="savings-goals-placeholder">
-            <ng-container *ngIf="!isLoading && savingsGoals.length === 0">
+            <ng-template #noGoals>
               <div class="no-data-container">
                 <p style="text-align: center; color: #777;">No hay metas de ahorro activas.</p>
+                <div>
+                  <ion-button routerLink="/ahorro">Ir a Ahorro</ion-button>
+                </div>
               </div>
-            </ng-container>
-
-            <ng-container *ngIf="!isLoading && savingsGoals.length > 0">
-              <div class="goal-item">
-                <p><strong>Última Meta:</strong> {{ savingsGoals[savingsGoals.length - 1].nombre }}</p>
-                <p><strong>Ahorrado:</strong> {{ savingsGoals[savingsGoals.length - 1].montoActual }} / {{ savingsGoals[savingsGoals.length - 1].montoMeta }}</p>
-              </div>
-            </ng-container>
-
-            <div class="button-container-bottom">
-              <ion-button routerLink="/ahorro">Ir a Ahorro</ion-button>
-            </div>
+            </ng-template>
+            <ng-container *ngTemplateOutlet="noGoals"></ng-container>
           </div>
         </div>
       </div>
