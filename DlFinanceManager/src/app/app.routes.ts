@@ -10,16 +10,16 @@ export const routes: Routes = [
     loadComponent: () => import('./page/auth/auth.page').then(m => m.AuthPage),
   },
   {
-    path: '',
-    redirectTo: 'auth',      // ← aquí cambiamos a 'auth'
-    pathMatch: 'full',
+    path: '', // Ruta por defecto
+    redirectTo: 'auth', // Redirige a la página de autenticación al iniciar la app
+    pathMatch: 'full', // Asegura que la ruta completa debe coincidir
   },
   {
     path: 'dashboard',
     loadComponent: () => import('./page/dashboard/dashboard.page').then(m => m.DashboardPage)
   },
   {
-    path: 'transacciones',
+    path: 'transacciones', // Ruta para la página de transacciones
     loadComponent: () => import('./page/transacciones/transacciones.page').then(m => m.TransaccionesPage)
   },
   {
@@ -31,7 +31,7 @@ export const routes: Routes = [
     loadComponent: () => import('./page/presupuestos/presupuestos.page').then(m => m.PresupuestosPage)
   },
   {
-    path: 'ahorro',
+    path: 'ahorro', // Ruta para la página de ahorro
     loadComponent: () => import('./page/ahorro/ahorro.page').then(m => m.AhorroPage)
   },
   {

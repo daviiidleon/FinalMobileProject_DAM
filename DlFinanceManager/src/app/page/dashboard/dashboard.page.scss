@@ -39,25 +39,7 @@ ion-header {
 
 .first-content {
   width: 15%; /* Este ancho fijo puede ser problemático si el menú se colapsa mucho */
-  // **CLAVE PARA ELIMINAR EL FONDO NEGRO:**
-  // Opción 1: Cambiar su color de fondo para que coincida con el de la página o sea transparente
-  background-color: transparent; // ¡Cambiado de var(--sidebar-background) a transparent!
-  // O si quieres que mantenga el color del side menu pero no lo muestre si este se colapsa:
-  // background-color: var(--global-menu-bg, #faf6e9); // Usar la variable global del side-menu
-
-  // Opción 2 (Más flexible si el layout lo permite): Ajustar su ancho dinámicamente.
-  // Esto dependerá de cómo se maneje el layout completo.
-  // Por ejemplo, si usas CSS Grid en .dashboard-layout:
-  /*
-  .dashboard-layout {
-    display: grid;
-    grid-template-columns: auto 1fr; // El primer auto se ajustaría al ancho del side-menu
-  }
-  .first-content {
-    width: auto; // Deja que el side-menu defina su ancho
-  }
-  */
-
+  background-color: transparent; // ¡Cambiado de var(--sidebar-background) a transparent para evitar el fondo negro!
   color: var(--sidebar-text); /* El color del texto del side menu, aunque no relevante aquí */
   @media (max-width: 768px) {
     width: 100%;
@@ -159,9 +141,15 @@ ion-header {
   font-size: 22px;
   color: var(--main-text-color);
   font-weight: bold;
-  margin-bottom: 10px;
+  margin-bottom: 10px; // Espacio debajo del título
   margin-left: 0;
   text-align: left;
+}
+
+/* Aseguramos que estos títulos no tengan márgenes superiores adicionales */
+.recent-transactions-section .card-title2,
+.savings-goals-section .card-title2 {
+  margin-top: 0;
 }
 
 /* Text inside chart section (like "Desempeño financiero mensual") */
@@ -177,6 +165,7 @@ ion-header {
   gap: 20px;
   margin-top: 30px;
   flex-wrap: wrap;
+  align-items: flex-start; /* CLAVE: Alinea los elementos hijos al inicio (arriba) del contenedor flex */
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -187,6 +176,8 @@ ion-header {
 .savings-goals-section {
   flex: 1;
   min-width: 300px;
+  /* Aseguramos que no tengan padding superior propio que los desalinee */
+  padding-top: 0;
 }
 
 .recent-transactions-placeholder,
@@ -225,6 +216,43 @@ ion-header {
   color: var(--secondary-text-color);
 }
 
+/* --- Section Header (Title and Button) --- */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* Alinea los elementos del header (título y botón si lo hubiera) verticalmente */
+  margin-bottom: 10px; /* Margen para separar el título del contenido de la sección */
+  padding-top: 0; /* Asegura que este div no tenga padding superior que desalinee */
+}
+
+/* --- No Data Container (Message and Button) --- */
+.no-data-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centra el texto y el botón horizontalmente */
+  padding: 10px; /* Añade un padding interno al contenedor */
+  width: 100%; /* Asegura que ocupe todo el ancho disponible */
+  box-sizing: border-box; /* Incluye padding en el ancho */
+}
+
+/* Centrar el texto de "No hay transacciones recientes" o "No hay metas de ahorro" */
+.no-data-container p {
+  text-align: center;
+  margin-bottom: 15px; /* Espacio entre el texto y el botón */
+}
+
+.no-data-container > div {
+  width: 100%; /* Asegura que el div que contiene el botón ocupe todo el ancho para centrarlo */
+  display: flex;
+  justify-content: center; /* Centra el botón dentro de su div */
+}
+
+
+.section-header ion-button {
+  --padding-top: 5px;
+  --padding-bottom: 5px;
+  font-size: 12px;
+}
 
 /* --- Skeleton Loader Styles (using inlined variables) --- */
 
@@ -260,7 +288,7 @@ ion-header {
 .h-6 { height: 1.5rem; }
 .h-8 { height: 2rem; }
 .h-10 { height: 2.5rem; }
-.h-48 { height: 12rem; }
+.h-48 { height: 12rem; } /* Altura para el esqueleto del gráfico */
 
 .w-full { width: 100%; }
 .w-3\/4 { width: 75%; }

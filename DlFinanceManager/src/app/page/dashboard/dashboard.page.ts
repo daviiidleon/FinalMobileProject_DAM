@@ -1,10 +1,19 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonIcon, IonTitle, IonToolbar, LoadingController } from '@ionic/angular/standalone';
+import {
+  IonContent,
+  IonHeader,
+  IonTitle,
+  IonToolbar,
+  LoadingController,
+  IonIcon,
+  IonButton // Asegúrate de que IonButton esté importado
+} from '@ionic/angular/standalone';
 import { HeaderComponent } from "../../component/header/header.component";
 import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
 import { Chart, registerables } from 'chart.js';
+import {RouterLink} from "@angular/router";
 Chart.register(...registerables);
 
 // Define interfaces for your data
@@ -41,15 +50,17 @@ interface SavingsGoal {
   styleUrls: ['./dashboard.page.scss'],
   standalone: true,
   imports: [
+    CommonModule,
+    FormsModule,
     IonContent,
     IonHeader,
     IonTitle,
     IonToolbar,
-    CommonModule,
-    FormsModule,
+    IonButton, // IonButton proporciona la funcionalidad routerLink
+    IonIcon,
     HeaderComponent,
     SideMenuComponent,
-    IonIcon
+    RouterLink,
   ]
 })
 export class DashboardPage implements OnInit, AfterViewInit {
@@ -76,6 +87,7 @@ export class DashboardPage implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    // La creación del gráfico se mueve al final de loadDashboardData para asegurar que el DOM esté listo
   }
 
   async loadDashboardData() {
@@ -125,10 +137,11 @@ export class DashboardPage implements OnInit, AfterViewInit {
     } finally {
       this.isLoading = false; // Hide skeleton loaders
       loading.dismiss(); // Dismiss the Ionic loading spinner
-      // Call createIncomeExpenseChart after isLoading is false and DOM has potentially updated
+      // Llama a createIncomeExpenseChart DESPUÉS de que isLoading sea false
+      // y después de un pequeño retraso para asegurar que el DOM se haya actualizado.
       setTimeout(() => {
         this.createIncomeExpenseChart();
-      }, 0);
+      }, 0); // Un setTimeout(..., 0) pone la ejecución al final de la cola de eventos
     }
   }
 
@@ -282,4 +295,3 @@ export class DashboardPage implements OnInit, AfterViewInit {
     }
   }
 }
-

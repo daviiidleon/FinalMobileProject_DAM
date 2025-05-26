@@ -39,12 +39,10 @@
         </div>
       </div>
 
-      <div *ngIf="isLoading" class="chart-section">
-        <div class="skeleton h-8 w-2/3 mb-4"></div>
-        <div class="skeleton h-4 w-1/2 mb-6"></div>
-        <div class="chart-placeholder skeleton-chart">
-          <div class="skeleton h-48 w-full"></div>
-        </div>
+      <div *ngIf="isLoading" class="chart-section skeleton-widget">
+        <div class="skeleton h-8 w-1/2 mb-4"></div>
+        <div class="skeleton h-4 w-full mb-2"></div>
+        <div class="skeleton h-48 w-full"></div>
       </div>
 
       <div *ngIf="!isLoading" class="chart-section">
@@ -68,31 +66,37 @@
 
       <div *ngIf="!isLoading" class="bottom-widgets">
         <div class="recent-transactions-section">
-          <div class="card-title2">Transacciones recientes</div>
-          <div class="recent-transactions-placeholder" *ngIf="recentTransactions.length > 0; else noTransactions">
-            <ul>
-              <li *ngFor="let transaction of recentTransactions">{{ transaction.description }} - {{ transaction.amount | number:'1.2-2' }}</li>
-            </ul>
+          <div class="section-header">
+            <div class="card-title2">Transacciones recientes</div>
           </div>
-          <ng-template #noTransactions>
-            <div class="recent-transactions-placeholder">
-              <p style="text-align: center; color: #777;">No hay transacciones recientes.</p>
-            </div>
-          </ng-template>
+          <div class="recent-transactions-placeholder">
+            <ng-template #noTransactions>
+              <div class="no-data-container">
+                <p style="text-align: center; color: #777;">No hay transacciones recientes.</p>
+                <div>
+                  <ion-button routerLink="/transacciones">Ir a Transacciones</ion-button>
+                </div>
+              </div>
+            </ng-template>
+            <ng-container *ngTemplateOutlet="noTransactions"></ng-container>
+          </div>
         </div>
 
         <div class="savings-goals-section">
-          <div class="card-title2">Metas de ahorro</div>
-          <div class="savings-goals-placeholder" *ngIf="savingsGoals.length > 0; else noGoals">
-            <ul>
-              <li *ngFor="let goal of savingsGoals">{{ goal.name }} - {{ goal.currentAmount }} / {{ goal.targetAmount }}</li>
-            </ul>
+          <div class="section-header">
+            <div class="card-title2">Metas de ahorro</div>
           </div>
-          <ng-template #noGoals>
-            <div class="savings-goals-placeholder">
-              <p style="text-align: center; color: #777;">No hay metas de ahorro activas.</p>
-            </div>
-          </ng-template>
+          <div class="savings-goals-placeholder">
+            <ng-template #noGoals>
+              <div class="no-data-container">
+                <p style="text-align: center; color: #777;">No hay metas de ahorro activas.</p>
+                <div>
+                  <ion-button routerLink="/ahorro">Ir a Ahorro</ion-button>
+                </div>
+              </div>
+            </ng-template>
+            <ng-container *ngTemplateOutlet="noGoals"></ng-container>
+          </div>
         </div>
       </div>
     </div>
