@@ -157,8 +157,10 @@ ion-header {
   /* Styles for centering the main content within the layout */
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: center; /* This centers content horizontally */
   width: 100%; // Ensure it takes full width to allow centering
+  max-width: 1200px; /* Add a max-width to keep content from stretching too wide */
+  margin: 0 auto; /* Center the main content block itself */
 }
 
 /* --- Budgets Header Section --- */
@@ -169,6 +171,7 @@ ion-header {
   margin-bottom: 20px;
   width: 100%; // Allow header to take full width for justify-content
   padding-right: 10px;
+  max-width: 1200px; /* Align with main-content max-width */
 }
 
 .page-title h2 {
@@ -215,6 +218,7 @@ ion-header {
   margin-bottom: 20px;
   width: 100%; // Make alert section take full width
   box-shadow: var(--shadow-light);
+  max-width: 1200px; /* Align with main-content max-width */
 
   .alert-container {
     display: flex;
@@ -260,6 +264,7 @@ ion-header {
     color: var(--main-text-color);
     margin-bottom: 15px;
     padding-right: 10px;
+    max-width: 1200px; /* Align with main-content max-width */
   }
 }
 
@@ -268,6 +273,8 @@ ion-header {
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   width: 100%; // Allow cards container to take full width
   gap: 20px;
+  justify-items: center; /* Centers grid items horizontally */
+  align-items: center; /* Centers grid items vertically */
 }
 
 .budget-card {
@@ -413,13 +420,16 @@ ion-header {
 
 /* --- Empty State Styles (Unified) --- */
 .empty-state {
-  text-align: center;
+  text-align: center; /* This centers inline-block content like text and buttons */
   color: var(--secondary-text-color);
   margin-top: 40px; /* Increased margin-top for more vertical spacing */
   width: 100%; /* Ensure it takes full width to center content */
   border-radius: 8px;
   padding: 40px 20px; /* Increased padding */
   box-sizing: border-box;
+  max-width: 1200px; /* Align with main-content max-width */
+  margin-left: auto;   /* Added for explicit centering of the block itself */
+  margin-right: auto;  /* Added for explicit centering of the block itself */
 
   h2 {
     font-size: 1.5em;
