@@ -47,15 +47,13 @@
         </div>
       </div>
 
-      <div class="empty-goals" *ngIf="!isLoading && objetivos.length === 0">
-        <div class="empty-state">
-          <h2>Start planning your dreams!</h2>
-          <p>Define your savings goals and track your progress.</p>
-          <ion-button (click)="openGoalModal('add')">
-            <ion-icon name="add-outline" slot="start"></ion-icon>
-            Create First Goal
-          </ion-button>
-        </div>
+      <div class="empty-state" *ngIf="!isLoading && objetivos.length === 0">
+        <h2>Start planning your dreams!</h2>
+        <p>Define your financial goals and track your progress.</p>
+        <ion-button class="create-first-button" (click)="openGoalModal('add')">
+          <ion-icon name="add-outline" slot="start"></ion-icon>
+          Create First Goal
+        </ion-button>
       </div>
 
       <div class="goals-grid" *ngIf="!isLoading && objetivos.length > 0">
@@ -143,8 +141,8 @@
             <ion-item class="form-item">
               <ion-label position="floating" (click)="toggleDatePicker()">Deadline (Optional)</ion-label>
               <span *ngIf="goalForm.get('fechaLimite')?.value" class="selected-date-display" (click)="toggleDatePicker()">
-                {{ goalForm.get('fechaLimite')?.value | date:'mediumDate' }}
-              </span>
+                 {{ goalForm.get('fechaLimite')?.value | date:'mediumDate' }}
+               </span>
 
               <ion-datetime
                 *ngIf="showDatePicker"

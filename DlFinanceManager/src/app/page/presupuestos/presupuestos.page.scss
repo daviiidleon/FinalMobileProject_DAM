@@ -25,6 +25,7 @@
   --ion-color-light: #f8f9fa; // Used for modal header toolbar
   --ion-color-step-50: #f0f2f5; // Slightly darker light step for input backgrounds for better contrast
   --ion-color-step-100: #e9ecef; // Kept as it might be used for borders
+  --ion-color-medium: #92949c; // Added for empty state icon
 
   // Added label-color for dark theme consistency, though it's set in dark-theme
   --label-color: var(--secondary-text-color);
@@ -64,11 +65,11 @@ body.dark-theme { /* Assuming a dark theme exists */
   // Dark theme specific for outline buttons
   ion-card .card-actions { /* Changed from .card-footer to .card-actions for direct targeting */
     .edit-button { /* Specific targeting for .edit-button within card-actions */
-      --background: none !important; /* Ensure no background */
+      --background: rgba(var(--ion-color-primary-rgb), 0.1) !important; // Match goals add button
       --color: var(--ion-color-primary) !important;
       --border-color: var(--ion-color-primary) !important;
       &:hover {
-        --background: rgba(var(--ion-color-primary-rgb), 0.1) !important;
+        --background: rgba(var(--ion-color-primary-rgb), 0.2) !important;
       }
     }
     ion-button[color="danger"] {
@@ -93,11 +94,13 @@ body.dark-theme { /* Assuming a dark theme exists */
         --border-color: transparent !important;
         --border-width: 0 !important;
         border: none !important; // Fallback
+        --background: var(--ion-color-step-50) !important; // Restore step background for dark inputs
       }
 
       // Dark theme specific for ion-datetime-button (now for selected-date-display span)
       .selected-date-display {
         color: var(--main-text-color) !important; /* Ensure button text is light */
+        background: var(--ion-color-step-50) !important; // Restore step background for dark date display
       }
     }
     .form-item ion-label {
@@ -408,49 +411,58 @@ ion-header {
   }
 }
 
-.no-budgets {
+/* --- Empty State Styles (Unified) --- */
+.empty-state {
   text-align: center;
   color: var(--secondary-text-color);
-  margin-top: 20px; /* Add margin-top to separate from header */
+  margin-top: 40px; /* Increased margin-top for more vertical spacing */
   width: 100%; /* Ensure it takes full width to center content */
+  border-radius: 8px;
+  padding: 40px 20px; /* Increased padding */
+  box-sizing: border-box;
 
+  h2 {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: var(--main-text-color);
+    margin-bottom: 8px;
+    margin-top: 0;
+  }
 
-  ion-button {
+  p {
+    margin-bottom: 25px; /* Adjusted margin for spacing */
+    font-size: 1em; /* Standard paragraph text size */
+    color: var(--secondary-text-color);
+    margin-top: 0;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
 
+  .create-first-button { /* Specific class for the "Create First" buttons */
     --border-radius: 8px;
+    font-weight: 600;
     text-transform: none;
-    ion-icon {
-      margin-right: 8px;
-    }
-    // This button should also be blue
+    height: auto;
+    display: flex; /* Use flexbox for centering content */
+    align-items: center;
+    justify-content: center; /* Center horizontally */
+    margin: 0 auto; /* Center button horizontally */
+    max-width: 200px; /* Set a max-width for the button */
+
     --background: var(--ion-color-primary);
     --color: var(--ion-color-primary-contrast);
+
     &:hover {
       --background: var(--ion-color-primary-shade);
     }
-  }
 
-  /* Ensure appropriate vertical spacing for content within the empty state */
-  p {
-    margin-bottom: 15px; /* Adjust margin-bottom to separate from button */
-    font-size: 0.95em; /* Match Savings Goals empty state description size */
-    color: var(--secondary-text-color); /* Match secondary text color */
-    margin-top: 0; /* Ensure no top margin */
-    max-width: 400px; /* Constrain width for readability */
-    margin-left: auto; /* Center text block */
-    margin-right: auto; /* Center text block */
+    ion-icon {
+      margin-right: 8px;
+      font-size: 18px;
+      --color: var(--ion-color-primary-contrast); /* Ensure icon color is white */
+    }
   }
-}
-.no-budgets h2 {
-  font-size: 1.5em;  /* Match Savings Goals empty state title size */
-  font-weight: bold;  /* Ensure bold */
-  color: var(--main-text-color);  /* Match main text color */
-  margin-bottom: 8px;
-  margin-top: 0;  /* Ensure no top margin */
-}
-
-.no-budgets p {
-  margin-right: auto; /* Center text block */
 }
 
 /* --- Form Modal Styles --- */

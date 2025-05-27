@@ -52,7 +52,8 @@
 
       <div class="past-budgets">
         <h3 *ngIf="isLoading" class="skeleton h-6 w-40 mb-4"></h3>
-        <h3 *ngIf="!isLoading">Past Budgets</h3>
+
+        <h3 *ngIf="!isLoading"></h3>
         <div class="budget-cards-container">
           <ng-container *ngIf="isLoading">
             <div class="budget-card skeleton-budget-card" *ngFor="let i of [1, 2, 3]">
@@ -98,9 +99,10 @@
             </div>
           </ng-container>
 
-          <div *ngIf="!isLoading && pastBudgets.length === 0" class="no-budgets">
-            <p>No budgets created yet. Start by creating your first budget!</p>
-            <ion-button class="create-budget-button" (click)="openBudgetModal('add')">
+          <div *ngIf="!isLoading && pastBudgets.length === 0" class="empty-state">
+            <h2>No budgets created yet.</h2>
+            <p>Start by creating your first budget!</p>
+            <ion-button class="create-first-button" (click)="openBudgetModal('add')">
               <ion-icon name="add-outline" slot="start"></ion-icon>
               Create First Budget
             </ion-button>
@@ -147,8 +149,8 @@
             <ion-item class="form-item">
               <ion-label position="floating" (click)="toggleMonthYearPicker()">Month and Year</ion-label>
               <span *ngIf="budgetForm.get('mes')?.value" class="selected-date-display" (click)="toggleMonthYearPicker()">
-                {{ budgetForm.get('mes')?.value | date:'MMMM yyyy' }}
-              </span>
+                 {{ budgetForm.get('mes')?.value | date:'MMMM yyyy' }}
+               </span>
 
               <ion-datetime
                 *ngIf="showMonthYearPicker"
