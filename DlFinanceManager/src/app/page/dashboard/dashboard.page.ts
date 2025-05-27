@@ -178,208 +178,51 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  async fetchMonthlyIncomeExpense(account: Account | null): Promise<IncomeExpense> {
+  async fetchMonthlyIncomeExpense(account: Account | null): Promise<IncomeExpense> { // Ensure this returns a Promise
     console.log(`WorkspaceMonthlyIncomeExpense called with account: ${account ? account.nombre : 'null'}`);
     return new Promise(resolve => {
       setTimeout(() => {
-        // Simulate data fetching based on account type
-        if (account === null) {
-          resolve({ income: 0, expense: 0 });
-        } else {
-          switch (account.tipo) {
-            case 'Checking':
-              resolve({ income: parseFloat((Math.random() * 4000 + 1000).toFixed(2)), expense: parseFloat((Math.random() * 3000 + 500).toFixed(2)) });
-              break;
-            case 'Savings':
-              resolve({ income: parseFloat((Math.random() * 50 + 10).toFixed(2)), expense: parseFloat((Math.random() * 20 + 5).toFixed(2)) });
-              break;
-            case 'Credit Card':
-            case 'Loan':
-            case 'Investment':
-            case 'Cash':
-              resolve({ income: 0, expense: 0 }); // Typically no direct income/expense for these types
-              break;
-            default:
-              resolve({ income: 3000, expense: 2000 });
-              break;
-          }
-        }
+        // Always resolve with 0 income and expense as per requirement
+        resolve({ income: 0, expense: 0 });
       }, 1000); // Simulate network delay
     });
   }
 
   async fetchBudgetUtilization(account: Account | null): Promise<BudgetUtilization> {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       setTimeout(() => {
-        // Simulate data fetching based on account type
-        if (account === null) {
-          // Return valid BudgetUtilization object
-          resolve({ percentage: 0, utilized: 0, total: 0 });
-        } else {
-          let percentage: number;
-          let utilized: number;
-          let total: number;
-
-          switch (account.tipo) {
-            case 'Checking':
-              total = 5000; // Example budget total
-              utilized = parseFloat((Math.random() * total).toFixed(2));
-              percentage = parseFloat(((utilized / total) * 100).toFixed(2));
-              resolve({ percentage: percentage, utilized: utilized, total: total });
-              break;
-            case 'Savings':
-              resolve({ percentage: 0, utilized: 0, total: 0 }); // Savings typically don't have budget utilization
-              break;
-            case 'Credit Card':
-              total = 10000; // Example credit limit
-              utilized = Math.abs(account.saldo); // Use absolute value of current balance as utilized
-              percentage = parseFloat(((utilized / total) * 100).toFixed(2));
-              resolve({ percentage: percentage, utilized: utilized, total: total });
-              break;
-            case 'Loan':
-              resolve({ percentage: 0, utilized: 0, total: 0 }); // Loans typically don't have budget utilization
-              break;
-            default:
-              resolve({ percentage: 0, utilized: 0, total: 0 });
-              break;
-          }
-        }
-      }, 700);
+        // As per requirement, always resolve with 0 utilization and total
+        // Note: Ensure the BudgetUtilization interface is updated if 'percentage', 'utilized' or 'total' are not the final properties needed.
+        resolve({ percentage: 0, utilized: 0, total: 0 });
+      }, 700); // Simulate network delay
     });
   }
 
   async fetchIncomeExpenseChartData(account: Account | null): Promise<any> {
+    // Ensure fetchIncomeExpenseChartData returns empty data as per requirement
     return new Promise(resolve => {
       setTimeout(() => {
-        // Simulate data fetching based on account type
-        if (account === null) {
-          resolve({ labels: [], datasets: [] });
-        } else {
-          switch (account.tipo) {
-            case 'Checking':
-              resolve({
-                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-                datasets: [
-                  { label: 'Ingresos', data: [parseFloat((Math.random() * 1500 + 2000).toFixed(2)), parseFloat((Math.random() * 1000 + 2000).toFixed(2)), parseFloat((Math.random() * 800 + 1500).toFixed(2)), parseFloat((Math.random() * 1200 + 2500).toFixed(2)), parseFloat((Math.random() * 1000 + 1500).toFixed(2)), parseFloat((Math.random() * 1300 + 1900).toFixed(2))], backgroundColor: '#28a745' },
-                  { label: 'Gastos', data: [parseFloat((Math.random() * 1000 + 1500).toFixed(2)), parseFloat((Math.random() * 800 + 1000).toFixed(2)), parseFloat((Math.random() * 1500 + 2000).toFixed(2)), parseFloat((Math.random() * 1200 + 1500).toFixed(2)), parseFloat((Math.random() * 2000 + 2500).toFixed(2)), parseFloat((Math.random() * 1300 + 1400).toFixed(2))], backgroundColor: '#dc3545' },
-                ],
-              });
-              break;
-            case 'Savings':
-              resolve({
-                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-                datasets: [
-                  { label: 'Crecimiento', data: [parseFloat((Math.random() * 50 + 1000).toFixed(2)), parseFloat((Math.random() * 60 + 1050).toFixed(2)), parseFloat((Math.random() * 70 + 1100).toFixed(2)), parseFloat((Math.random() * 80 + 1150).toFixed(2)), parseFloat((Math.random() * 90 + 1200).toFixed(2)), parseFloat((Math.random() * 100 + 1250).toFixed(2))], backgroundColor: '#007bff' },
-                ],
-              });
-              break;
-            case 'Credit Card':
-            case 'Loan':
-            case 'Investment':
-            case 'Cash':
-              resolve({
-                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-                datasets: [
-                  { label: 'Ingresos', data: [0, 0, 0, 0, 0, 0], backgroundColor: '#28a745' },
-                  { label: 'Gastos', data: [0, 0, 0, 0, 0, 0], backgroundColor: '#dc3545' },
-                ],
-              });
-              break;
-            default:
-              resolve({
-                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-                datasets: [
-                  { label: 'Ingresos', data: [parseFloat((Math.random() * 1500 + 2000).toFixed(2)), parseFloat((Math.random() * 1000 + 2000).toFixed(2)), parseFloat((Math.random() * 800 + 1500).toFixed(2)), parseFloat((Math.random() * 1200 + 2500).toFixed(2)), parseFloat((Math.random() * 1000 + 1500).toFixed(2)), parseFloat((Math.random() * 1300 + 1900).toFixed(2))], backgroundColor: '#28a745' },
-                  { label: 'Gastos', data: [parseFloat((Math.random() * 1000 + 1500).toFixed(2)), parseFloat((Math.random() * 800 + 1000).toFixed(2)), parseFloat((Math.random() * 1500 + 2000).toFixed(2)), parseFloat((Math.random() * 1200 + 1500).toFixed(2)), parseFloat((Math.random() * 2000 + 2500).toFixed(2)), parseFloat((Math.random() * 1300 + 1400).toFixed(2))], backgroundColor: '#dc3545' },
-                ],
-              });
-              break;
-          }
-        }
+        resolve({ labels: [], datasets: [] });
       }, 1200);
     });
   }
 
   async fetchRecentTransactions(account: Account | null): Promise<Transaction[]> {
     console.log(`WorkspaceRecentTransactions called with account: ${account ? account.nombre : 'null'}`);
+    // As per requirement, always resolve with an empty array
     return new Promise((resolve) => {
       setTimeout(() => {
-        if (account === null) {
-          resolve([]); // Resolve with empty array if no account is selected
-        } else {
-          switch (account.tipo) {
-            case 'Checking':
-              resolve([
-                { id: 1, description: 'Compras de comestibles', amount: parseFloat((Math.random() * -40 - 20).toFixed(2)), date: new Date(Date.now() - Math.random() * 10 * 24 * 60 * 60 * 1000) },
-                { id: 2, description: 'Depósito de salario', amount: parseFloat((Math.random() * 500 + 2000).toFixed(2)), date: new Date(Date.now() - Math.random() * 5 * 24 * 60 * 60 * 1000) },
-                { id: 3, description: 'Pago de alquiler', amount: parseFloat((Math.random() * -100 - 700).toFixed(2)), date: new Date(Date.now() - Math.random() * 8 * 24 * 60 * 60 * 1000) },
-                { id: 4, description: 'Cena con amigos', amount: parseFloat((Math.random() * -30 - 20).toFixed(2)), date: new Date(Date.now() - Math.random() * 3 * 24 * 60 * 60 * 1000) },
-                { id: 5, description: 'Transferencia', amount: parseFloat((Math.random() * -200).toFixed(2)), date: new Date(Date.now() - Math.random() * 1 * 24 * 60 * 60 * 1000) },
-              ]);
-              break;
-            case 'Savings':
-              resolve([
-                { id: 6, description: 'Intereses ganados', amount: parseFloat((Math.random() * 10 + 1).toFixed(2)), date: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000) },
-                { id: 7, description: 'Transferencia interna', amount: parseFloat((Math.random() * -500 - 100).toFixed(2)), date: new Date(Date.now() - Math.random() * 15 * 24 * 60 * 60 * 1000) },
-              ]);
-              break;
-            case 'Credit Card':
-            case 'Loan':
-            case 'Investment':
-            case 'Cash':
-              resolve([
-                { id: 8, description: 'Pago de factura', amount: parseFloat((Math.random() * 100 + 50).toFixed(2)), date: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000) },
-                { id: 9, description: 'Compra en línea', amount: parseFloat((Math.random() * -100 - 20).toFixed(2)), date: new Date(Date.now() - Math.random() * 2 * 24 * 60 * 60 * 1000) },
-              ]);
-              break;
-            default:
-              resolve([
-                { id: 10, description: 'Transacción genérica 1', amount: parseFloat((Math.random() * -100).toFixed(2)), date: new Date(Date.now() - Math.random() * 5 * 24 * 60 * 60 * 1000) },
-                { id: 11, description: 'Transacción genérica 2', amount: parseFloat((Math.random() * 50).toFixed(2)), date: new Date(Date.now() - Math.random() * 2 * 24 * 60 * 60 * 1000) },
-              ]);
-              break;
-          }
-        }
+        // Return empty array for transactions
+        resolve([]);
       }, 900);
     });
   }
 
   async fetchSavingsGoals(account: Account | null): Promise<SavingsGoal[]> {
     console.log(`WorkspaceSavingsGoals called with account: ${account ? account.nombre : 'null'}`);
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        if (account === null) {
-          resolve([]); // Resolve with empty array if no account is selected
-        } else {
-          switch (account.tipo) {
-            case 'Checking':
-              resolve([
-                { id: 1, name: 'Fondo de Vacaciones', currentAmount: parseFloat((Math.random() * 500 + 200).toFixed(2)), targetAmount: 2000 },
-                { id: 2, name: 'Nueva computadora portátil', currentAmount: parseFloat((Math.random() * 300 + 900).toFixed(2)), targetAmount: 1500 },
-              ]);
-              break;
-            case 'Savings':
-              resolve([
-                { id: 3, name: 'Enganche de coche', currentAmount: parseFloat((Math.random() * 1000 + 2000).toFixed(2)), targetAmount: 5000 },
-                { id: 4, name: 'Reforma de cocina', currentAmount: parseFloat((Math.random() * 200 + 300).toFixed(2)), targetAmount: 10000 },
-                { id: 5, name: 'Fondo de Emergencia', currentAmount: parseFloat((Math.random() * 1000 + 4000).toFixed(2)), targetAmount: 5000 },
-              ]);
-              break;
-            case 'Credit Card':
-            case 'Loan':
-            case 'Investment':
-            case 'Cash':
-              resolve([]); // No savings goals for these types
-              break;
-            default:
-              resolve([
-                { id: 1, name: 'Fondo de Vacaciones', currentAmount: parseFloat((Math.random() * 500 + 200).toFixed(2)), targetAmount: 2000 },
-              ]);
-              break;
-          }
-        }
-      }, 800);
-    });
+    // As per requirement, always resolve with an empty array
+    // Removed simulation logic
+    return Promise.resolve([]);
   }
 
   createIncomeExpenseChart(): void {
