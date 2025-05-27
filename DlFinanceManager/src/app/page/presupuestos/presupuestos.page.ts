@@ -35,6 +35,7 @@ import {
   closeOutline
 } from 'ionicons/icons';
 
+// Define types for better type safety
 type CategoriaKey = 'comida' | 'transporte' | 'entretenimiento' | 'educacion' | 'salud' | 'housing' | 'utilities' | 'otros';
 
 interface PastBudget {
@@ -43,10 +44,10 @@ interface PastBudget {
   categoriaDisplay: string;
   mes: string;
   anio: string;
-  limite: string;
-  gastado: string;
-  restante: string;
-  porcentaje: number;
+  limite: string; // Stored as formatted string, e.g., "€100.00"
+  gastado: string; // Stored as formatted string, e.g., "€50.00"
+  restante: string; // Stored as formatted string
+  porcentaje: number; // Stored as a decimal, e.g., 0.5 for 50%
 }
 
 interface BudgetAlert {
@@ -151,50 +152,13 @@ export class PresupuestosPage implements OnInit {
     });
     await loading.present();
 
-    setTimeout(() => {
-      this.pastBudgets = [
-        {
-          id: '1',
-          categoriaValue: 'comida',
-          categoriaDisplay: 'Comida',
-          mes: 'December',
-          anio: '2023',
-          limite: '€550',
-          gastado: '€120',
-          restante: '€430',
-          porcentaje: 0.218
-        },
-        {
-          id: '2',
-          categoriaValue: 'comida',
-          categoriaDisplay: 'Comida',
-          mes: 'November',
-          anio: '2023',
-          limite: '€500',
-          gastado: '€350.75',
-          restante: '€149.25',
-          porcentaje: 0.702
-        },
-        {
-          id: '3',
-          categoriaValue: 'transporte',
-          categoriaDisplay: 'Transporte',
-          mes: 'November',
-          anio: '2023',
-          limite: '€150',
-          gastado: '€160',
-          restante: '-€10',
-          porcentaje: 1.067
-        }
-      ];
-
-      this.updateBudgetAlerts();
-
-      this.isLoading = false;
-      loading.dismiss();
-    }, 1500);
+    // Budgets are currently initialized to empty for now
+    this.pastBudgets = [];
+    this.updateBudgetAlerts(); // Update alerts after initializing budgets
+    this.isLoading = false;
+    await loading.dismiss();
   }
-
+  // Method to get category icon based on category key
   getCategoryIcon(categoryValue: CategoriaKey): string {
     switch (categoryValue) {
       case 'comida':
@@ -228,13 +192,13 @@ export class PresupuestosPage implements OnInit {
     this.isEditMode = mode === 'edit';
     this.budgetForm.reset();
     this.editingBudgetId = null;
+    this.isSubmitting = false; // Reset submitting state
     this.showMonthYearPicker = false; // Ensure picker is hidden when modal opens
 
     if (this.isEditMode && budget) {
       this.editingBudgetId = budget.id;
       const limitAsNumber = parseFloat(budget.limite.replace('€', ''));
       // Construct a valid date string for parsing, ensuring month and year
-      // Make sure this construction results in a valid ISO string recognized by ion-datetime
       const budgetDate = new Date(`${budget.mes} 1, ${budget.anio}`); // Example: "December 1, 2023"
       this.budgetForm.patchValue({
         categoria: budget.categoriaValue,
@@ -261,7 +225,6 @@ export class PresupuestosPage implements OnInit {
 
   // This method will be called when the user confirms the date selection (clicks "Confirm")
   // The 'ionChange' event on ion-datetime fires when the value is selected and confirmed
-  // (if showDefaultButtons is true)
   onMonthYearSelected(event: any) {
     // The formControlName="mes" already handles updating the form's value.
     // We just need to hide the picker.
@@ -287,16 +250,16 @@ export class PresupuestosPage implements OnInit {
     const month = selectedDate.toLocaleString('en-US', { month: 'long' });
     const year = selectedDate.getFullYear().toString();
 
-    const newBudget: PastBudget = {
+    let newBudget: PastBudget = {
       id: this.isEditMode && this.editingBudgetId ? this.editingBudgetId : Date.now().toString(),
       categoriaValue: formValue.categoria,
       categoriaDisplay: this.categoriaOptions[formValue.categoria as CategoriaKey],
       mes: month,
       anio: year,
-      limite: `€${formValue.monto.toFixed(2)}`,
-      gastado: '€0.00',
-      restante: `€${formValue.monto.toFixed(2)}`,
-      porcentaje: 0
+      limite: `€${parseFloat(formValue.monto).toFixed(2)}`,
+      gastado: '€0.00', // Default for new budgets
+      restante: `€${parseFloat(formValue.monto).toFixed(2)}`, // Default for new budgets
+      porcentaje: 0 // Default for new budgets
     };
 
     setTimeout(async () => {
@@ -304,24 +267,26 @@ export class PresupuestosPage implements OnInit {
         const index = this.pastBudgets.findIndex(b => b.id === this.editingBudgetId);
         if (index !== -1) {
           const oldBudget = this.pastBudgets[index];
+          // When editing, retain 'gastado' value and recalculate 'restante' and 'porcentaje'
           const oldGastadoNum = parseFloat(oldBudget.gastado.replace('€', ''));
 
           newBudget.gastado = `€${oldGastadoNum.toFixed(2)}`;
-          newBudget.restante = `€${(formValue.monto - oldGastadoNum).toFixed(2)}`;
-          newBudget.porcentaje = oldGastadoNum / formValue.monto;
+          newBudget.restante = `€${(parseFloat(formValue.monto) - oldGastadoNum).toFixed(2)}`;
+          newBudget.porcentaje = oldGastadoNum / parseFloat(formValue.monto);
 
           this.pastBudgets[index] = newBudget;
           await this.presentToast('Budget updated successfully!', 'success');
         }
       } else {
+        // Add new budget to the beginning of the array
         this.pastBudgets.unshift(newBudget);
         await this.presentToast('Budget added successfully!', 'success');
       }
 
       this.updateBudgetAlerts();
       this.isSubmitting = false;
-      loading.dismiss();
-      this.closeBudgetModal();
+      await loading.dismiss();
+      await this.closeBudgetModal();
     }, 1000);
   }
 
@@ -339,8 +304,9 @@ export class PresupuestosPage implements OnInit {
         },
         {
           text: 'Delete',
-          handler: () => {
-            this.deleteBudget(id);
+          cssClass: 'danger',
+          handler: async () => {
+            await this.deleteBudget(id); // Ensure deleteBudget is awaited
           },
         },
       ],
@@ -356,26 +322,35 @@ export class PresupuestosPage implements OnInit {
     });
     await deleteLoading.present();
 
-    setTimeout(() => {
+    setTimeout(async () => { // Made this async to use await
       this.pastBudgets = this.pastBudgets.filter(budget => budget.id !== id);
 
       this.updateBudgetAlerts();
-      this.presentToast('Budget deleted successfully!', 'success');
+      await this.presentToast('Budget deleted successfully!', 'success'); // Await toast
 
-      deleteLoading.dismiss();
+      await deleteLoading.dismiss(); // Await dismiss
     }, 500);
   }
 
   private getBudgetById(id: string | null): PastBudget | undefined {
+    // Ensure pastBudgets is defined before attempting to find
+    if (!this.pastBudgets) {
+      return undefined;
+    }
     return this.pastBudgets.find(b => b.id === id);
   }
 
   private updateBudgetAlerts() {
+    // Ensure pastBudgets is defined before filtering
+    if (!this.pastBudgets) {
+      this.budgetAlerts = [];
+      return;
+    }
     // Only include alerts for budgets where the limit is greater than 0
     this.budgetAlerts = this.pastBudgets.filter(b => {
       const limiteNum = parseFloat(b.limite.replace('€', ''));
       const gastadoNum = parseFloat(b.gastado.replace('€', ''));
-      return limiteNum > 0 && gastadoNum / limiteNum >= 1; // Alert if 100% or more is used
+      return limiteNum > 0 && (gastadoNum / limiteNum) >= 1; // Alert if 100% or more is used
     }).map(b => ({
       message: `${b.categoriaDisplay} (${(b.porcentaje * 100).toFixed(0)}% used) for ${b.mes} ${b.anio}`
     }));

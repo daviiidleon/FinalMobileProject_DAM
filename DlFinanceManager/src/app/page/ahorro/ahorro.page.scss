@@ -1,17 +1,17 @@
 /* src/app/page/goals/goals.page.scss */
 
-/* --- Variables CSS en línea para la página de Metas --- */
+/* --- Inlined CSS Variables for Goals Page (similar to Predicciones Page for consistency) --- */
 :host {
   --page-background: #f8f9fa;
   --card-background: #ffffff;
   --border-color: #e9ecef;
   --main-text-color: #343a40;
   --secondary-text-color: #6c757d;
-  --sidebar-background: #f0f0f0;
-  --sidebar-text: #343a40;
+  --sidebar-background: #222; // Dark background for the side menu (from predicciones)
+  --sidebar-text: #fff; // White text for the side menu (from predicciones)
   --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.04);
   --shadow-subtle: 0 1px 3px rgba(0,0,0,0.03);
-  --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.08); // Keep medium shadow
 
   --ion-color-primary: #007bff;
   --ion-color-primary-shade: #006bdf;
@@ -21,14 +21,14 @@
   --ion-color-danger-shade: #c12f3d;
   --ion-color-warning: #ffc107;
   --ion-color-warning-shade: #e0a800;
-  --ion-color-light: #f8f9fa;
-  --ion-color-step-50: #f0f2f5;
-  --ion-color-step-100: #e9ecef;
+  --ion-color-light: #f8f9fa; // Used for modal header toolbar
+  --ion-color-step-50: #f8f8f8; // Light step for input backgrounds (from predicciones)
+  --ion-color-step-100: #e9ecef; // For borders in light mode (from presupuestos)
   --ion-color-medium: #92949c;
 
   --label-color: var(--secondary-text-color);
   --input-border-color: #d1d5db;
-
+  // Form/Modal specific variables (Keep)
   --form-item-background: var(--card-background);
   --form-item-border: 1px solid var(--border-color);
   --form-item-shadow: var(--shadow-subtle);
@@ -36,10 +36,9 @@
 
   // New variables for aesthetic improvements
   --card-border-radius: 10px;
-  --shadow-card: 0 4px 15px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 4px 15px rgba(0, 0, 0, 0.08); // Keep card shadow
   --shadow-input-focus: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.2);
-
-  --progress-bar-height: 10px;
+  --progress-bar-height: 10px; // Keep progress bar height
   --progress-bar-border-radius: 5px;
 }
 
@@ -49,11 +48,11 @@ body.dark-theme {
   --card-background: #2a2a2a;
   --main-text-color: #e0e0e0;
   --label-color: #bbbbbb;
-  --input-border-color: #444444;
+  --input-border-color: #444444; // Keep input border color
   --small-text-color: #aaaaaa;
   --hint-text-color: #999999;
-  --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.3);
-  --shadow-subtle: 0 1px 3px rgba(0,0,0,0.1);
+  --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.3); // Dark theme shadows
+  --shadow-subtle: 0 1px 3px rgba(0,0,0,0.1); // Dark theme shadows
   --shadow-medium: 0 6px 18px rgba(0, 0, 0, 0.4);
   --shadow-card: 0 6px 20px rgba(0, 0, 0, 0.5); // More pronounced for dark cards
   --shadow-input-focus: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.3);
@@ -154,8 +153,8 @@ ion-header {
 
 .first-content {
   width: 15%;
-  background-color: var(--sidebar-background);
-  color: var(--sidebar-text);
+  background-color: var(--sidebar-background); /* Use the unified sidebar background */
+  color: var(--sidebar-text); /* Use the unified sidebar text color */
   @media (max-width: 768px) {
     width: 100%;
   }
@@ -225,49 +224,32 @@ ion-header {
 }
 
 /* Updated Empty State Styles */
-.empty-goals {
-  text-align: center;
-  padding: 30px; /* Reduced from 40px */
+.empty-goals { /* Apply these styles to the content */
+  text-align: center; /* Center the content horizontally */
   color: var(--secondary-text-color);
-  border-top: 1px solid var(--border-color); /* Kept for separation from header area */
-  margin-top: 30px; /* Adjusted margin */
-  /* Added styles for a more contained, card-like look */
-  max-width: 600px; /* Example max-width, adjust as needed */
-  margin-left: auto; /* Center horizontally */
-  margin-right: auto; /* Center horizontally */
-  background-color: var(--card-background); /* Give it a card background */
-  border-radius: var(--card-border-radius); /* Use existing card border radius */
-  box-shadow: var(--shadow-light); /* Apply a light shadow to make it a distinct block */
-  display: flex; /* Use flexbox to center content vertically within the card */
-  align-items: center;
-  justify-content: center;
-  min-height: 250px; /* Give it a minimum height, adjust if needed */
-  flex-direction: column; /* Ensure content stacks vertically */
 }
 
-.empty-state {
+
+
+.empty-state { /* Apply these styles to the content *//* Apply these styles to the content */
   text-align: center;
   color: var(--secondary-text-color);
   padding: 0 20px; /* Add some horizontal padding inside */
 
-
   ion-icon {
-    font-size: 2.5em; /* Slightly smaller icon */
-    margin-bottom: 8px; /* Reduced margin */
-    color: var(--ion-color-medium);
+    margin-bottom: 15px; /* Increased margin for spacing */
+    color: var(--ion-color-medium); // Icon color
+    display: block; /* Ensure icon is a block element for margin */
   }
 
-  h2 {
-    margin-top: 0;
-    margin-bottom: 8px; /* Reduced margin */
-    font-weight: bold;
-    color: var(--main-text-color);
+  h2 { /* Slightly smaller heading */
+    color: var(--main-text-color); /* Ensure text color is correct */
     font-size: 1.5em; /* Slightly smaller heading */
   }
 
   p {
-    margin-bottom: 15px; /* Reduced margin */
-    font-size: 0.95em; /* Slightly smaller paragraph text */
+    margin-bottom: 20px; /* Adjusted margin for spacing */
+    font-size: 1em; /* Standard paragraph text size */
     max-width: 400px; /* Constrain paragraph width for better readability */
     margin-left: auto;
     margin-right: auto;
@@ -275,20 +257,26 @@ ion-header {
 
   ion-button {
     --background: var(--ion-color-primary);
+    /* Ensure the text and icon color is white */
+    display: inline-block;
+    max-width: 250px; /* Adjust if needed */
     --color: var(--ion-color-primary-contrast);
     --border-radius: 8px;
     font-weight: 600;
     text-transform: none;
-    padding: 8px 16px; /* Slightly less padding to make the button more compact */
+    padding: 10px 18px; /* Use consistent button padding */
     height: auto; /* Allow button height to adjust based on padding */
     font-size: 0.9em; /* Slightly smaller button text */
+    margin-top: 15px; /* Add margin above button */
 
     &:hover {
       --background: var(--ion-color-primary-shade);
     }
+    ion-icon { /* Style to make the plus icon white */
+      --color: white;
+    } /* End of empty state button styles */
   }
 }
-
 .goals-grid {
   .goals-card-container {
     display: grid;
@@ -298,13 +286,13 @@ ion-header {
   }
 
   .goal-card {
+    /* Base styles copied from .sugerencia-card for consistency */
     background-color: var(--card-background);
-    border-radius: var(--card-border-radius);
-    box-shadow: var(--shadow-card);
-    padding: 24px; // Slightly more padding
+    border-radius: 8px;
+    box-shadow: var(--shadow-light);
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     height: auto;
     border: 1px solid var(--border-color);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -312,30 +300,17 @@ ion-header {
     &:hover {
       transform: translateY(-5px);
       box-shadow: var(--shadow-medium);
-    }
+    } /* End of base styles */
   }
 
   .goal-header {
+    /* Styles to match prediction card header */
     display: flex;
     align-items: center;
-    margin-bottom: 20px;
-    font-weight: 600;
+    margin-bottom: 10px;
+    font-weight: 500;
     font-size: 18px;
     color: var(--main-text-color);
-
-    h3 {
-      font-size: 1.3em;
-      margin-right: 12px;
-      margin-bottom: 0;
-      flex-grow: 1;
-      color: var(--main-text-color);
-    }
-
-    ion-icon {
-      font-size: 20px;
-      color: var(--ion-color-primary);
-    }
-
     span {
       font-size: 13px;
       color: var(--secondary-text-color);
@@ -345,11 +320,11 @@ ion-header {
 
   .goal-body {
     margin-bottom: 20px;
-    flex-grow: 1;
 
-    p {
-      margin-bottom: 10px;
-      font-size: 15px;
+    /* Styles to match prediction card body text */
+    p { /* Styles to match prediction card body text */
+      margin-bottom: 8px; /* Reduced margin */
+      font-size: 14px; /* Match .sugerencia-info text font-size */
       color: var(--main-text-color);
 
       strong {
@@ -358,16 +333,15 @@ ion-header {
     }
 
     .progress-container {
-      margin-top: 18px;
-      margin-bottom: 12px;
+      /* Styles for visual consistency with prediction cards */
+      margin: 15px 0 10px 0;
+
       display: flex;
       align-items: center;
 
       ion-progress-bar {
-        flex-grow: 1;
         --background: var(--ion-color-step-100);
         --progress-background: var(--ion-color-primary);
-        height: var(--progress-bar-height);
         border-radius: var(--progress-bar-border-radius);
         margin-right: 10px;
       }
@@ -390,69 +364,84 @@ ion-header {
   }
 
   .goal-actions {
+    /* Styles to match prediction card actions *//* Styles to match prediction card actions */
     display: flex;
-    gap: 8px;
     justify-content: flex-end;
-    flex-wrap: nowrap;
-    align-items: center;
     margin-top: 15px;
-    padding-top: 15px;
+    gap: 10px;
+    padding-top: 15px; /* Added padding-top for consistency */
     border-top: 1px dashed var(--border-color);
 
-    ion-button {
-      font-size: 12.5px;
-      --padding-start: 10px;
-      --padding-end: 10px;
+    ion-button { height: 36px; /* Match .sugerencia-actions button height */
       --border-radius: 6px;
-      height: 36px;
-      font-weight: 600;
-      text-transform: none;
-      --box-shadow: none;
-      ion-icon {
-        margin-right: 5px;
-        font-size: 15px;
-      }
+      font-size: 0.9em; /* Match .sugerencia-actions button font-size */
+      font-weight: 600; /* Match .sugerencia-actions button font-weight */
     }
+  }
 
-    .add-button, .edit-button, ion-button[color="danger"] {
-      transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  .add-button, .edit-button, ion-button[color="danger"] {
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    font-size: 13px; /* Match .sugerencia-actions button font-size */
+    --border-radius: 5px; /* Match .sugerencia-actions button border-radius */
+    text-transform: none; /* Match .sugerencia-actions button text-transform */
+    padding: 8px 12px; /* Match .sugerencia-actions button padding */
+  }
+
+  .add-button {
+    --background: var(--ion-color-primary);
+    --color: var(--ion-color-primary-contrast);
+    box-shadow: var(--shadow-subtle);
+
+    &:hover {
+      --background: var(--ion-color-primary-shade);
     }
+  }
 
-    .add-button {
+  .edit-button {
+    --background: var(--card-background);
+    --color: var(--ion-color-primary);
+    --border-width: 1px;
+    --border-style: solid;
+    --border-color: var(--ion-color-primary);
+    box-shadow: var(--shadow-subtle);
+
+    &:hover {
       --background: var(--ion-color-primary);
       --color: var(--ion-color-primary-contrast);
-      box-shadow: var(--shadow-subtle);
-
-      &:hover {
-        --background: var(--ion-color-primary-shade);
-      }
     }
+  }
 
-    .edit-button {
-      --background: var(--card-background);
-      --color: var(--ion-color-primary);
-      --border-width: 1px;
-      --border-style: solid;
-      --border-color: var(--ion-color-primary);
-      box-shadow: var(--shadow-subtle);
+  ion-button[color="danger"] {
+    --background: var(--ion-color-danger);
+    --color: var(--ion-color-primary-contrast);
+    box-shadow: var(--shadow-subtle);
 
-      &:hover {
-        --background: var(--ion-color-primary);
-        --color: var(--ion-color-primary-contrast);
-      }
+    &:hover {
+      --background: var(--ion-color-danger-shade);
     }
+  }
 
-    ion-button[color="danger"] {
-      --background: var(--ion-color-danger);
-      --color: var(--ion-color-primary-contrast);
-      box-shadow: var(--shadow-subtle);
-
-      &:hover {
-        --background: var(--ion-color-danger-shade);
-      }
+  /* Styles for the edit button copied from .sugerencia-actions */
+  ion-button.edit-button {
+    --background: transparent;
+    --border-color: var(--ion-color-primary);
+    --color: var(--ion-color-primary);
+    --border-width: 1px;
+    &:hover {
+      --background: rgba(var(--ion-color-primary-rgb), 0.1);
+    }
+  }
+  /* Styles for the danger button copied from .sugerencia-actions */
+  ion-button[color="danger"] {
+    --background: var(--ion-color-danger);
+    --color: var(--ion-color-primary-contrast);
+    box-shadow: var(--shadow-subtle);
+    &:hover {
+      --background: var(--ion-color-danger-shade);
     }
   }
 }
+
 
 /* --- Modal specific styles (REVERTED TO PREVIOUS VERSION) --- */
 ion-modal {
@@ -616,6 +605,11 @@ ion-modal {
       --background: var(--ion-color-primary-shade);
     }
   }
+}
+
+/* Style to make the plus icon in the empty state button white, using higher specificity and !important */
+.empty-goals ion-button.create-budget-button ion-icon {
+  --color: white !important;
 }
 
 /* --- Skeleton Styles --- */

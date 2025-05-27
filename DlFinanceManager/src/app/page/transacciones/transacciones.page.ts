@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, formatDate } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
   IonBackButton,
@@ -46,7 +46,7 @@ import {
 } from 'ionicons/icons';
 import { TransactionService } from '../../services/transaction.service';
 import { Subscription } from 'rxjs';
-import { AccountService } from '../../services/account.service'; // Import AccountService
+import { AccountService } from '../../services/account.service';
 
 import * as XLSX from 'xlsx';
 
@@ -101,7 +101,7 @@ export class TransaccionesPage implements OnInit, OnDestroy {
   editingTransactionId: string | null = null;
 
   private accountSubscription!: Subscription;
-  private selectedAccount: any | null = null;
+  selectedAccount: any | null = null;
 
   constructor(
     private accountService: AccountService,
@@ -131,7 +131,7 @@ export class TransaccionesPage implements OnInit, OnDestroy {
       categoria: ['', Validators.required],
       descripcion: ['', Validators.required],
       cantidad: [null, [Validators.required, Validators.min(0.01)]],
-      accountId: [null] // Add accountId to the form group
+      accountId: [null]
     });
   }
 
@@ -185,7 +185,7 @@ export class TransaccionesPage implements OnInit, OnDestroy {
                 transaction.categoria = row[2];
                 transaction.descripcion = row[3];
                 transaction.cantidad = parseFloat(row[4]);
-                transaction.accountId = this.selectedAccount.id; // Assign the selected account ID
+                transaction.accountId = this.selectedAccount.id;
 
                 console.log('Adding transaction:', transaction);
                 this.transactionService.addTransaction(transaction);
@@ -208,19 +208,15 @@ export class TransaccionesPage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Subscribe to account selection changes
     this.accountSubscription = this.accountService.selectedAccount$.subscribe(account => {
       this.selectedAccount = account;
-      if (this.selectedAccount) {
-        this.loadTransactions(this.selectedAccount.id); // Load transactions for the selected account
-      } else {
-        this.transacciones = []; // Clear transactions if no account is selected
-        console.log('No account selected, transactions cleared.');
-        // If no account is selected, dismiss any loading indicator
-        this.loadingController.dismiss().catch(() => {});
-        this.isLoading = false;
-      }
+      this.transacciones = [];
+      console.log('Account selection changed, transactions cleared.'); // Clear transactions when account is selected
+      this.isLoading = false;
+      this.loadingController.dismiss().catch(() => {});
+      // We no longer load transactions here as we only want to show empty state
     });
+    this.loadTransactions();
   }
 
   ngOnDestroy() {
@@ -232,34 +228,26 @@ export class TransaccionesPage implements OnInit, OnDestroy {
     }
   }
 
-  async loadTransactions(accountId?: string) {
+  async loadTransactions() {
     this.isLoading = true;
     const loading = await this.loadingController.create({
-      message: accountId ? 'Loading transactions...' : 'Select an account to view transactions...',
+      message: 'Loading transactions...',
       spinner: 'crescent'
     });
     await loading.present();
 
-    if (this.transactionsSubscription) {
-      this.transactionsSubscription.unsubscribe();
-    }
-
-    this.transactionsSubscription = this.transactionService.transactions$.subscribe(data => {
-      const currentAccountId = accountId || (this.selectedAccount ? this.selectedAccount.id : null);
-
-      console.log(`Loading transactions. Current selected account ID: ${this.selectedAccount?.id || 'None'}. AccountId parameter: ${accountId || 'None'}. Effective account ID for filtering: ${currentAccountId || 'None'}`);
-
-      if (currentAccountId) {
-        // Filter transactions only if they have an accountId and it matches the currentAccountId
-        this.transacciones = data.filter(transaction => transaction.accountId === currentAccountId);
-        console.log(`Transactions loaded for account ${currentAccountId}:`, this.transacciones);
-      } else {
-        this.transacciones = [];
-        console.log('No account selected, transactions cleared.');
-      }
-
+    // In this phase, we only want to show empty transactions
+    // when a specific account is selected.
+    // The original service loads dummy data regardless of account.
+    // We will keep the subscription but always assign an empty array
+    // when an account is selected to prevent showing dummy data.
+    // If selectedAccount is null (initial state), we might still see dummy data from the service,
+    // but selecting an account will clear it.
+    this.transactionsSubscription = this.transactionService.transactions$.subscribe(() => {
+      // Regardless of the data from the service, if an account is selected, show empty.
+      this.transacciones = [];
       this.isLoading = false;
-      loading.dismiss();
+      loading.dismiss().catch(() => {});
     });
   }
 
@@ -268,14 +256,14 @@ export class TransaccionesPage implements OnInit, OnDestroy {
     this.isSubmitting = false;
 
     if (mode === 'add' && !this.selectedAccount) {
-      this.presentToast('Please select an account before adding a transaction.', 'warning');
+      await this.presentToast('Please select an account before adding a transaction.', 'warning');
       return;
     }
 
     if (this.isEditMode && transaction) {
       this.editingTransactionId = transaction.id;
       const amountValue = typeof transaction.cantidad === 'string'
-        ? parseFloat(transaction.cantidad.replace(/[^\d.-]/g, ''))
+        ? parseFloat(transaction.cantidad.replace(/[^0-9.-]+/g, ''))
         : transaction.cantidad;
 
       this.transactionForm.patchValue({
@@ -285,7 +273,7 @@ export class TransaccionesPage implements OnInit, OnDestroy {
         categoria: transaction.categoria,
         descripcion: transaction.descripcion,
         cantidad: amountValue,
-        accountId: transaction.accountId // Patch existing accountId
+        accountId: transaction.accountId
       });
     } else {
       this.editingTransactionId = null;
@@ -295,7 +283,7 @@ export class TransaccionesPage implements OnInit, OnDestroy {
         categoria: '',
         descripcion: '',
         cantidad: null,
-        accountId: this.selectedAccount ? this.selectedAccount.id : null // Set accountId for new transactions
+        accountId: this.selectedAccount ? this.selectedAccount.id : null
       });
     }
     this.isModalOpen = true;
@@ -306,13 +294,12 @@ export class TransaccionesPage implements OnInit, OnDestroy {
     this.transactionForm.markAllAsTouched();
 
     if (this.transactionForm.invalid) {
-      this.presentToast('Please fill in all required fields correctly.', 'danger');
+      await this.presentToast('Please fill in all required fields correctly.', 'danger');
       return;
     }
 
-    // Ensure an account is selected before saving (redundant check, but safe)
     if (!this.selectedAccount && !this.isEditMode) {
-      this.presentToast('No account selected to save the transaction to.', 'danger');
+      await this.presentToast('No account selected to save the transaction to.', 'danger');
       return;
     }
 
@@ -331,22 +318,21 @@ export class TransaccionesPage implements OnInit, OnDestroy {
       ...formData,
       id: this.editingTransactionId || this.generateUniqueId(),
       cantidad: formattedAmount,
-      // Ensure accountId is correctly set for new and existing transactions
       accountId: formData.accountId || (this.selectedAccount ? this.selectedAccount.id : null)
     };
 
     setTimeout(async () => {
       if (this.isEditMode) {
         this.transactionService.updateTransaction(transactionToSave);
-        this.presentToast('Transaction updated successfully!', 'success');
+        await this.presentToast('Transaction updated successfully!', 'success');
       } else {
         this.transactionService.addTransaction(transactionToSave);
-        this.presentToast('Transaction added successfully!', 'success');
+        await this.presentToast('Transaction added successfully!', 'success');
       }
       this.isSubmitting = false;
-      this.loadTransactions();
       await loading.dismiss();
-      this.cancelModal();
+      await this.loadTransactions();
+      await this.cancelModal();
     }, 700);
   }
 
@@ -361,7 +347,7 @@ export class TransaccionesPage implements OnInit, OnDestroy {
   async eliminarTransaccion(transaccion: any) {
     const alert = await this.alertController.create({
       header: 'Confirm Deletion',
-      message: `Are you sure you want to delete the transaction "${transaccion.descripcion}" on ${transaccion.fecha}? This action cannot be undone.`,
+      message: `Are you sure you want to delete the transaction "${transaccion.descripcion}" on ${this.formatDate(transaccion.fecha)}? This action cannot be undone.`,
       buttons: [
         {
           text: 'Cancel',
@@ -374,9 +360,10 @@ export class TransaccionesPage implements OnInit, OnDestroy {
         {
           text: 'Delete',
           cssClass: 'danger',
-          handler: () => {
+          handler: async () => {
             this.transactionService.deleteTransaction(transaccion.id);
-            this.presentToast('Transaction deleted successfully!', 'success');
+            await this.presentToast('Transaction deleted successfully!', 'success');
+            await this.loadTransactions();
           },
         },
       ],
@@ -395,8 +382,14 @@ export class TransaccionesPage implements OnInit, OnDestroy {
     toast.present();
   }
 
+  formatDate(isoDate: string | undefined): string {
+    if (!isoDate) {
+      return '';
+    }
+    return formatDate(isoDate, 'MMM d, y', 'en-US');
+  }
+
   private generateUniqueId(): string {
-    // Combine account ID with a timestamp and random string for better uniqueness within an account
     const accountId = this.selectedAccount ? this.selectedAccount.id : 'no-account';
     return `${accountId}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
   }
@@ -409,7 +402,13 @@ export class TransaccionesPage implements OnInit, OnDestroy {
     } else if (typeof excelDate === 'string') {
       const parts = excelDate.split('/');
       if (parts.length === 3) {
-        return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0])).toISOString();
+        const day = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const year = parseInt(parts[2], 10);
+        const date = new Date(year, month, day);
+        if (!isNaN(date.getTime())) {
+          return date.toISOString();
+        }
       }
       const date = new Date(excelDate);
       if (!isNaN(date.getTime())) {

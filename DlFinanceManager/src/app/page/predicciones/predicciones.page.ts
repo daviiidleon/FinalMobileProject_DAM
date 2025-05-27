@@ -9,7 +9,8 @@ import {
   IonIcon,
   IonRow,
   IonTitle,
-  IonToolbar,
+  IonToolbar, IonItem, IonLabel,
+  IonList,
   LoadingController // <--- Import LoadingController
 } from '@ionic/angular/standalone';
 import { HeaderComponent } from "../../component/header/header.component";
@@ -24,15 +25,17 @@ import { SideMenuComponent } from "../../component/side-menu/side-menu.component
     IonContent, IonHeader, IonTitle, IonToolbar,
     CommonModule, FormsModule, HeaderComponent,
     SideMenuComponent, IonIcon, IonButton, IonRow,
-    IonCol, IonGrid, CurrencyPipe
+    IonCol, IonGrid, CurrencyPipe, IonItem, IonLabel, IonList
   ]
 })
 export class PrediccionesPage implements OnInit {
 
-  sugerencias: any[] = [];
+  sugerencias: any[] = []; // Property to hold prediction data
   isLoading: boolean = true; // <--- Initialize to true
 
-  constructor(private loadingController: LoadingController) { } // <--- Inject LoadingController
+  selectedAccount: any | null = null; // To hold the selected account
+
+  constructor(private loadingController: LoadingController) { }
 
   ngOnInit() {
     // ngOnInit is typically for one-time initialization.
@@ -45,10 +48,19 @@ export class PrediccionesPage implements OnInit {
     await this.loadSugerencias();
   }
 
+  // Method responsible for loading data
+  // Ensure prediction data is initialized to an empty array
   async loadSugerencias() {
-    this.isLoading = true; // Set loading to true to show skeleton
+    // Check if an account is selected. If so, show no data for now.
+    if (this.selectedAccount) {
+      this.sugerencias = []; // Initialize prediction data to an empty array
+      this.isLoading = false; // Set loading to false
+      console.log('Account selected, prediction data initialized to empty.');
+      return; // Skip data loading logic if an account is selected
+    }
 
     // <--- Start Dashboard-style LoadingController
+    this.isLoading = true; // Set loading to true to show skeleton
     const loading = await this.loadingController.create({
       message: 'Cargando sugerencias...',
       spinner: 'crescent'
@@ -56,27 +68,13 @@ export class PrediccionesPage implements OnInit {
     await loading.present();
     // End Dashboard-style LoadingController --->
 
-    // Simulate network delay for fetching data
+    // Original logic for loading data (now only runs if no account is selected)
+    // This part can be removed entirely if you never want simulated data.
     await new Promise(resolve => setTimeout(resolve, 1500)); // 1.5 second delay
 
-    // Actual data loading
-    this.sugerencias = [
-      {
-        texto: '🎯 Puedes ahorrar 50€ reduciendo un 20% tu gasto en delivery.',
-        impacto: 50,
-        porcentaje: 40
-      },
-      {
-        texto: '💡 Mueve 20€ a tu cuenta de ahorro esta semana: no los necesitas.',
-        impacto: 20,
-        porcentaje: 25
-      },
-      {
-        texto: '📉 Estás gastando más en transporte que el 80% de usuarios como tú.',
-        impacto: 35,
-        porcentaje: 30
-      }
-    ];
+    // Initialize prediction data to an empty array
+    // Remove existing logic that attempts to fetch or simulate prediction data.
+    this.sugerencias = [];
 
     this.isLoading = false; // Set loading to false to hide skeleton
     loading.dismiss(); // <--- Dismiss the LoadingController
