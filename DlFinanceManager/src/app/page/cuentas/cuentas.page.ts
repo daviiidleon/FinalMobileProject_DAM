@@ -182,20 +182,22 @@ export class CuentasPage implements OnInit, OnDestroy {
 
   // Method to open the add/edit modal - RE-ADDED AND ADAPTED
   async openAccountModal(mode: 'add' | 'edit', account?: any) {
+    console.log('Edit button clicked for account:', account); // Log when edit button is clicked
     this.isEditMode = (mode === 'edit');
     this.isSubmitting = false; // Reset submitting state
 
     if (this.isEditMode && account) {
       this.editingAccountId = account.id;
-      // Parse saldo to a number, removing currency symbols if present
-      const saldoValue = parseFloat(account.saldo.replace(/[^\d.-]/g, ''));
+      // Reintroduce saldoValue to parse the saldo if it might be a string (e.g., from an API)
+      const saldoValue = parseFloat(String(account.saldo).replace(/[^\d.-]/g, ''));
+      console.log('Entering edit mode for account:', account); // Log when entering edit mode
       this.accountForm.patchValue({
         id: account.id,
         nombre: account.nombre,
         tipo: account.tipo,
         saldo: saldoValue,
         institucion: account.institucion,
-        fechaActualizacion: account.fechaActualizacion // Assuming already compatible format
+        fechaActualizacion: account.fechaActualizacion // Assuming already compatible format or will be handled by form control
       });
     } else {
       this.editingAccountId = null;
@@ -237,7 +239,7 @@ export class CuentasPage implements OnInit, OnDestroy {
     const accountToSave = {
       ...formData,
       id: this.editingAccountId || this.generateUniqueId(), // Use existing ID or generate new
-      saldo: numericBalance, // Store the cleaned and converted numeric balance
+      saldo: numericBalance, // Store the cleaned and converted numeric balance (from form input)
     };
 
     setTimeout(async () => { // Simulate API call delay, using the numeric balance
