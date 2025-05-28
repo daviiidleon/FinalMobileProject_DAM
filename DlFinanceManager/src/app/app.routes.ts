@@ -9,13 +9,13 @@ export const routes: Routes = [
     canActivate: [AuthGuard] // Protege esta ruta: requiere autenticación
   },
   {
-    path: 'auth',
+    path: 'auth', // Ruta de login/registro
     loadComponent: () => import('./page/auth/auth.page').then(m => m.AuthPage),
     canActivate: [NoAuthGuard] // Protege esta ruta: no permite acceso si ya está autenticado
   },
   {
     path: '', // Ruta por defecto
-    redirectTo: 'auth', // Redirige a la página de autenticación al iniciar la app
+    redirectTo: 'dashboard', // <-- CAMBIADO DE 'auth' a 'dashboard'
     pathMatch: 'full', // Asegura que la ruta completa debe coincidir
   },
   {
@@ -61,7 +61,7 @@ export const routes: Routes = [
   // Opcional: Ruta comodín para redirigir URLs no encontradas
   {
     path: '**',
-    redirectTo: 'home', // Si ya hay un usuario logueado, lo redirige a 'home'. Si no, 'AuthGuard' lo enviará a 'auth'.
+    redirectTo: 'dashboard', // <-- CAMBIADO DE 'home' a 'dashboard'
     pathMatch: 'full'
   }
 ];

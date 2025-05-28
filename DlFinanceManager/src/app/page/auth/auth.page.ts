@@ -60,7 +60,7 @@ export class AuthPage implements OnInit {
     this.authService.isAuthenticated.subscribe(isAuthenticated => {
       if (isAuthenticated) {
         // Usa NavController para manejar la pila de navegación de Ionic
-        this.navCtrl.navigateRoot('/home'); // Redirige a tu página principal si ya está logeado
+        this.navCtrl.navigateRoot('/dashboard'); // <-- CAMBIADO: Redirige a tu dashboard si ya está logeado
       }
     });
   }
@@ -87,7 +87,7 @@ export class AuthPage implements OnInit {
         const response = await this.authService.login(this.formData).toPromise();
         console.log('Login exitoso:', response);
         // Redirigir a la página principal después de un login exitoso
-        this.navCtrl.navigateRoot('/home'); // ¡Cambia '/home' por la ruta de tu dashboard!
+        this.navCtrl.navigateRoot('/dashboard'); // <-- CAMBIADO: Redirige al dashboard
       } else {
         // Lógica de Registro
         // Asegúrate de que password_confirmation se envía solo en el registro
@@ -99,8 +99,8 @@ export class AuthPage implements OnInit {
         };
         const response = await this.authService.register(registerData).toPromise();
         console.log('Registro exitoso:', response);
-        // Opcional: Redirigir a la página de login para que inicie sesión, o directamente a home
-        this.navCtrl.navigateRoot('/home'); // Puedes cambiar esto a '/login' si quieres que se logee tras el registro
+        // Opcional: Redirigir a la página de login para que inicie sesión, o directamente a dashboard
+        this.navCtrl.navigateRoot('/dashboard'); // <-- CAMBIADO: Redirige al dashboard tras el registro
       }
     } catch (error: any) {
       console.error('Error de autenticación:', error);

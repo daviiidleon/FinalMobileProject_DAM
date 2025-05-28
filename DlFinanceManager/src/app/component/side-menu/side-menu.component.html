@@ -42,10 +42,9 @@
       <ion-label class="menu-item-label" [class.hidden]="isCollapsed">{{ item.title }}</ion-label>
     </ion-item>
 
-    <div class="footer-action-item user-profile-item" (click)="goTo('/profile')">
-      <ion-avatar slot="start" class="user-avatar">
-        <img [src]="currentUser.avatarUrl || 'https://placehold.co/40x40/2c2c2c/faf6e9?text=U'" alt="User Avatar" />
-      </ion-avatar>
+    <div class="footer-action-item user-profile-item" (click)="goTo('/configuracion')"> <ion-avatar slot="start" class="user-avatar">
+      <img [src]="currentUser.avatarUrl" alt="User Avatar" />
+    </ion-avatar>
       <span class="footer-action-label" [class.hidden]="isCollapsed">{{ currentUser.name }}</span>
     </div>
 

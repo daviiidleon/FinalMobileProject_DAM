@@ -31,7 +31,7 @@ import { personCircleOutline, mailOutline, colorPaletteOutline, notificationsOut
 import { UserService, UserProfile } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
-import { environment } from 'src/environments/environment'; // Import environment for base URL
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-configuracion',
@@ -83,12 +83,12 @@ export class ConfiguracionPage implements OnInit {
   userDisplay = {
     displayName: 'Cargando...',
     email: 'cargando...',
-    avatarFullUrl: 'https://placehold.co/80x80/E0E0E0/757575?text=Avatar' // Default placeholder
+    avatarFullUrl: 'https://placehold.co/80x80/E0E0E0/757575?text=Avatar'
   };
 
   constructor(
     private userService: UserService,
-    private authService: AuthService,
+    private authService: AuthService, // Ya inyectado
     private loadingCtrl: LoadingController,
     private alertCtrl: AlertController,
     private router: Router
@@ -121,15 +121,12 @@ export class ConfiguracionPage implements OnInit {
         this.userDisplay.displayName = data.name;
         this.userDisplay.email = data.email;
 
-        // --- ¡CAMBIO CRÍTICO AQUÍ! ---
         if (data.profile_picture_url) {
-          // Usamos environment.baseUrl para construir la URL completa
           this.userDisplay.avatarFullUrl = environment.baseUrl + data.profile_picture_url;
         } else {
           this.userDisplay.avatarFullUrl = 'https://placehold.co/80x80/E0E0E0/757575?text=Avatar';
         }
         console.log('Perfil cargado:', data);
-        console.log('URL de Avatar a mostrar:', this.userDisplay.avatarFullUrl); // Para depuración
       },
       error: async (err) => {
         console.error('Error al cargar el perfil:', err);
@@ -179,9 +176,14 @@ export class ConfiguracionPage implements OnInit {
           });
           await alert.present();
           if (res.avatar_url) {
-            this.userProfile.profile_picture_url = res.avatar_url; // Guarda la URL relativa
-            // --- ¡CAMBIO CRÍTICO AQUÍ! ---
-            this.userDisplay.avatarFullUrl = environment.baseUrl + res.avatar_url; // Usa baseUrl
+            // Actualiza userProfile con la URL relativa de la API
+            this.userProfile.profile_picture_url = res.avatar_url;
+            // Actualiza la URL para el display
+            this.userDisplay.avatarFullUrl = environment.baseUrl + res.avatar_url;
+
+            // ¡¡¡CAMBIO CLAVE AQUÍ!!! Notifica a AuthService para actualizar el usuario almacenado
+            // El API devuelve el objeto 'user' completo con la nueva profile_picture_url
+            this.authService.updateCurrentUser(res.user);
           }
         },
         error: async (err) => {
@@ -226,10 +228,15 @@ export class ConfiguracionPage implements OnInit {
         this.userProfile = res.user;
         this.userDisplay.displayName = res.user.name;
         this.userDisplay.email = res.user.email;
-        // Re-actualizar la URL completa del avatar por si el objeto user de la respuesta no la tiene bien formada
         if (res.user.profile_picture_url) {
           this.userDisplay.avatarFullUrl = environment.baseUrl + res.user.profile_picture_url;
+        } else {
+          this.userDisplay.avatarFullUrl = 'https://placehold.co/80x80/E0E0E0/757575?text=Avatar';
         }
+
+        // ¡¡¡CAMBIO CLAVE AQUÍ!!! Notifica a AuthService para actualizar el usuario almacenado
+        // La API devuelve el objeto 'user' completo con la nueva profile_picture_url (si aplica)
+        this.authService.updateCurrentUser(res.user);
       },
       error: async (err) => {
         console.error('Error al actualizar perfil:', err);
@@ -277,6 +284,10 @@ export class ConfiguracionPage implements OnInit {
         });
         await alert.present();
         this.passwords = { current_password: '', password: '', password_confirmation: '' };
+
+        // ¡¡¡CAMBIO CLAVE AQUÍ!!! Notifica a AuthService para actualizar el usuario almacenado
+        // La API devuelve el objeto 'user' completo (con nombre, email, etc.)
+        this.authService.updateCurrentUser(res.user);
       },
       error: async (err) => {
         console.error('Error al cambiar contraseña:', err);
