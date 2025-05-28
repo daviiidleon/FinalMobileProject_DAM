@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -20,18 +20,18 @@ import {
   IonIcon,
   IonItem,
   IonInput,
-  LoadingController, // Importado para manejar cargas
-  AlertController // Importado para mostrar alertas
+  LoadingController,
+  AlertController
 } from '@ionic/angular/standalone';
 import { HeaderComponent } from "../../component/header/header.component";
 import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
 import { addIcons } from 'ionicons';
 import { personCircleOutline, mailOutline, colorPaletteOutline, notificationsOutline, lockClosedOutline, saveOutline, logOutOutline, cameraOutline } from 'ionicons/icons';
 
-// Importamos el UserService y la interfaz UserProfile
 import { UserService, UserProfile } from '../../services/user.service';
-import { AuthService } from '../../services/auth.service'; // Asumiendo que tienes un AuthService con método logout
-import { Router } from '@angular/router'; // Para la redirección después del logout
+import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
+import { environment } from 'src/environments/environment'; // Import environment for base URL
 
 @Component({
   selector: 'app-configuracion',
@@ -65,11 +65,13 @@ import { Router } from '@angular/router'; // Para la redirección después del l
 })
 export class ConfiguracionPage implements OnInit {
 
-  // Usamos el objeto userProfile del UserService
+  @ViewChild('fileInput') fileInput!: ElementRef;
+
   userProfile: UserProfile = {
     id: 0,
     name: '',
-    email: ''
+    email: '',
+    profile_picture_url: ''
   };
 
   passwords = {
@@ -78,14 +80,11 @@ export class ConfiguracionPage implements OnInit {
     password_confirmation: ''
   };
 
-  // Se mantiene una variable 'user' para los datos del avatar, aunque el email y nombre se toman de userProfile
-  // Puedes refactorizar esto más adelante si tu API devuelve la URL del avatar.
-  user = {
+  userDisplay = {
     displayName: 'Cargando...',
     email: 'cargando...',
-    avatarUrl: 'https://placehold.co/80x80/E0E0E0/757575?text=Avatar'
+    avatarFullUrl: 'https://placehold.co/80x80/E0E0E0/757575?text=Avatar' // Default placeholder
   };
-
 
   constructor(
     private userService: UserService,
@@ -119,10 +118,18 @@ export class ConfiguracionPage implements OnInit {
     this.userService.getUserProfile().subscribe({
       next: (data) => {
         this.userProfile = data;
-        // Actualizar el objeto 'user' usado para el avatar y otros display
-        this.user.displayName = data.name;
-        this.user.email = data.email;
+        this.userDisplay.displayName = data.name;
+        this.userDisplay.email = data.email;
+
+        // --- ¡CAMBIO CRÍTICO AQUÍ! ---
+        if (data.profile_picture_url) {
+          // Usamos environment.baseUrl para construir la URL completa
+          this.userDisplay.avatarFullUrl = environment.baseUrl + data.profile_picture_url;
+        } else {
+          this.userDisplay.avatarFullUrl = 'https://placehold.co/80x80/E0E0E0/757575?text=Avatar';
+        }
         console.log('Perfil cargado:', data);
+        console.log('URL de Avatar a mostrar:', this.userDisplay.avatarFullUrl); // Para depuración
       },
       error: async (err) => {
         console.error('Error al cargar el perfil:', err);
@@ -132,7 +139,6 @@ export class ConfiguracionPage implements OnInit {
           buttons: ['OK']
         });
         await alert.present();
-        // Si el error es de autenticación (401), redirigir al login
         if (err.status === 401) {
           this.authService.logout();
           this.router.navigateByUrl('/auth', { replaceUrl: true });
@@ -144,14 +150,58 @@ export class ConfiguracionPage implements OnInit {
     });
   }
 
-
   changeAvatar() {
-    // La lógica de cambiar el avatar es independiente de la API de perfil básica.
-    // Esto podría abrir un selector de archivos o usar el plugin de la cámara de Capacitor.
-    console.log('Intentando cambiar avatar...');
-    this.presentAlert('Información', 'La función de cambiar avatar aún no está implementada con la API.');
+    this.fileInput.nativeElement.click();
   }
 
+  async onFileSelected(event: any) {
+    const file: File = event.target.files[0];
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.userDisplay.avatarFullUrl = e.target.result;
+      };
+      reader.readAsDataURL(file);
+
+      const loading = await this.loadingCtrl.create({
+        message: 'Subiendo avatar...'
+      });
+      await loading.present();
+
+      this.userService.uploadAvatar(file).subscribe({
+        next: async (res) => {
+          console.log('Avatar subido:', res);
+          const alert = await this.alertCtrl.create({
+            header: 'Éxito',
+            message: res.message || 'Avatar actualizado correctamente.',
+            buttons: ['OK']
+          });
+          await alert.present();
+          if (res.avatar_url) {
+            this.userProfile.profile_picture_url = res.avatar_url; // Guarda la URL relativa
+            // --- ¡CAMBIO CRÍTICO AQUÍ! ---
+            this.userDisplay.avatarFullUrl = environment.baseUrl + res.avatar_url; // Usa baseUrl
+          }
+        },
+        error: async (err) => {
+          console.error('Error al subir avatar:', err);
+          const alert = await this.alertCtrl.create({
+            header: 'Error',
+            message: err || 'No se pudo subir el avatar. Verifique el formato y tamaño (máx 2MB).',
+            buttons: ['OK']
+          });
+          await alert.present();
+          // Si falla, revertir a la URL anterior o a un placeholder
+          this.userDisplay.avatarFullUrl = this.userProfile.profile_picture_url ? (environment.baseUrl + this.userProfile.profile_picture_url) : 'https://placehold.co/80x80/E0E0E0/757575?text=Avatar';
+        },
+        complete: () => {
+          loading.dismiss();
+          event.target.value = '';
+        }
+      });
+    }
+  }
 
   async saveProfile() {
     const loading = await this.loadingCtrl.create({
@@ -159,7 +209,6 @@ export class ConfiguracionPage implements OnInit {
     });
     await loading.present();
 
-    // Enviamos solo el nombre y el email, ya que la API espera esos campos para la actualización básica
     const dataToUpdate = {
       name: this.userProfile.name,
       email: this.userProfile.email
@@ -174,9 +223,13 @@ export class ConfiguracionPage implements OnInit {
           buttons: ['OK']
         });
         await alert.present();
-        this.userProfile = res.user; // Actualiza el perfil local con los datos de la respuesta
-        this.user.displayName = res.user.name; // Actualizar el display name
-        this.user.email = res.user.email; // Actualizar el email del display
+        this.userProfile = res.user;
+        this.userDisplay.displayName = res.user.name;
+        this.userDisplay.email = res.user.email;
+        // Re-actualizar la URL completa del avatar por si el objeto user de la respuesta no la tiene bien formada
+        if (res.user.profile_picture_url) {
+          this.userDisplay.avatarFullUrl = environment.baseUrl + res.user.profile_picture_url;
+        }
       },
       error: async (err) => {
         console.error('Error al actualizar perfil:', err);
@@ -194,7 +247,6 @@ export class ConfiguracionPage implements OnInit {
   }
 
   async updatePassword() {
-    // Validaciones básicas antes de enviar a la API
     if (this.passwords.password !== this.passwords.password_confirmation) {
       this.presentAlert('Error', 'La nueva contraseña y su confirmación no coinciden.');
       return;
@@ -209,7 +261,6 @@ export class ConfiguracionPage implements OnInit {
     });
     await loading.present();
 
-    // La API de Laravel espera estos campos para el cambio de contraseña
     const passwordData = {
       current_password: this.passwords.current_password,
       password: this.passwords.password,
@@ -225,7 +276,6 @@ export class ConfiguracionPage implements OnInit {
           buttons: ['OK']
         });
         await alert.present();
-        // Limpiar los campos de contraseña después de un cambio exitoso
         this.passwords = { current_password: '', password: '', password_confirmation: '' };
       },
       error: async (err) => {
@@ -252,7 +302,7 @@ export class ConfiguracionPage implements OnInit {
     try {
       await this.authService.logout();
       await loading.dismiss();
-      this.router.navigateByUrl('/auth', { replaceUrl: true }); // Redirige a la página de autenticación
+      this.router.navigateByUrl('/auth', { replaceUrl: true });
     } catch (error) {
       await loading.dismiss();
       console.error('Error al cerrar sesión:', error);
@@ -260,7 +310,6 @@ export class ConfiguracionPage implements OnInit {
     }
   }
 
-  // Pequeña función auxiliar para mostrar alertas
   async presentAlert(header: string, message: string) {
     const alert = await this.alertCtrl.create({
       header: header,

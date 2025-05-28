@@ -9,7 +9,8 @@ export interface UserProfile {
   id: number;
   name: string;
   email: string;
-  // Añade otros campos si los devuelves desde la API
+  profile_picture_url?: string; // <-- Added: Property for the avatar URL
+  // Add other fields if you return them from the API
 }
 
 @Injectable({
@@ -23,34 +24,44 @@ export class UserService {
   private handleError(error: HttpErrorResponse) {
     let errorMessage = 'Ocurrió un error inesperado al procesar la solicitud.';
     if (error.error instanceof ErrorEvent) {
-      // Error del lado del cliente
+      // Client-side error
       errorMessage = `Error del cliente: ${error.error.message}`;
     } else if (error.error && error.error.errors) {
-      // Errores de validación de Laravel
+      // Laravel validation errors
       const laravelErrors = Object.values(error.error.errors).flat();
       errorMessage = laravelErrors.join('\n');
     } else if (error.error && error.error.message) {
-      // Otros errores del servidor (mensaje de la API)
+      // Other server errors (API message)
       errorMessage = error.error.message;
     } else if (error.status) {
-      // Errores HTTP con código de estado
+      // HTTP errors with status code
       errorMessage = `Error del servidor: ${error.status} - ${error.message}`;
     }
-    console.error('UserService Error:', error); // Log completo del error para depuración
-    return throwError(errorMessage); // Propaga el error como un mensaje más amigable
+    console.error('UserService Error:', error); // Full error log for debugging
+    return throwError(errorMessage); // Propagate the error as a more friendly message
   }
 
-  // Método para obtener el perfil del usuario
+  // Method to get the user profile
   getUserProfile(): Observable<UserProfile> {
     return this.http.get<UserProfile>(`${this.apiUrl}/user`).pipe(
       catchError(this.handleError)
     );
   }
 
-  // Método para actualizar el perfil del usuario
+  // Method to update the user profile (name, email, password)
   updateUserProfile(userData: any): Observable<any> {
-    // Usamos PUT ya que el endpoint de Laravel está configurado para PUT
+    // We use PUT as the Laravel endpoint is configured for PUT
     return this.http.put<any>(`${this.apiUrl}/user`, userData).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  // NEW METHOD to upload the avatar
+  uploadAvatar(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('avatar', file, file.name); // 'avatar' must match the field name in the API
+
+    return this.http.post<any>(`${this.apiUrl}/user/avatar`, formData).pipe(
       catchError(this.handleError)
     );
   }

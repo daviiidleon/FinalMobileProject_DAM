@@ -21,13 +21,14 @@
               <ion-card-content>
                 <div class="profile-header">
                   <ion-avatar slot="start" class="profile-avatar">
-                    <img [src]="user.avatarUrl" alt="User Avatar" />
+                    <img [src]="userDisplay.avatarFullUrl" alt="User Avatar" />
                   </ion-avatar>
                   <div class="profile-info">
-                    <ion-label class="profile-name">{{ user.displayName }}</ion-label>
-                    <ion-label class="profile-email">{{ user.email }}</ion-label>
+                    <ion-label class="profile-name">{{ userDisplay.displayName }}</ion-label>
+                    <ion-label class="profile-email">{{ userDisplay.email }}</ion-label>
                   </div>
                 </div>
+                <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none;" accept="image/*">
                 <ion-button expand="block" fill="outline" color="medium" class="action-button" (click)="changeAvatar()">
                   Cambiar avatar
                 </ion-button>
@@ -110,7 +111,7 @@
                 </ion-item>
                 <ion-item lines="full">
                   <ion-label position="stacked">Confirmar nueva contraseña</ion-label>
-                  <ion-input type="password" placeholder="Confirmar nueva contraseña" [(ngModel)]="passwords.password_confirmation" name="confirmNewPassword"></ion-input>
+                    <ion-input type="password" placeholder="Confirmar nueva contraseña" [(ngModel)]="passwords.password_confirmation" name="confirmNewPassword"></ion-input>
                 </ion-item>
                 <ion-button expand="block" color="secondary" class="action-button" (click)="updatePassword()">
                   Actualizar contraseña
