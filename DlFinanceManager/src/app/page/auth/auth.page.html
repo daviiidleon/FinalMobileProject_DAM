@@ -5,7 +5,6 @@
       <h2>{{ isLogin ? 'Inicio de sesión' : 'Crear cuenta' }}</h2>
 
       <form (ngSubmit)="onSubmit()">
-        <!-- Nombre (solo en registro) -->
         <div class="input-group" *ngIf="!isLogin">
           <label class="custom-label">Nombre</label>
           <input
@@ -13,10 +12,9 @@
             type="text"
             placeholder="Tu nombre"
             [(ngModel)]="formData.name"
-            name="name" />
-        </div>
+            name="name"
+            required /> </div>
 
-        <!-- Email -->
         <div class="input-group">
           <label class="custom-label">Correo electrónico</label>
           <input
@@ -28,7 +26,6 @@
             required />
         </div>
 
-        <!-- Contraseña -->
         <div class="input-group">
           <label class="custom-label">Contraseña</label>
           <input
@@ -40,13 +37,21 @@
             required />
         </div>
 
-        <!-- Botón -->
+        <div class="input-group" *ngIf="!isLogin">
+          <label class="custom-label">Confirmar Contraseña</label>
+          <input
+            class="custom-input"
+            type="password"
+            placeholder="Repite la contraseña"
+            [(ngModel)]="formData.password_confirmation"
+            name="password_confirmation"
+            required /> </div>
+
         <ion-button class="boton" expand="block" type="submit" color="dark">
           {{ isLogin ? 'Iniciar Sesión' : 'Registrarse' }}
         </ion-button>
       </form>
 
-      <!-- Cambiar entre login / registro -->
       <p class="toggle-text">
         {{ isLogin ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?' }}
         <a (click)="toggleAuth()">

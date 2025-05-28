@@ -20,12 +20,18 @@ import {
   IonIcon,
   IonItem,
   IonInput,
-  // IonSelect, IonSelectOption (Removed as per new design)
+  LoadingController, // Importado para manejar cargas
+  AlertController // Importado para mostrar alertas
 } from '@ionic/angular/standalone';
-import { HeaderComponent } from "../../component/header/header.component"; // Assuming path is correct
-import { SideMenuComponent } from "../../component/side-menu/side-menu.component"; // Assuming path is correct
-import { addIcons } from 'ionicons'; // Import addIcons
-import { personCircleOutline, mailOutline, colorPaletteOutline, notificationsOutline, lockClosedOutline, saveOutline, logOutOutline, cameraOutline } from 'ionicons/icons'; // Import necessary icons
+import { HeaderComponent } from "../../component/header/header.component";
+import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
+import { addIcons } from 'ionicons';
+import { personCircleOutline, mailOutline, colorPaletteOutline, notificationsOutline, lockClosedOutline, saveOutline, logOutOutline, cameraOutline } from 'ionicons/icons';
+
+// Importamos el UserService y la interfaz UserProfile
+import { UserService, UserProfile } from '../../services/user.service';
+import { AuthService } from '../../services/auth.service'; // Asumiendo que tienes un AuthService con método logout
+import { Router } from '@angular/router'; // Para la redirección después del logout
 
 @Component({
   selector: 'app-configuracion',
@@ -55,25 +61,39 @@ import { personCircleOutline, mailOutline, colorPaletteOutline, notificationsOut
     IonInput,
     HeaderComponent,
     SideMenuComponent,
-    // IonSelect, IonSelectOption (Removed)
   ]
 })
 export class ConfiguracionPage implements OnInit {
 
-  user = {
-    displayName: 'Usuario Desarrollador', // Updated to match image
-    email: 'dev@ejemplo.com',          // Updated to match image
-    avatarUrl: 'https://placehold.co/80x80/E0E0E0/757575?text=Avatar' // Placeholder avatar
+  // Usamos el objeto userProfile del UserService
+  userProfile: UserProfile = {
+    id: 0,
+    name: '',
+    email: ''
   };
 
   passwords = {
-    current: '',
-    new: '',
-    confirm: ''
+    current_password: '',
+    password: '',
+    password_confirmation: ''
   };
 
-  constructor() {
-    // Add all icons that will be used in the template here
+  // Se mantiene una variable 'user' para los datos del avatar, aunque el email y nombre se toman de userProfile
+  // Puedes refactorizar esto más adelante si tu API devuelve la URL del avatar.
+  user = {
+    displayName: 'Cargando...',
+    email: 'cargando...',
+    avatarUrl: 'https://placehold.co/80x80/E0E0E0/757575?text=Avatar'
+  };
+
+
+  constructor(
+    private userService: UserService,
+    private authService: AuthService,
+    private loadingCtrl: LoadingController,
+    private alertCtrl: AlertController,
+    private router: Router
+  ) {
     addIcons({
       personCircleOutline,
       mailOutline,
@@ -82,56 +102,171 @@ export class ConfiguracionPage implements OnInit {
       lockClosedOutline,
       saveOutline,
       logOutOutline,
-      cameraOutline // For "Cambiar avatar" if you use an icon there
+      cameraOutline
     });
   }
 
   ngOnInit() {
-    // Logic to load user data would typically go here
-    // For now, using static data
+    this.loadUserProfile();
   }
 
-  // This function is kept in case you have a global theme switcher
-  // or implement the theme switch described in the "Apariencia" section later.
-  onThemeChange(value: string) {
-    document.body.classList.toggle('dark-theme', value === 'oscuro');
-    // Optionally, save theme preference to localStorage or a service
+  async loadUserProfile() {
+    const loading = await this.loadingCtrl.create({
+      message: 'Cargando perfil...'
+    });
+    await loading.present();
+
+    this.userService.getUserProfile().subscribe({
+      next: (data) => {
+        this.userProfile = data;
+        // Actualizar el objeto 'user' usado para el avatar y otros display
+        this.user.displayName = data.name;
+        this.user.email = data.email;
+        console.log('Perfil cargado:', data);
+      },
+      error: async (err) => {
+        console.error('Error al cargar el perfil:', err);
+        const alert = await this.alertCtrl.create({
+          header: 'Error',
+          message: 'No se pudo cargar el perfil del usuario. Por favor, intente de nuevo o inicie sesión.',
+          buttons: ['OK']
+        });
+        await alert.present();
+        // Si el error es de autenticación (401), redirigir al login
+        if (err.status === 401) {
+          this.authService.logout();
+          this.router.navigateByUrl('/auth', { replaceUrl: true });
+        }
+      },
+      complete: () => {
+        loading.dismiss();
+      }
+    });
   }
+
 
   changeAvatar() {
-    // Logic for changing avatar
-    // This could open a modal, file picker, etc.
-    console.log('Attempting to change avatar...');
-    // Example: You might use the Capacitor Camera plugin or a file input
+    // La lógica de cambiar el avatar es independiente de la API de perfil básica.
+    // Esto podría abrir un selector de archivos o usar el plugin de la cámara de Capacitor.
+    console.log('Intentando cambiar avatar...');
+    this.presentAlert('Información', 'La función de cambiar avatar aún no está implementada con la API.');
   }
 
-  saveProfile() {
-    // Logic to save updated user profile information
-    // This would typically involve calling a service
-    console.log('Saving profile:', this.user);
-    // Add actual save logic here (e.g., API call)
+
+  async saveProfile() {
+    const loading = await this.loadingCtrl.create({
+      message: 'Guardando perfil...'
+    });
+    await loading.present();
+
+    // Enviamos solo el nombre y el email, ya que la API espera esos campos para la actualización básica
+    const dataToUpdate = {
+      name: this.userProfile.name,
+      email: this.userProfile.email
+    };
+
+    this.userService.updateUserProfile(dataToUpdate).subscribe({
+      next: async (res) => {
+        console.log('Perfil actualizado:', res);
+        const alert = await this.alertCtrl.create({
+          header: 'Éxito',
+          message: res.message || 'Perfil actualizado correctamente.',
+          buttons: ['OK']
+        });
+        await alert.present();
+        this.userProfile = res.user; // Actualiza el perfil local con los datos de la respuesta
+        this.user.displayName = res.user.name; // Actualizar el display name
+        this.user.email = res.user.email; // Actualizar el email del display
+      },
+      error: async (err) => {
+        console.error('Error al actualizar perfil:', err);
+        const alert = await this.alertCtrl.create({
+          header: 'Error',
+          message: err || 'No se pudo actualizar el perfil. Verifique los datos e intente de nuevo.',
+          buttons: ['OK']
+        });
+        await alert.present();
+      },
+      complete: () => {
+        loading.dismiss();
+      }
+    });
   }
 
-  updatePassword() {
-    // Logic to update user password
-    console.log('Attempting to update password...');
-    if (this.passwords.new !== this.passwords.confirm) {
-      console.error('New passwords do not match.');
-      // Display an error message to the user (e.g., using IonToast)
+  async updatePassword() {
+    // Validaciones básicas antes de enviar a la API
+    if (this.passwords.password !== this.passwords.password_confirmation) {
+      this.presentAlert('Error', 'La nueva contraseña y su confirmación no coinciden.');
       return;
     }
-    if (!this.passwords.current || !this.passwords.new) {
-      console.error('Current and new passwords are required.');
-      // Display an error message
+    if (!this.passwords.current_password || !this.passwords.password) {
+      this.presentAlert('Error', 'Todos los campos de contraseña son requeridos.');
       return;
     }
-    // Add actual password update logic here (e.g., API call)
-    console.log('Password update requested for:', this.user.email);
+
+    const loading = await this.loadingCtrl.create({
+      message: 'Actualizando contraseña...'
+    });
+    await loading.present();
+
+    // La API de Laravel espera estos campos para el cambio de contraseña
+    const passwordData = {
+      current_password: this.passwords.current_password,
+      password: this.passwords.password,
+      password_confirmation: this.passwords.password_confirmation
+    };
+
+    this.userService.updateUserProfile(passwordData).subscribe({
+      next: async (res) => {
+        console.log('Contraseña cambiada:', res);
+        const alert = await this.alertCtrl.create({
+          header: 'Éxito',
+          message: res.message || 'Contraseña cambiada correctamente.',
+          buttons: ['OK']
+        });
+        await alert.present();
+        // Limpiar los campos de contraseña después de un cambio exitoso
+        this.passwords = { current_password: '', password: '', password_confirmation: '' };
+      },
+      error: async (err) => {
+        console.error('Error al cambiar contraseña:', err);
+        const alert = await this.alertCtrl.create({
+          header: 'Error',
+          message: err || 'No se pudo cambiar la contraseña. Verifique los datos, especialmente la contraseña actual.',
+          buttons: ['OK']
+        });
+        await alert.present();
+      },
+      complete: () => {
+        loading.dismiss();
+      }
+    });
   }
 
-  logout() {
-    // Logic for user logout
-    console.log('Logging out...');
-    // This would typically clear session/token and navigate to login page
+  async logout() {
+    const loading = await this.loadingCtrl.create({
+      message: 'Cerrando sesión...'
+    });
+    await loading.present();
+
+    try {
+      await this.authService.logout();
+      await loading.dismiss();
+      this.router.navigateByUrl('/auth', { replaceUrl: true }); // Redirige a la página de autenticación
+    } catch (error) {
+      await loading.dismiss();
+      console.error('Error al cerrar sesión:', error);
+      this.presentAlert('Error', 'No se pudo cerrar la sesión.');
+    }
+  }
+
+  // Pequeña función auxiliar para mostrar alertas
+  async presentAlert(header: string, message: string) {
+    const alert = await this.alertCtrl.create({
+      header: header,
+      message: message,
+      buttons: ['OK']
+    });
+    await alert.present();
   }
 }

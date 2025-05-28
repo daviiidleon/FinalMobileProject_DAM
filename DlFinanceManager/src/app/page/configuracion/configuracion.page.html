@@ -21,7 +21,7 @@
               <ion-card-content>
                 <div class="profile-header">
                   <ion-avatar slot="start" class="profile-avatar">
-                    <img src="https://placehold.co/80x80/E0E0E0/757575?text=Avatar" alt="User Avatar" />
+                    <img [src]="user.avatarUrl" alt="User Avatar" />
                   </ion-avatar>
                   <div class="profile-info">
                     <ion-label class="profile-name">{{ user.displayName }}</ion-label>
@@ -74,11 +74,11 @@
               <ion-card-content>
                 <ion-item lines="full">
                   <ion-label position="stacked">Nombre para mostrar</ion-label>
-                  <ion-input [(ngModel)]="user.displayName" placeholder="Dev User"></ion-input>
+                  <ion-input [(ngModel)]="userProfile.name" name="userName" placeholder="Su nombre"></ion-input>
                 </ion-item>
                 <ion-item lines="full" class="readonly-item">
                   <ion-label position="stacked">Dirección de correo electrónico (solo lectura)</ion-label>
-                  <ion-input [(ngModel)]="user.email" readonly placeholder="dev@example.com"></ion-input>
+                  <ion-input [(ngModel)]="userProfile.email" name="userEmail" readonly placeholder="su_email@ejemplo.com"></ion-input>
                 </ion-item>
                 <p class="small-text hint-text">
                   Para cambiar su correo electrónico, comuníquese con el soporte o utilice la sección de
@@ -102,15 +102,15 @@
               <ion-card-content>
                 <ion-item lines="full">
                   <ion-label position="stacked">Contraseña actual</ion-label>
-                  <ion-input type="password" placeholder="Su contraseña actual" [(ngModel)]="passwords.current"></ion-input>
+                  <ion-input type="password" placeholder="Su contraseña actual" [(ngModel)]="passwords.current_password" name="currentPassword"></ion-input>
                 </ion-item>
                 <ion-item lines="full">
                   <ion-label position="stacked">Nueva contraseña</ion-label>
-                  <ion-input type="password" placeholder="Nueva contraseña" [(ngModel)]="passwords.new"></ion-input>
+                  <ion-input type="password" placeholder="Nueva contraseña" [(ngModel)]="passwords.password" name="newPassword"></ion-input>
                 </ion-item>
                 <ion-item lines="full">
                   <ion-label position="stacked">Confirmar nueva contraseña</ion-label>
-                  <ion-input type="password" placeholder="Confirmar nueva contraseña" [(ngModel)]="passwords.confirm"></ion-input>
+                  <ion-input type="password" placeholder="Confirmar nueva contraseña" [(ngModel)]="passwords.password_confirmation" name="confirmNewPassword"></ion-input>
                 </ion-item>
                 <ion-button expand="block" color="secondary" class="action-button" (click)="updatePassword()">
                   Actualizar contraseña
