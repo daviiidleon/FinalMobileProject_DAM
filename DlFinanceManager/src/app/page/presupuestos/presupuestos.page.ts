@@ -57,7 +57,7 @@ interface ClientBudget {
   category_id?: number;
   categoryName?: string;
   amount: number; // Esto es el `budget_amount` de la API
-  spent_amount: number; // Mapeado de `spent_amount` de la API
+  spent_amount: number; // Mapeado de `spent_amount` de la API (aunque no se use en UI ahora)
   start_date: string;
   end_date: string;
   is_active: boolean;
@@ -129,7 +129,7 @@ export class PresupuestosPage implements OnInit, OnDestroy {
 
   budgets: ClientBudget[] = [];
   filteredBudgets: ClientBudget[] = [];
-  budgetAlerts: BudgetAlert[] = [];
+  budgetAlerts: BudgetAlert[] = []; // Se mantiene para compatibilidad, pero updateBudgetAlerts lo vaciará
   isLoading: boolean = true;
   private subscriptions: Subscription = new Subscription();
 
@@ -145,10 +145,9 @@ export class PresupuestosPage implements OnInit, OnDestroy {
   accounts: ClientAccount[] = [];
   currentSearchTerm: string = '';
 
-  // Propiedad para el saldo restante de la cuenta seleccionada
-  remainingAccountBalance: number | null = null;
-  // Propiedad para almacenar la cuenta seleccionada completa
-  currentSelectedAccount: ClientAccount | null = null;
+  // ELIMINADO: remainingAccountBalance y currentSelectedAccount ya no se usarán en la UI
+  // remainingAccountBalance: number | null = null;
+  // currentSelectedAccount: ClientAccount | null = null;
 
 
   constructor(
@@ -196,14 +195,14 @@ export class PresupuestosPage implements OnInit, OnDestroy {
       this.accountService.selectedAccount$.subscribe(async account => {
         if (account && account.id !== undefined) {
           this.selectedAccountId = account.id;
-          this.currentSelectedAccount = account;
+          // this.currentSelectedAccount = account; // Ya no se usa para visualización directa
           console.log('PresupuestosPage: Cuenta seleccionada recibida:', account.nombre, 'ID:', this.selectedAccountId, 'Saldo:', account.saldo);
           if (!this.isEditMode && (this.budgetForm.get('account_id')?.value === null || this.budgetForm.get('account_id')?.value === undefined)) {
             this.budgetForm.patchValue({ account_id: this.selectedAccountId });
           }
         } else {
           this.selectedAccountId = null;
-          this.currentSelectedAccount = null;
+          // this.currentSelectedAccount = null; // Ya no se usa para visualización directa
           console.log('PresupuestosPage: Ninguna cuenta seleccionada recibida.');
         }
         await this.loadBudgets();
@@ -265,8 +264,8 @@ export class PresupuestosPage implements OnInit, OnDestroy {
       this.budgets = [];
       this.filteredBudgets = [];
       this.isLoading = false;
-      this.remainingAccountBalance = null;
-      this.updateBudgetAlerts();
+      // this.remainingAccountBalance = null; // Ya no se usa
+      this.updateBudgetAlerts(); // Vaciará las alertas
       console.log('PresupuestosPage: No hay selectedAccountId, vaciando presupuestos y finalizando carga.');
       this.cdRef.detectChanges();
       return;
@@ -285,19 +284,19 @@ export class PresupuestosPage implements OnInit, OnDestroy {
         next: (apiBudgets: Budget[]) => {
           console.log('PresupuestosPage: Presupuestos recibidos de la API (raw):', apiBudgets);
 
-          let totalBudgetedForSelectedAccount: number = 0; // Se inicializa como número
-
-          let currentAccountBalance = this.currentSelectedAccount ? this.currentSelectedAccount.saldo : 0;
-          console.log(`PresupuestosPage: Saldo actual de la cuenta '${this.currentSelectedAccount?.nombre}': ${currentAccountBalance}`);
+          // ELIMINADO: La lógica de totalBudgetedForSelectedAccount y remainingAccountBalance
+          // let totalBudgetedForSelectedAccount: number = 0;
+          // let currentAccountBalance = this.currentSelectedAccount ? this.currentSelectedAccount.saldo : 0;
+          // console.log(`PresupuestosPage: Saldo actual de la cuenta '${this.currentSelectedAccount?.nombre}': ${currentAccountBalance}`);
 
 
           this.budgets = apiBudgets.map(b => {
             const account = this.accounts.find(acc => acc.id === b.account_id);
             const category = this.categories.find(cat => cat.id === b.category_id);
-            const amountNum = Number(b.budget_amount); // <--- CAMBIO CLAVE: Asegurarse de que es un número
-            const spentNum = Number(b.spent_amount ?? 0); // <--- CAMBIO CLAVE: Asegurarse de que es un número
+            const amountNum = Number(b.budget_amount);
+            const spentNum = Number(b.spent_amount ?? 0);
 
-            totalBudgetedForSelectedAccount += amountNum; // Ahora sumará números correctamente
+            // totalBudgetedForSelectedAccount += amountNum; // ELIMINADO: La suma para el balance restante de la cuenta
 
             const isActive = new Date(b.end_date) >= new Date();
 
@@ -315,13 +314,14 @@ export class PresupuestosPage implements OnInit, OnDestroy {
             return new Date(b.end_date).getTime() - new Date(a.end_date).getTime();
           });
 
-          this.remainingAccountBalance = currentAccountBalance - totalBudgetedForSelectedAccount;
-          console.log(`PresupuestosPage: Total Presupuestado para esta cuenta: ${totalBudgetedForSelectedAccount}. ` +
-            `Restante en cuenta (saldo - total presupuestado): ${this.remainingAccountBalance}.`);
+          // ELIMINADO: La asignación final de remainingAccountBalance
+          // this.remainingAccountBalance = currentAccountBalance - totalBudgetedForSelectedAccount;
+          // console.log(`PresupuestosPage: Total Presupuestado para esta cuenta: ${totalBudgetedForSelectedAccount}. ` +
+          //             `Restante en cuenta (saldo - total presupuestado): ${this.remainingAccountBalance}.`);
 
           console.log('PresupuestosPage: Presupuestos mapeados para UI:', this.budgets);
           this.applyFilters();
-          this.updateBudgetAlerts();
+          this.updateBudgetAlerts(); // Vaciará las alertas
           this.isLoading = false;
           loading.dismiss();
           console.log('PresupuestosPage: Carga y filtrado de presupuestos completado.');
@@ -331,7 +331,7 @@ export class PresupuestosPage implements OnInit, OnDestroy {
           console.error('ERROR PresupuestosPage: Error al cargar presupuestos desde API:', err);
           this.isLoading = false;
           loading.dismiss();
-          this.remainingAccountBalance = null;
+          // this.remainingAccountBalance = null; // ELIMINADO: Ya no se usa
           const alert = await this.alertController.create({
             header: 'Error de Carga',
             message: err.message || 'No se pudieron cargar los presupuestos. Por favor, intente de nuevo o verifique su conexión.',
@@ -558,17 +558,9 @@ export class PresupuestosPage implements OnInit, OnDestroy {
     );
   }
 
+  // Se mantiene el método, pero ahora solo vacía las alertas.
   private updateBudgetAlerts() {
-    this.budgetAlerts = this.budgets.filter(b => {
-      const percentage_used = b.amount > 0 ? (b.spent_amount / b.amount) : 0;
-      return b.is_active && percentage_used >= 1;
-    }).map(b => ({
-      message: `El presupuesto '${b.name || b.categoryName}' ha sido excedido (${(b.spent_amount / b.amount * 100).toFixed(0)}% utilizado).`
-    }));
-
-    if (this.remainingAccountBalance !== null && this.remainingAccountBalance < 0) {
-      this.budgetAlerts.push({ message: `¡Advertencia! El balance restante de la cuenta (${this.currentSelectedAccount?.nombre}) es negativo: ${this.remainingAccountBalance.toFixed(2)} EUR.` });
-    }
+    this.budgetAlerts = []; // Vaciamos el array de alertas para que no se muestre el marco rojo
   }
 
   formatDatePeriod(startDate: string, endDate: string): string {
