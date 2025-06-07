@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+// src/app/page/ahorro/ahorro.page.ts
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 
@@ -35,24 +36,22 @@ import {
   closeOutline
 } from 'ionicons/icons';
 
-import { AccountService } from '../../services/account.service'; // Ensure this path is correct
+import { AccountService, Account } from '../../services/account.service'; // Account ahora tiene current_balance
+import { ClientAccount } from '../cuentas/cuentas.page'; // Importar ClientAccount
+
+// Import the 'map' operator
+import { map } from 'rxjs/operators';
+
 
 interface ObjetivoAhorro {
   id: string;
   nombre: string;
   montoMeta: number;
   montoActual: number;
-  fechaLimite?: string | null; // Optional deadline
+  fechaLimite?: string | null;
   progreso: number;
+  accountId: number; // Añadimos accountId para asociar el objetivo a una cuenta
 }
-
-// Assuming Account interface is defined in account.service.ts or a shared types file
-interface Account {
-  id: string;
-  name: string;
-  // ... other properties of an Account
-}
-
 
 @Component({
   selector: 'app-ahorro',
@@ -85,7 +84,7 @@ interface Account {
   ],
 })
 export class AhorroPage implements OnInit, OnDestroy {
-  objetivos: ObjetivoAhorro[] = []; // Property to hold savings goals data
+  objetivos: ObjetivoAhorro[] = [];
   isLoading = true;
 
   @ViewChild('goalModal') goalModal!: IonModal;
@@ -98,19 +97,23 @@ export class AhorroPage implements OnInit, OnDestroy {
   isSubmitting: boolean = false;
   editingGoalId: string | null = null;
   fundsToAdd: number | null = null;
-  showDatePicker: boolean = false; // New property to control date picker visibility
-  selectedGoal: ObjetivoAhorro | null = null; // Ensure this is declared
+  showDatePicker: boolean = false;
+  selectedGoal: ObjetivoAhorro | null = null;
+
+  accounts: ClientAccount[] = []; // Lista de cuentas para el select
+  selectedAccountId: number | null = null; // ID de la cuenta seleccionada (para el select de filtro)
+  currentAccountDetails: ClientAccount | null = null; // Detalles de la cuenta actualmente seleccionada (del AccountService)
 
   private storageKey = 'objetivosAhorro';
-  private storageSubscription: Subscription | undefined;
-  private accountSubscription: Subscription | undefined; // Declare the subscription for account service
+  private subscriptions: Subscription = new Subscription();
 
   constructor(
     private fb: FormBuilder,
     private loadingCtrl: LoadingController,
     private alertController: AlertController,
     private toastController: ToastController,
-    private accountService: AccountService // Inject AccountService
+    private accountService: AccountService,
+    private cdRef: ChangeDetectorRef
   ) {
     addIcons({
       addOutline,
@@ -127,68 +130,125 @@ export class AhorroPage implements OnInit, OnDestroy {
       nombre: ['', [Validators.required, Validators.minLength(3)]],
       montoMeta: [null, [Validators.required, Validators.min(0.01)]],
       montoActual: [0, Validators.min(0)],
-      fechaLimite: [null], // Add fechaLimite to the form group
+      fechaLimite: [null],
+      accountId: [null, Validators.required] // Campo para asociar el objetivo a una cuenta
     });
   }
 
-  ngOnInit() {
-    // Subscribe to account selection changes.
-    // If an account is selected, clear objectives and stop loading.
-    // Otherwise, load objectives from storage.
-    this.accountSubscription = this.accountService.selectedAccount$.subscribe(async account => {
-      if (account) {
-        this.objetivos = []; // Initialize savings goals to empty when an account is selected
-        this.isLoading = false; // Stop loading state
-        await this.loadingCtrl.dismiss().catch(() => {}); // Dismiss any loading indicator
-      } else {
-        // If no account is selected, load from localStorage
-        await this.loadObjetivosFromStorage();
-      }
-    });
+  async ngOnInit() {
+    // 1. Suscribirse a la cuenta seleccionada del servicio
+    this.subscriptions.add(
+      this.accountService.selectedAccount$.subscribe(async account => {
+        this.currentAccountDetails = account; // Actualizar los detalles de la cuenta principal
+        if (account && account.id !== undefined) {
+          this.selectedAccountId = account.id; // Mantener el ID del select sincronizado
+          console.log('AhorroPage: Cuenta seleccionada desde servicio:', account.nombre);
+        } else {
+          this.selectedAccountId = null;
+          console.log('AhorroPage: Ninguna cuenta seleccionada desde servicio.');
+        }
+        await this.loadObjetivosFromStorage(); // Recargar objetivos cuando cambia la cuenta
+        this.cdRef.detectChanges(); // Forzar la detección de cambios
+      })
+    );
+
+    // 2. Cargar la lista de todas las cuentas (para el ion-select en el futuro, si lo pones)
+    await this.loadAccounts();
+
+    // NOTA: loadObjetivosFromStorage ya se llama dentro de la suscripción a selectedAccount$,
+    // lo que asegura que los objetivos se carguen solo para la cuenta correcta.
   }
 
-  // ionViewWillEnter is an Ionic lifecycle hook, useful for refreshing data when entering the view.
   async ionViewWillEnter() {
-    console.log('ionViewWillEnter: Iniciando carga de metas...');
-    // Re-load objectives whenever the view is about to enter
-    // The ngOnInit subscription will handle whether to load from storage or clear.
+    // Recargar cuentas y objetivos cada vez que la vista entra para asegurar la frescura de los datos
+    await this.loadAccounts();
+    // La suscripción a selectedAccount$ ya disparará loadObjetivosFromStorage
   }
 
   ngOnDestroy() {
-    if (this.storageSubscription) {
-      this.storageSubscription.unsubscribe();
-    }
-    if (this.accountSubscription) { // Unsubscribe from account service observable
-      this.accountSubscription.unsubscribe();
+    this.subscriptions.unsubscribe();
+  }
+
+  // --- Lógica de Carga de Cuentas (para el select, si lo usas) ---
+  async loadAccounts() {
+    this.subscriptions.add(
+      this.accountService.getAccounts().pipe(
+        map((apiAccounts: Account[]) => {
+          return apiAccounts.map(apiAcc => ({
+            id: apiAcc.id,
+            nombre: apiAcc.name,
+            tipo: apiAcc.type,
+            // ===> CAMBIO CLAVE AQUÍ: Usar apiAcc.current_balance <===
+            saldo: apiAcc.current_balance ?? 0, // Usar apiAcc.current_balance
+            institucion: apiAcc.institution || '',
+            fechaActualizacion: apiAcc.updated_at
+          }));
+        })
+      ).subscribe({
+        next: (clientAccounts: ClientAccount[]) => {
+          this.accounts = clientAccounts;
+          // Si no hay cuenta seleccionada en el servicio, y hay cuentas disponibles,
+          // establece la primera como seleccionada (para que otras páginas reaccionen)
+          if (!this.accountService.getSelectedAccount() && clientAccounts.length > 0) {
+            this.accountService.setSelectedAccount(clientAccounts[0]);
+          } else if (clientAccounts.length === 0) {
+            this.accountService.setSelectedAccount(null); // Si no hay cuentas, deselecciona
+          }
+        },
+        error: async (err) => {
+          console.error('Error al cargar cuentas para select en AhorroPage:', err);
+          const alert = await this.alertController.create({ header: 'Error', message: err.message || 'No se pudieron cargar las cuentas para la selección.', buttons: ['OK'] });
+          await alert.present();
+        }
+      })
+    );
+  }
+
+  // Este método ya no es para cambiar la cuenta principal, sino si tuvieras un select en AhorroPage
+  onAccountChange(event: any) {
+    const accountId = event.detail.value;
+    // Esto solo actualizaría el filtro local si tuvieras un select de cuenta en AhorroPage.
+    // La cuenta principal se gestiona vía AccountService.selectedAccount$.
+    console.log('AhorroPage: Cambió la cuenta seleccionada en el select local a:', accountId);
+    // Si quieres que cambiar el select en AhorroPage cambie la cuenta globalmente:
+    const selectedAccount = this.accounts.find(acc => acc.id === accountId);
+    if (selectedAccount) {
+      this.accountService.setSelectedAccount(selectedAccount);
     }
   }
 
-  // This method is now solely responsible for loading objectives from localStorage
+
+  // --- Lógica de Carga y Guardado de Objetivos ---
   private async loadObjetivosFromStorage() {
     this.isLoading = true;
-    console.log('loadObjetivosFromStorage: isLoading =', this.isLoading);
-
     const loading = await this.loadingCtrl.create({
       message: 'Cargando tus metas de ahorro...',
       spinner: 'crescent'
     });
     await loading.present();
 
-    // Simulate network delay for loading from storage
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    const currentAccountId = this.selectedAccountId;
+    if (currentAccountId === null) {
+      this.objetivos = []; // Si no hay cuenta seleccionada, no hay objetivos
+      this.isLoading = false;
+      await loading.dismiss();
+      return;
+    }
 
     try {
       const storedObjetivos = localStorage.getItem(this.storageKey);
       if (storedObjetivos) {
-        this.objetivos = JSON.parse(storedObjetivos).map((obj: ObjetivoAhorro) => {
+        const allObjetivos: ObjetivoAhorro[] = JSON.parse(storedObjetivos);
+        // Filtrar objetivos que pertenecen a la cuenta seleccionada
+        this.objetivos = allObjetivos.filter(obj => obj.accountId === currentAccountId).map((obj: ObjetivoAhorro) => {
           const montoActualClamped = Math.min(obj.montoActual, obj.montoMeta);
           return {
             ...obj,
             montoActual: montoActualClamped,
-            progreso: (obj.montoMeta > 0) ? (montoActualClamped / obj.montoMeta) * 100 : 0, // Avoid division by zero
+            progreso: (obj.montoMeta > 0) ? (montoActualClamped / obj.montoMeta) * 100 : 0,
           };
         });
-        console.log('Metas cargadas desde localStorage:', this.objetivos.length);
+        console.log(`Metas cargadas para cuenta ${currentAccountId} desde localStorage:`, this.objetivos.length);
       } else {
         this.objetivos = [];
         console.log('No se encontraron metas en localStorage.');
@@ -199,33 +259,40 @@ export class AhorroPage implements OnInit, OnDestroy {
     } finally {
       this.isLoading = false;
       await loading.dismiss();
-      console.log('loadObjetivosFromStorage: Carga finalizada, isLoading =', this.isLoading);
     }
   }
-
-  // This is the primary method to call from elsewhere to trigger a reload of objectives
-  // It checks the account selection first, then calls the appropriate loading method.
-  async loadObjetivos() {
-    const currentSelectedAccount = (this.accountService.selectedAccount$ as any).value; // Access BehaviorSubject value
-    if (currentSelectedAccount) {
-      this.objetivos = []; // Clear objectives if an account is selected
-      this.isLoading = false;
-      await this.loadingCtrl.dismiss().catch(() => {});
-    } else {
-      await this.loadObjetivosFromStorage(); // Load from storage if no account is selected
-    }
-  }
-
 
   saveObjetivos() {
+    let allObjetivos: ObjetivoAhorro[] = [];
+    try {
+      const storedObjetivos = localStorage.getItem(this.storageKey);
+      if (storedObjetivos) {
+        allObjetivos = JSON.parse(storedObjetivos);
+      }
+    }
+    catch (e) {
+      console.error('Error al parsear objetivos de localStorage para guardar:', e);
+    }
+
+    const currentAccountId = this.selectedAccountId;
+    if (currentAccountId === null) {
+      console.warn('No hay cuenta seleccionada para guardar objetivos.');
+      return;
+    }
+
+    // Filtra objetivos de otras cuentas y añade/actualiza los de la cuenta actual
+    const updatedAllObjetivos = allObjetivos.filter(obj => obj.accountId !== currentAccountId);
+    this.objetivos.forEach(obj => {
+      // Asegura que el accountId se guarde con el objetivo
+      updatedAllObjetivos.push({ ...obj, accountId: currentAccountId });
+    });
+
     localStorage.setItem(
       this.storageKey,
-      JSON.stringify(
-        this.objetivos.map((obj) => {
-          const { progreso, ...rest } = obj; // Destructure to omit 'progreso' as it's calculated
-          return rest;
-        })
-      )
+      JSON.stringify(updatedAllObjetivos.map((obj:any) => {
+        const { progreso, ...rest } = obj;
+        return rest;
+      }))
     );
     console.log('Metas guardadas en localStorage.');
   }
@@ -239,9 +306,8 @@ export class AhorroPage implements OnInit, OnDestroy {
       return null;
     }
     const dateObj = new Date(date);
-    // Use a custom format for display, e.g., "Jan 1, 2024"
     const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
-    return new Intl.DateTimeFormat('en-US', options).format(dateObj);
+    return new Intl.DateTimeFormat('es-ES', options).format(dateObj); // Usar es-ES
   }
 
   isDeadlinePassed(fechaLimite: string | null | undefined): boolean {
@@ -249,23 +315,31 @@ export class AhorroPage implements OnInit, OnDestroy {
       return false;
     }
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize today to start of day
+    today.setHours(0, 0, 0, 0);
 
     const deadline = new Date(fechaLimite);
-    deadline.setHours(0, 0, 0, 0); // Normalize deadline to start of day
+    deadline.setHours(0, 0, 0, 0);
 
     return deadline < today;
   }
 
   // --- Goal Modal Methods ---
-
   async openGoalModal(mode: 'add' | 'edit', goal?: ObjetivoAhorro) {
+    if (this.selectedAccountId === null) {
+      await this.presentToast('Por favor, selecciona una cuenta antes de añadir o editar una meta de ahorro.', 'warning');
+      return;
+    }
+
     this.isGoalModalOpen = true;
     this.isEditMode = mode === 'edit';
     this.goalForm.reset();
     this.editingGoalId = null;
-    this.isSubmitting = false; // Reset submitting state
-    this.showDatePicker = false; // Hide date picker initially when opening modal
+    this.isSubmitting = false;
+    this.showDatePicker = false;
+
+    // Asegura que el accountId del formulario se establezca correctamente
+    this.goalForm.get('accountId')?.setValue(this.selectedAccountId);
+    this.goalForm.get('accountId')?.disable(); // Para que el usuario no cambie la cuenta desde el modal
 
     if (this.isEditMode && goal) {
       this.editingGoalId = goal.id;
@@ -274,16 +348,13 @@ export class AhorroPage implements OnInit, OnDestroy {
         nombre: goal.nombre,
         montoMeta: goal.montoMeta,
         montoActual: goal.montoActual,
-        // Convert stored date string to ISO string for ion-datetime
         fechaLimite: goal.fechaLimite ? new Date(goal.fechaLimite).toISOString() : null,
       });
-      // Disable montoActual if editing, as it should only be changed via "Add Funds"
-      this.goalForm.get('montoActual')?.disable();
+      this.goalForm.get('montoActual')?.disable(); // montoActual solo se cambia vía "Add Funds"
     } else {
-      // Set default value for montoActual for new goals
-      this.goalForm.get('montoActual')?.enable(); // Ensure it's enabled for new goals
+      this.goalForm.get('montoActual')?.enable();
       this.goalForm.patchValue({ montoActual: 0 });
-      this.goalForm.get('id')?.setValue(this.generateId()); // Assign new ID
+      this.goalForm.get('id')?.setValue(this.generateId());
     }
   }
 
@@ -293,19 +364,16 @@ export class AhorroPage implements OnInit, OnDestroy {
     this.isSubmitting = false;
     this.goalForm.reset();
     this.editingGoalId = null;
-    this.showDatePicker = false; // Reset date picker visibility
-    this.goalForm.get('montoActual')?.enable(); // Re-enable montoActual for next potential 'add'
+    this.showDatePicker = false;
+    this.goalForm.get('montoActual')?.enable();
+    this.goalForm.get('accountId')?.enable(); // Re-habilitar accountId
   }
 
-  // Toggles the visibility of the ion-datetime component
   toggleDatePicker() {
     this.showDatePicker = !this.showDatePicker;
   }
 
-  // Called when the user selects a date and clicks "Confirm" in the ion-datetime
   onDateSelected(event: any) {
-    // The formControlName="fechaLimite" already handles updating the form's value.
-    // We just need to hide the picker.
     this.showDatePicker = false;
   }
 
@@ -323,55 +391,45 @@ export class AhorroPage implements OnInit, OnDestroy {
     });
     await loading.present();
 
-    const formValue = this.goalForm.getRawValue(); // Use getRawValue to get disabled field values
+    const formValue = this.goalForm.getRawValue();
     const newGoal: ObjetivoAhorro = {
-      id: formValue.id || this.generateId(), // Ensure ID is present
+      id: formValue.id || this.generateId(),
       nombre: formValue.nombre,
       montoMeta: parseFloat(formValue.montoMeta),
       montoActual: parseFloat(formValue.montoActual),
-      // Store date as ISO string or null
       fechaLimite: formValue.fechaLimite ? new Date(formValue.fechaLimite).toISOString() : null,
-      progreso: 0 // Will be calculated after adding/updating
+      progreso: 0, // Se recalculará
+      accountId: formValue.accountId // Asegura que se pase el accountId
     };
 
-    // Calculate progress
-    newGoal.progreso = (newGoal.montoActual / newGoal.montoMeta) * 100;
-    if (newGoal.progreso > 100) newGoal.progreso = 100; // Cap at 100%
+    if (this.isEditMode && this.editingGoalId) {
+      const index = this.objetivos.findIndex(g => g.id === this.editingGoalId);
+      if (index !== -1) {
+        newGoal.montoActual = this.objetivos[index].montoActual; // Preservar montoActual
+        newGoal.progreso = (newGoal.montoActual / newGoal.montoMeta) * 100;
+        if (newGoal.progreso > 100) newGoal.progreso = 100;
 
-    setTimeout(async () => {
-      if (this.isEditMode && this.editingGoalId) {
-        const index = this.objetivos.findIndex(g => g.id === this.editingGoalId);
-        if (index !== -1) {
-          // When editing, montoActual should typically only be changed via "Add Funds".
-          // So, we preserve the existing montoActual unless you have another mechanism.
-          const currentMontoActual = this.objetivos[index].montoActual;
-          newGoal.montoActual = currentMontoActual; // Preserve existing saved amount
-          newGoal.progreso = (newGoal.montoActual / newGoal.montoMeta) * 100;
-          if (newGoal.progreso > 100) newGoal.progreso = 100;
-
-          this.objetivos[index] = { ...newGoal }; // Use spread to create new object for change detection
-          await this.presentToast('Goal updated successfully!', 'success');
-        }
-      } else {
-        this.objetivos.unshift(newGoal); // Add to the beginning for visibility
-        await this.presentToast('Goal added successfully!', 'success');
+        this.objetivos[index] = { ...newGoal };
+        await this.presentToast('Goal updated successfully!', 'success');
       }
+    } else {
+      this.objetivos.unshift(newGoal);
+      await this.presentToast('Goal added successfully!', 'success');
+    }
 
-      this.saveObjetivos();
-      this.isSubmitting = false;
-      await loading.dismiss(); // Await dismiss
-      await this.closeGoalModal();
-      await this.loadObjetivos(); // Reload to ensure UI is updated with new calculations
-    }, 1000);
+    this.saveObjetivos();
+    this.isSubmitting = false;
+    await loading.dismiss();
+    await this.closeGoalModal();
+    await this.loadObjetivosFromStorage(); // Recargar para actualizar la UI
   }
 
   // --- Add Funds Modal Methods ---
-
   openAddFundsModal(goal: ObjetivoAhorro) {
     this.isAddFundsModalOpen = true;
-    this.selectedGoal = goal; // Set the selected goal for adding funds
-    this.fundsToAdd = null; // Reset funds to add
-    this.isSubmitting = false; // Reset submitting state
+    this.selectedGoal = goal;
+    this.fundsToAdd = null;
+    this.isSubmitting = false;
   }
 
   closeAddFundsModal() {
@@ -394,34 +452,30 @@ export class AhorroPage implements OnInit, OnDestroy {
     });
     await loading.present();
 
-    setTimeout(async () => {
-      const index = this.objetivos.findIndex(g => g.id === this.selectedGoal?.id);
-      if (index !== -1) {
-        const goal = this.objetivos[index];
-        goal.montoActual += this.fundsToAdd!; // Add funds (use non-null assertion as checked above)
-        if (goal.montoActual > goal.montoMeta) {
-          goal.montoActual = goal.montoMeta; // Cap at target amount
-        }
-        goal.progreso = (goal.montoMeta > 0) ? (goal.montoActual / goal.montoMeta) * 100 : 0; // Avoid division by zero
-        if (goal.progreso > 100) goal.progreso = 100; // Cap at 100%
-
-        this.objetivos[index] = { ...goal }; // Ensure change detection fires
-        this.saveObjetivos();
-        await this.presentToast('Funds added successfully!', 'success');
-      } else {
-        await this.presentToast('Goal not found.', 'danger');
+    const index = this.objetivos.findIndex(g => g.id === this.selectedGoal?.id);
+    if (index !== -1) {
+      const goal = this.objetivos[index];
+      goal.montoActual += this.fundsToAdd;
+      if (goal.montoActual > goal.montoMeta) {
+        goal.montoActual = goal.montoMeta;
       }
+      goal.progreso = (goal.montoMeta > 0) ? (goal.montoActual / goal.montoMeta) * 100 : 0;
+      if (goal.progreso > 100) goal.progreso = 100;
 
-      this.isSubmitting = false;
-      await loading.dismiss(); // Await dismiss
-      this.closeAddFundsModal();
-      await this.loadObjetivos(); // Reload to ensure UI is updated
-    }, 1000);
+      this.objetivos[index] = { ...goal };
+      this.saveObjetivos();
+      await this.presentToast('Funds added successfully!', 'success');
+    } else {
+      await this.presentToast('Goal not found.', 'danger');
+    }
+
+    this.isSubmitting = false;
+    await loading.dismiss();
+    this.closeAddFundsModal();
+    await this.loadObjetivosFromStorage(); // Recargar para actualizar UI
   }
 
-
   // --- General Methods ---
-
   async deleteGoal(goalId: string) {
     const alert = await this.alertController.create({
       header: 'Confirm Deletion',
@@ -437,7 +491,7 @@ export class AhorroPage implements OnInit, OnDestroy {
         {
           text: 'Delete',
           cssClass: 'danger',
-          handler: async () => { // Make handler async
+          handler: async () => {
             const loading = await this.loadingCtrl.create({
               message: 'Deleting goal...',
             });
@@ -445,9 +499,8 @@ export class AhorroPage implements OnInit, OnDestroy {
             this.objetivos = this.objetivos.filter((obj) => obj.id !== goalId);
             this.saveObjetivos();
             await loading.dismiss();
-            await this.presentToast('Goal deleted successfully!', 'success'); // Use await
-            console.log(`Meta con ID ${goalId} eliminada.`);
-            await this.loadObjetivos(); // Reload to ensure UI is updated
+            await this.presentToast('Goal deleted successfully!', 'success');
+            await this.loadObjetivosFromStorage(); // Recargar para actualizar UI
           },
         },
       ],

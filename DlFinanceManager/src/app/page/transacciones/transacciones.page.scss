@@ -109,7 +109,6 @@ ion-header {
   box-sizing: border-box;
 }
 
-/* --- Transactions Header Section --- */
 .transactions-header {
   display: flex;
   justify-content: space-between;
@@ -163,7 +162,6 @@ ion-button:not([color]) {
   --color: var(--ion-color-primary-contrast);
 }
 
-/* --- Transactions Filter Section --- */
 .transactions-filter {
   display: flex;
   gap: 20px;
@@ -202,7 +200,6 @@ ion-select {
   padding-bottom: 8px;
 }
 
-/* --- Transactions List Section --- */
 .transactions-list {
   background-color: var(--card-background);
   border: 1px solid var(--border-color);
@@ -332,9 +329,7 @@ ion-list ion-item ion-icon {
   }
 }
 
-/* --------------------- */
-/* RESPONSIVE STYLES */
-/* --------------------- */
+
 
 @media (max-width: 991px) {
   .dashboard-layout {
@@ -459,7 +454,6 @@ ion-list ion-item ion-icon {
   }
 }
 
-/* --- Form Modal Styles (NEW/MODIFIED) --- */
 ion-modal {
   --width: 30%;
   --height: 70%;
@@ -514,7 +508,6 @@ ion-modal {
     width: 100%;
     box-sizing: border-box;
 
-    /* Explicitly reset internal Ionic item paddings to ensure visibility */
     --padding-start: 16px;
     --padding-end: 16px;
     --padding-top: 8px;
@@ -543,7 +536,7 @@ ion-modal {
       --padding-end: 0;
       color: var(--main-text-color);
       font-size: 1.05em;
-      min-height: 44px; /* Ensure a minimum touch target height */
+      min-height: 44px;
     }
 
     ion-note[color="danger"] {
@@ -566,7 +559,6 @@ ion-modal {
 }
 
 
-/* --- Skeleton Loader Styles (using inlined variables) --- */
 .skeleton {
   background: linear-gradient(90deg, var(--border-color) 25%, #e0e0e0 50%, var(--border-color) 75%);
   background-size: 200% 100%;
@@ -642,3 +634,4 @@ ion-modal {
   .mb-2 { margin-bottom: 0.5rem; }
   .ml-2 { margin-left: 0.5rem; }
 }
+

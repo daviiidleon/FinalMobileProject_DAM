@@ -1,6 +1,8 @@
-import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
-import { CommonModule, DatePipe, PercentPipe } from '@angular/common';
+import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { CommonModule, formatDate, DatePipe, PercentPipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
 import {
   IonButton,
   IonContent,
@@ -14,6 +16,9 @@ import {
   LoadingController,
   AlertController,
   ToastController,
+  IonSearchbar,
+  IonCard, IonCardHeader, IonCardContent, IonCardTitle, IonCardSubtitle,
+  IonBadge
 } from '@ionic/angular/standalone';
 import { HeaderComponent } from "../../component/header/header.component";
 import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
@@ -32,22 +37,32 @@ import {
   pricetagOutline,
   createOutline,
   trashOutline,
-  closeOutline
+  closeOutline,
+  calendarOutline,
+  walletOutline,
+  searchOutline
 } from 'ionicons/icons';
 
-// Define types for better type safety
-type CategoriaKey = 'comida' | 'transporte' | 'entretenimiento' | 'educacion' | 'salud' | 'housing' | 'utilities' | 'otros';
+import { BudgetService, Budget, BudgetApiResponse } from '../../services/budget.service';
+import { AccountService, Account } from '../../services/account.service';
+import { ClientAccount } from '../cuentas/cuentas.page';
 
-interface PastBudget {
-  id: string;
-  categoriaValue: CategoriaKey;
-  categoriaDisplay: string;
-  mes: string;
-  anio: string;
-  limite: string; // Stored as formatted string, e.g., "€100.00"
-  gastado: string; // Stored as formatted string, e.g., "€50.00"
-  restante: string; // Stored as formatted string
-  porcentaje: number; // Stored as a decimal, e.g., 0.5 for 50%
+type CategoriaKey = 'comida' | 'transporte' | 'entretenimiento' | 'educacion' | 'salud' | 'vivienda' | 'servicios' | 'otros' | 'salario' | 'inversion';
+
+interface ClientBudget {
+  id?: number;
+  name?: string | null;
+  account_id: number;
+  accountName?: string;
+  category_id?: number;
+  categoryName?: string;
+  amount: number; // Esto es el `budget_amount` de la API
+  spent_amount: number; // Mapeado de `spent_amount` de la API
+  start_date: string;
+  end_date: string;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface BudgetAlert {
@@ -73,6 +88,9 @@ interface BudgetAlert {
     IonModal,
     IonItem, IonLabel, IonInput, IonDatetime, IonButtons, IonSpinner, IonSelect, IonSelectOption, IonNote, IonList,
     IonProgressBar,
+    IonSearchbar,
+    IonCard, IonCardHeader, IonCardContent, IonCardTitle, IonCardSubtitle,
+    IonBadge,
 
     DatePipe,
     PercentPipe,
@@ -81,7 +99,7 @@ interface BudgetAlert {
     SideMenuComponent,
   ]
 })
-export class PresupuestosPage implements OnInit {
+export class PresupuestosPage implements OnInit, OnDestroy {
 
   categoriaOptions: Record<CategoriaKey, string> = {
     comida: 'Comida',
@@ -89,32 +107,58 @@ export class PresupuestosPage implements OnInit {
     entretenimiento: 'Entretenimiento',
     educacion: 'Educación',
     salud: 'Salud',
-    housing: 'Vivienda',
-    utilities: 'Servicios',
+    vivienda: 'Vivienda',
+    servicios: 'Servicios',
+    salario: 'Salario',
+    inversion: 'Inversión',
     otros: 'Otros'
   };
 
-  pastBudgets: PastBudget[] = [];
+  categories: { id: number, name: string }[] = [
+    { id: 1, name: 'Comida' },
+    { id: 2, name: 'Transporte' },
+    { id: 3, name: 'Entretenimiento' },
+    { id: 4, name: 'Educación' },
+    { id: 5, name: 'Salud' },
+    { id: 6, name: 'Vivienda' },
+    { id: 7, name: 'Servicios' },
+    { id: 8, name: 'Salario' },
+    { id: 9, name: 'Inversión' },
+    { id: 10, name: 'Otros' }
+  ];
+
+  budgets: ClientBudget[] = [];
+  filteredBudgets: ClientBudget[] = [];
   budgetAlerts: BudgetAlert[] = [];
   isLoading: boolean = true;
+  private subscriptions: Subscription = new Subscription();
 
   @ViewChild('budgetModal') budgetModal!: IonModal;
-  @ViewChild('createBudgetButton') createBudgetButtonRef!: ElementRef<HTMLIonButtonElement>;
 
   isModalOpen: boolean = false;
   isEditMode: boolean = false;
   budgetForm: FormGroup;
   isSubmitting: boolean = false;
-  editingBudgetId: string | null = null;
-  currentDate = new Date();
+  editingBudgetId: number | null = null;
 
-  showMonthYearPicker: boolean = false; // New property to control datetime visibility
+  selectedAccountId: number | null = null;
+  accounts: ClientAccount[] = [];
+  currentSearchTerm: string = '';
+
+  // Propiedad para el saldo restante de la cuenta seleccionada
+  remainingAccountBalance: number | null = null;
+  // Propiedad para almacenar la cuenta seleccionada completa
+  currentSelectedAccount: ClientAccount | null = null;
+
 
   constructor(
     private fb: FormBuilder,
     private loadingController: LoadingController,
     private alertController: AlertController,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private budgetService: BudgetService,
+    private accountService: AccountService,
+    private cdRef: ChangeDetectorRef
   ) {
     addIcons({
       addOutline,
@@ -131,83 +175,250 @@ export class PresupuestosPage implements OnInit {
       createOutline,
       trashOutline,
       closeOutline,
+      calendarOutline,
+      walletOutline,
+      searchOutline
     });
 
     this.budgetForm = this.fb.group({
-      categoria: ['', Validators.required],
-      monto: [null, [Validators.required, Validators.min(0.01)]],
-      mes: [this.currentDate.toISOString(), Validators.required],
+      name: [null, Validators.required],
+      account_id: [null, Validators.required],
+      category_id: [null],
+      amount: [null, [Validators.required, Validators.min(0.01)]],
+      start_date: [new Date().toISOString(), Validators.required],
+      end_date: [this.addMonths(new Date(), 1).toISOString(), Validators.required],
     });
   }
 
-  ngOnInit() {
+  async ngOnInit() {
+    console.log('PresupuestosPage: ngOnInit - Inicializando.');
+    this.subscriptions.add(
+      this.accountService.selectedAccount$.subscribe(async account => {
+        if (account && account.id !== undefined) {
+          this.selectedAccountId = account.id;
+          this.currentSelectedAccount = account;
+          console.log('PresupuestosPage: Cuenta seleccionada recibida:', account.nombre, 'ID:', this.selectedAccountId, 'Saldo:', account.saldo);
+          if (!this.isEditMode && (this.budgetForm.get('account_id')?.value === null || this.budgetForm.get('account_id')?.value === undefined)) {
+            this.budgetForm.patchValue({ account_id: this.selectedAccountId });
+          }
+        } else {
+          this.selectedAccountId = null;
+          this.currentSelectedAccount = null;
+          console.log('PresupuestosPage: Ninguna cuenta seleccionada recibida.');
+        }
+        await this.loadBudgets();
+        this.cdRef.detectChanges();
+      })
+    );
+    await this.loadAccounts();
+    console.log('PresupuestosPage: Cuentas cargadas para el select del formulario.');
+  }
+
+  ionViewWillEnter() {
+    console.log('PresupuestosPage: ionViewWillEnter - Recargando presupuestos.');
     this.loadBudgets();
   }
 
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
+  }
+
+  async loadAccounts() {
+    console.log('PresupuestosPage: loadAccounts() - Iniciando carga de cuentas.');
+    this.subscriptions.add(
+      this.accountService.getAccounts().pipe(
+        map((apiAccounts: Account[]) => {
+          return apiAccounts.map(apiAcc => ({
+            id: apiAcc.id,
+            nombre: apiAcc.name,
+            tipo: apiAcc.type,
+            saldo: apiAcc.current_balance ?? 0,
+            institucion: apiAcc.institution || '',
+            fechaActualizacion: apiAcc.updated_at
+          }));
+        })
+      ).subscribe({
+        next: (clientAccounts: ClientAccount[]) => {
+          this.accounts = clientAccounts;
+          console.log('PresupuestosPage: Cuentas cargadas para el formulario:', this.accounts.length);
+          if (!this.accountService.getSelectedAccount() && clientAccounts.length > 0) {
+            this.accountService.setSelectedAccount(clientAccounts[0]);
+            console.log('PresupuestosPage: Estableciendo la primera cuenta como seleccionada por defecto:', clientAccounts[0].nombre);
+          } else if (clientAccounts.length === 0) {
+            this.accountService.setSelectedAccount(null);
+            console.log('PresupuestosPage: No hay cuentas para seleccionar.');
+          }
+        },
+        error: async (err) => {
+          console.error('ERROR PresupuestosPage: Error al cargar cuentas:', err);
+          const alert = await this.alertController.create({ header: 'Error', message: err.message || 'No se pudieron cargar las cuentas para los presupuestos.', buttons: ['OK'] });
+          await alert.present();
+        }
+      })
+    );
+  }
+
+
   async loadBudgets() {
+    console.log('PresupuestosPage: loadBudgets() - Iniciando carga de presupuestos.');
+    if (this.selectedAccountId === null) {
+      this.budgets = [];
+      this.filteredBudgets = [];
+      this.isLoading = false;
+      this.remainingAccountBalance = null;
+      this.updateBudgetAlerts();
+      console.log('PresupuestosPage: No hay selectedAccountId, vaciando presupuestos y finalizando carga.');
+      this.cdRef.detectChanges();
+      return;
+    }
+
     this.isLoading = true;
     const loading = await this.loadingController.create({
-      message: 'Loading budgets...',
+      message: 'Cargando presupuestos...',
       spinner: 'crescent'
     });
     await loading.present();
+    console.log(`PresupuestosPage: Solicitando presupuestos para accountId: ${this.selectedAccountId}`);
 
-    // Budgets are currently initialized to empty for now
-    this.pastBudgets = [];
-    this.updateBudgetAlerts(); // Update alerts after initializing budgets
-    this.isLoading = false;
-    await loading.dismiss();
+    this.subscriptions.add(
+      this.budgetService.getBudgets(this.selectedAccountId).subscribe({
+        next: (apiBudgets: Budget[]) => {
+          console.log('PresupuestosPage: Presupuestos recibidos de la API (raw):', apiBudgets);
+
+          let totalBudgetedForSelectedAccount: number = 0; // Se inicializa como número
+
+          let currentAccountBalance = this.currentSelectedAccount ? this.currentSelectedAccount.saldo : 0;
+          console.log(`PresupuestosPage: Saldo actual de la cuenta '${this.currentSelectedAccount?.nombre}': ${currentAccountBalance}`);
+
+
+          this.budgets = apiBudgets.map(b => {
+            const account = this.accounts.find(acc => acc.id === b.account_id);
+            const category = this.categories.find(cat => cat.id === b.category_id);
+            const amountNum = Number(b.budget_amount); // <--- CAMBIO CLAVE: Asegurarse de que es un número
+            const spentNum = Number(b.spent_amount ?? 0); // <--- CAMBIO CLAVE: Asegurarse de que es un número
+
+            totalBudgetedForSelectedAccount += amountNum; // Ahora sumará números correctamente
+
+            const isActive = new Date(b.end_date) >= new Date();
+
+            return {
+              ...b,
+              amount: amountNum,
+              spent_amount: spentNum,
+              accountName: account ? account.nombre : 'Cuenta Desconocida',
+              categoryName: category ? category.name : 'Sin Categoría',
+              is_active: isActive
+            };
+          }).sort((a, b) => {
+            if (a.is_active && !b.is_active) return -1;
+            if (!a.is_active && b.is_active) return 1;
+            return new Date(b.end_date).getTime() - new Date(a.end_date).getTime();
+          });
+
+          this.remainingAccountBalance = currentAccountBalance - totalBudgetedForSelectedAccount;
+          console.log(`PresupuestosPage: Total Presupuestado para esta cuenta: ${totalBudgetedForSelectedAccount}. ` +
+            `Restante en cuenta (saldo - total presupuestado): ${this.remainingAccountBalance}.`);
+
+          console.log('PresupuestosPage: Presupuestos mapeados para UI:', this.budgets);
+          this.applyFilters();
+          this.updateBudgetAlerts();
+          this.isLoading = false;
+          loading.dismiss();
+          console.log('PresupuestosPage: Carga y filtrado de presupuestos completado.');
+          this.cdRef.detectChanges();
+        },
+        error: async (err) => {
+          console.error('ERROR PresupuestosPage: Error al cargar presupuestos desde API:', err);
+          this.isLoading = false;
+          loading.dismiss();
+          this.remainingAccountBalance = null;
+          const alert = await this.alertController.create({
+            header: 'Error de Carga',
+            message: err.message || 'No se pudieron cargar los presupuestos. Por favor, intente de nuevo o verifique su conexión.',
+            buttons: ['OK']
+          });
+          await alert.present();
+          this.cdRef.detectChanges();
+        }
+      })
+    );
   }
-  // Method to get category icon based on category key
-  getCategoryIcon(categoryValue: CategoriaKey): string {
-    switch (categoryValue) {
-      case 'comida':
-        return 'fast-food-outline';
-      case 'transporte':
-        return 'car-outline';
-      case 'entretenimiento':
-        return 'film-outline';
-      case 'educacion':
-        return 'book-outline';
-      case 'salud':
-        return 'heart-outline';
-      case 'housing':
-        return 'home-outline';
-      case 'utilities':
-        return 'flash-outline';
-      case 'otros':
-        return 'ellipsis-horizontal-outline';
-      default:
-        return 'pricetag-outline';
+
+  onSearchChange(event: any) {
+    this.currentSearchTerm = event.detail.value ? event.detail.value.toLowerCase() : '';
+    this.applyFilters();
+  }
+
+  applyFilters() {
+    console.log('PresupuestosPage: Aplicando filtros. Datos iniciales:', this.budgets.length);
+    let tempBudgets = [...this.budgets];
+
+    if (this.currentSearchTerm) {
+      tempBudgets = tempBudgets.filter(b =>
+        (b.name && b.name.toLowerCase().includes(this.currentSearchTerm)) ||
+        (b.categoryName && b.categoryName.toLowerCase().includes(this.currentSearchTerm)) ||
+        (b.accountName && b.accountName.toLowerCase().includes(this.currentSearchTerm)) ||
+        b.amount.toString().includes(this.currentSearchTerm)
+      );
+    }
+
+    this.filteredBudgets = tempBudgets;
+    console.log('PresupuestosPage: Presupuestos filtrados resultantes:', this.filteredBudgets.length);
+    this.cdRef.detectChanges();
+  }
+
+  getCategoryIcon(categoryId: number | undefined): string {
+    const category = this.categories.find(cat => cat.id === categoryId);
+    switch (category?.name.toLowerCase()) {
+      case 'comida': return 'fast-food-outline';
+      case 'transporte': return 'car-outline';
+      case 'entretenimiento': return 'film-outline';
+      case 'educación': return 'book-outline';
+      case 'salud': return 'heart-outline';
+      case 'vivienda': return 'home-outline';
+      case 'servicios': return 'flash-outline';
+      default: return 'pricetag-outline';
     }
   }
 
-  // Helper to get category keys for ngFor in select
-  getCategoryKeys(): CategoriaKey[] {
-    return Object.keys(this.categoriaOptions) as CategoriaKey[];
+  getCategoryNameById(categoryId: number | undefined): string {
+    const category = this.categories.find(cat => cat.id === categoryId);
+    return category ? category.name : 'Sin Categoría';
   }
 
-  async openBudgetModal(mode: 'add' | 'edit', budget?: PastBudget) {
+  async openBudgetModal(mode: 'add' | 'edit', budget?: ClientBudget) {
     this.isModalOpen = true;
     this.isEditMode = mode === 'edit';
     this.budgetForm.reset();
     this.editingBudgetId = null;
-    this.isSubmitting = false; // Reset submitting state
-    this.showMonthYearPicker = false; // Ensure picker is hidden when modal opens
+    this.isSubmitting = false;
 
     if (this.isEditMode && budget) {
-      this.editingBudgetId = budget.id;
-      const limitAsNumber = parseFloat(budget.limite.replace('€', ''));
-      // Construct a valid date string for parsing, ensuring month and year
-      const budgetDate = new Date(`${budget.mes} 1, ${budget.anio}`); // Example: "December 1, 2023"
+      this.editingBudgetId = budget.id || null;
       this.budgetForm.patchValue({
-        categoria: budget.categoriaValue,
-        monto: limitAsNumber,
-        mes: budgetDate.toISOString(), // Ensure it's an ISO string
+        name: budget.name,
+        account_id: budget.account_id,
+        category_id: budget.category_id,
+        amount: budget.amount ?? null,
+        start_date: budget.start_date ? new Date(budget.start_date).toISOString() : null,
+        end_date: budget.end_date ? new Date(budget.end_date).toISOString() : null,
       });
+      console.log('PresupuestosPage: Abriendo modal en modo EDICIÓN para ID:', budget.id);
+      console.log('PresupuestosPage: Valores del formulario en edición (parcheado):', this.budgetForm.value);
     } else {
-      this.budgetForm.patchValue({ mes: new Date().toISOString() }); // Default to current date as ISO string
+      this.editingBudgetId = null;
+      this.budgetForm.reset({
+        name: null,
+        account_id: this.selectedAccountId,
+        category_id: null,
+        amount: null,
+        start_date: new Date().toISOString(),
+        end_date: this.addMonths(new Date(), 1).toISOString(),
+      });
+      console.log('PresupuestosPage: Abriendo modal en modo AÑADIR. account_id preestablecido:', this.selectedAccountId);
+      console.log('PresupuestosPage: Valores del formulario en añadir (reset):', this.budgetForm.value);
     }
+    this.cdRef.detectChanges();
   }
 
   async closeBudgetModal() {
@@ -216,144 +427,160 @@ export class PresupuestosPage implements OnInit {
     this.isSubmitting = false;
     this.budgetForm.reset();
     this.editingBudgetId = null;
-    this.showMonthYearPicker = false; // Reset picker visibility when modal closes
-  }
-
-  toggleMonthYearPicker() {
-    this.showMonthYearPicker = !this.showMonthYearPicker;
-  }
-
-  // This method will be called when the user confirms the date selection (clicks "Confirm")
-  // The 'ionChange' event on ion-datetime fires when the value is selected and confirmed
-  onMonthYearSelected(event: any) {
-    // The formControlName="mes" already handles updating the form's value.
-    // We just need to hide the picker.
-    this.showMonthYearPicker = false;
+    this.cdRef.detectChanges();
   }
 
   async submitBudgetForm() {
     this.budgetForm.markAllAsTouched();
     if (this.budgetForm.invalid) {
-      await this.presentToast('Please fill all required fields correctly.', 'danger');
+      console.warn('PresupuestosPage: Formulario inválido al guardar.');
+      await this.presentToast('Por favor, completa todos los campos requeridos correctamente.', 'danger');
       return;
     }
 
     this.isSubmitting = true;
     const loading = await this.loadingController.create({
-      message: this.isEditMode ? 'Saving changes...' : 'Adding budget...',
+      message: this.isEditMode ? 'Guardando cambios...' : 'Añadiendo presupuesto...',
       spinner: 'crescent'
     });
     await loading.present();
 
-    const formValue = this.budgetForm.value;
-    const selectedDate = new Date(formValue.mes); // Should already be a valid ISO string from the picker
-    const month = selectedDate.toLocaleString('en-US', { month: 'long' });
-    const year = selectedDate.getFullYear().toString();
+    const formData = this.budgetForm.value;
 
-    let newBudget: PastBudget = {
-      id: this.isEditMode && this.editingBudgetId ? this.editingBudgetId : Date.now().toString(),
-      categoriaValue: formValue.categoria,
-      categoriaDisplay: this.categoriaOptions[formValue.categoria as CategoriaKey],
-      mes: month,
-      anio: year,
-      limite: `€${parseFloat(formValue.monto).toFixed(2)}`,
-      gastado: '€0.00', // Default for new budgets
-      restante: `€${parseFloat(formValue.monto).toFixed(2)}`, // Default for new budgets
-      porcentaje: 0 // Default for new budgets
+    if (formData.account_id === null && this.selectedAccountId !== null) {
+      formData.account_id = this.selectedAccountId;
+    }
+
+    const amountToSend = typeof formData.amount === 'string' && formData.amount.trim() === '' ? null : parseFloat(formData.amount);
+
+    if (amountToSend === null || isNaN(amountToSend) || amountToSend <= 0) {
+      console.error('PresupuestosPage: Monto inválido a enviar a la API:', formData.amount);
+      await loading.dismiss();
+      await this.presentToast('El monto del presupuesto debe ser un número positivo.', 'danger');
+      this.isSubmitting = false;
+      return;
+    }
+
+    const budgetToSend: Budget = {
+      name: formData.name,
+      account_id: formData.account_id,
+      category_id: formData.category_id || null,
+      budget_amount: amountToSend,
+      start_date: formatDate(formData.start_date, 'yyyy-MM-dd HH:mm:ss', 'en-US'),
+      end_date: formatDate(formData.end_date, 'yyyy-MM-dd HH:mm:ss', 'en-US'),
     };
 
-    setTimeout(async () => {
-      if (this.isEditMode && this.editingBudgetId) {
-        const index = this.pastBudgets.findIndex(b => b.id === this.editingBudgetId);
-        if (index !== -1) {
-          const oldBudget = this.pastBudgets[index];
-          // When editing, retain 'gastado' value and recalculate 'restante' and 'porcentaje'
-          const oldGastadoNum = parseFloat(oldBudget.gastado.replace('€', ''));
+    console.log('PresupuestosPage: Presupuesto a enviar a la API:', budgetToSend);
 
-          newBudget.gastado = `€${oldGastadoNum.toFixed(2)}`;
-          newBudget.restante = `€${(parseFloat(formValue.monto) - oldGastadoNum).toFixed(2)}`;
-          newBudget.porcentaje = oldGastadoNum / parseFloat(formValue.monto);
-
-          this.pastBudgets[index] = newBudget;
-          await this.presentToast('Budget updated successfully!', 'success');
-        }
-      } else {
-        // Add new budget to the beginning of the array
-        this.pastBudgets.unshift(newBudget);
-        await this.presentToast('Budget added successfully!', 'success');
-      }
-
-      this.updateBudgetAlerts();
-      this.isSubmitting = false;
-      await loading.dismiss();
-      await this.closeBudgetModal();
-    }, 1000);
+    if (this.isEditMode && this.editingBudgetId !== null) {
+      this.subscriptions.add(
+        this.budgetService.updateBudget(this.editingBudgetId, budgetToSend).subscribe({
+          next: async (res: BudgetApiResponse) => {
+            console.log('PresupuestosPage: Presupuesto actualizado con éxito:', res);
+            await loading.dismiss();
+            this.presentToast('¡Presupuesto actualizado con éxito!', 'success');
+            this.closeBudgetModal();
+            await this.loadBudgets();
+          },
+          error: async (err) => {
+            console.error('ERROR PresupuestosPage: Error al actualizar presupuesto:', err);
+            await loading.dismiss();
+            this.presentToast(err.message || 'No se pudo actualizar el presupuesto. Intente de nuevo.', 'danger');
+          }
+        })
+      );
+    } else {
+      this.subscriptions.add(
+        this.budgetService.createBudget(budgetToSend).subscribe({
+          next: async (res: BudgetApiResponse) => {
+            console.log('PresupuestosPage: Presupuesto añadido con éxito:', res);
+            await loading.dismiss();
+            this.presentToast('¡Presupuesto añadido con éxito!', 'success');
+            this.closeBudgetModal();
+            await this.loadBudgets();
+          },
+          error: async (err) => {
+            console.error('ERROR PresupuestosPage: Error al añadir presupuesto:', err);
+            await loading.dismiss();
+            this.presentToast(err.message || 'No se pudo añadir el presupuesto. Intente de nuevo.', 'danger');
+          }
+        })
+      );
+    }
   }
 
-  async confirmDeleteBudget(id: string) {
+  async confirmDeleteBudget(id: number | undefined) {
+    if (id === undefined) {
+      console.error('PresupuestosPage: Intento de eliminar presupuesto sin ID.');
+      await this.presentToast('No se pudo eliminar el presupuesto: ID no válido.', 'danger');
+      return;
+    }
+
     const alert = await this.alertController.create({
-      header: 'Confirm Deletion',
-      message: 'Are you sure you want to delete this budget? This action cannot be undone.',
+      header: 'Confirmar Eliminación',
+      message: '¿Estás seguro de que deseas eliminar este presupuesto? Esta acción no se puede deshacer.',
       buttons: [
+        { text: 'Cancelar', role: 'cancel' },
         {
-          text: 'Cancel',
-          role: 'cancel',
-          handler: () => {
-            console.log('Delete cancelled');
-          },
-        },
-        {
-          text: 'Delete',
+          text: 'Eliminar',
           cssClass: 'danger',
           handler: async () => {
-            await this.deleteBudget(id); // Ensure deleteBudget is awaited
+            await this.deleteBudget(id);
           },
         },
       ],
     });
-
     await alert.present();
   }
 
-  async deleteBudget(id: string) {
+  async deleteBudget(id: number) {
     const deleteLoading = await this.loadingController.create({
-      message: 'Deleting budget...',
+      message: 'Eliminando presupuesto...',
       spinner: 'crescent'
     });
     await deleteLoading.present();
+    console.log('PresupuestosPage: Iniciando eliminación de presupuesto con ID:', id);
 
-    setTimeout(async () => { // Made this async to use await
-      this.pastBudgets = this.pastBudgets.filter(budget => budget.id !== id);
-
-      this.updateBudgetAlerts();
-      await this.presentToast('Budget deleted successfully!', 'success'); // Await toast
-
-      await deleteLoading.dismiss(); // Await dismiss
-    }, 500);
-  }
-
-  private getBudgetById(id: string | null): PastBudget | undefined {
-    // Ensure pastBudgets is defined before attempting to find
-    if (!this.pastBudgets) {
-      return undefined;
-    }
-    return this.pastBudgets.find(b => b.id === id);
+    this.subscriptions.add(
+      this.budgetService.deleteBudget(id).subscribe({
+        next: async () => {
+          console.log('PresupuestosPage: Presupuesto eliminado con éxito.');
+          await deleteLoading.dismiss();
+          this.presentToast('¡Presupuesto eliminado con éxito!', 'success');
+          await this.loadBudgets();
+        },
+        error: async (err) => {
+          console.error('ERROR PresupuestosPage: Error al eliminar presupuesto:', err);
+          await deleteLoading.dismiss();
+          this.presentToast(err.message || 'No se pudo eliminar el presupuesto. Intente de nuevo.', 'danger');
+        }
+      })
+    );
   }
 
   private updateBudgetAlerts() {
-    // Ensure pastBudgets is defined before filtering
-    if (!this.pastBudgets) {
-      this.budgetAlerts = [];
-      return;
-    }
-    // Only include alerts for budgets where the limit is greater than 0
-    this.budgetAlerts = this.pastBudgets.filter(b => {
-      const limiteNum = parseFloat(b.limite.replace('€', ''));
-      const gastadoNum = parseFloat(b.gastado.replace('€', ''));
-      return limiteNum > 0 && (gastadoNum / limiteNum) >= 1; // Alert if 100% or more is used
+    this.budgetAlerts = this.budgets.filter(b => {
+      const percentage_used = b.amount > 0 ? (b.spent_amount / b.amount) : 0;
+      return b.is_active && percentage_used >= 1;
     }).map(b => ({
-      message: `${b.categoriaDisplay} (${(b.porcentaje * 100).toFixed(0)}% used) for ${b.mes} ${b.anio}`
+      message: `El presupuesto '${b.name || b.categoryName}' ha sido excedido (${(b.spent_amount / b.amount * 100).toFixed(0)}% utilizado).`
     }));
+
+    if (this.remainingAccountBalance !== null && this.remainingAccountBalance < 0) {
+      this.budgetAlerts.push({ message: `¡Advertencia! El balance restante de la cuenta (${this.currentSelectedAccount?.nombre}) es negativo: ${this.remainingAccountBalance.toFixed(2)} EUR.` });
+    }
+  }
+
+  formatDatePeriod(startDate: string, endDate: string): string {
+    const start = formatDate(startDate, 'd/MM/yyyy', 'es-ES');
+    const end = formatDate(endDate, 'd/MM/yyyy', 'es-ES');
+    return `${start} - ${end}`;
+  }
+
+  addMonths(date: Date, months: number): Date {
+    const d = new Date(date);
+    d.setMonth(d.getMonth() + months);
+    return d;
   }
 
   async presentToast(message: string, color: string = 'primary') {

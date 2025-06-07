@@ -1,24 +1,56 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+// src/app/pages/dashboard/dashboard.page.ts
+import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import { CommonModule, formatDate } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { Router } from '@angular/router';
 import {
   IonContent,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardSubtitle,
+  IonCardContent,
+  IonSpinner,
+  LoadingController,
+  AlertController,
+  ToastController,
   IonHeader,
   IonTitle,
   IonToolbar,
-  LoadingController,
+  IonButtons,
+  IonMenuButton,
   IonIcon,
-  IonButton
+  IonButton,
+  IonLabel,
 } from '@ionic/angular/standalone';
-import { AccountService, Account } from 'src/app/services/account.service'; // Import Account here
-import { Subscription } from 'rxjs';
-import { HeaderComponent } from "../../component/header/header.component";
-import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
+import { SideMenuComponent } from '../../component/side-menu/side-menu.component';
+import { addIcons } from 'ionicons';
+import {
+  walletOutline,
+  trendingUpOutline,
+  arrowDownOutline,
+  arrowUpOutline,
+  addOutline,
+  eyeOutline,
+  eyeOffOutline,
+  chevronForwardOutline,
+  cashOutline,
+  receiptOutline,
+  statsChartOutline,
+  chevronDownOutline,
+} from 'ionicons/icons';
+
+import { AccountService, Account } from '../../services/account.service'; // Account ahora tiene current_balance
+import { ClientAccount } from '../cuentas/cuentas.page';
 import { Chart, registerables } from 'chart.js';
-import {RouterLink} from "@angular/router";
+
 Chart.register(...registerables);
 
-// Define interfaces for your data
 interface Balance {
   current: number;
 }
@@ -28,25 +60,25 @@ interface IncomeExpense {
   expense: number;
 }
 
-// Corrected BudgetUtilization interface
 interface BudgetUtilization {
   percentage: number;
-  total?: number; // Make total optional or remove if not always needed
-  utilized?: number; // Add utilized if you're returning it. Changed from 'utilization'
+  total?: number;
+  utilized?: number;
 }
 
 interface Transaction {
-  id: number;
+  id: number | string;
   description: string;
   amount: number;
-  date: Date;
+  date: string;
+  type?: string;
 }
 
 interface SavingsGoal {
-  id: number;
-  name: string;
-  currentAmount: number;
-  targetAmount: number;
+  id: string;
+  nombre: string;
+  montoActual: number;
+  montoMeta: number;
 }
 
 @Component({
@@ -61,68 +93,143 @@ interface SavingsGoal {
     IonHeader,
     IonTitle,
     IonToolbar,
-    IonButton,
+    IonGrid,
+    IonRow,
+    IonCol,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardSubtitle,
+    IonCardContent,
     IonIcon,
-    HeaderComponent,
+    IonButton,
+    IonSpinner,
     SideMenuComponent,
-    RouterLink,
-  ]
+    IonButtons,
+    IonMenuButton,
+    IonLabel,
+  ],
 })
 export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
-  // Data for summary cards
+  private subscriptions: Subscription = new Subscription();
+
   currentBalance: Balance | null = null;
   monthlyIncomeExpense: IncomeExpense | null = null;
   budgetUtilization: BudgetUtilization | null = null;
 
-  // Data for the Income vs Expenses chart
   incomeExpenseChartData: any;
   @ViewChild('incomeExpenseChart') incomeExpenseChartRef!: ElementRef;
   public chart: any;
 
-  // Data for Recent Transactions and Savings Goals
   recentTransactions: Transaction[] = [];
   savingsGoals: SavingsGoal[] = [];
 
-  isLoading: boolean = true;
+  isLoading: boolean = false;
+  hideBalance: boolean = false;
 
-  private accountSubscription!: Subscription;
+  selectedDisplayAccount: ClientAccount | null = null;
 
   constructor(
-    private loadingController: LoadingController,
-    private accountService: AccountService
-  ) { }
-
-  ngOnInit() {
-    this.accountSubscription = this.accountService.selectedAccount$.subscribe(account => {
-      // Add this console log to inspect the received account object
-      console.log('Selected account updated in DashboardPage:', account);
-      // Pass the entire account object to loadDashboardData
-      this.loadDashboardData(account);
+    private loadingCtrl: LoadingController,
+    private alertCtrl: AlertController,
+    private toastCtrl: ToastController,
+    private accountService: AccountService,
+    private cdRef: ChangeDetectorRef,
+    private router: Router
+  ) {
+    addIcons({
+      walletOutline,
+      trendingUpOutline,
+      arrowDownOutline,
+      arrowUpOutline,
+      addOutline,
+      eyeOutline,
+      eyeOffOutline,
+      chevronForwardOutline,
+      cashOutline,
+      receiptOutline,
+      statsChartOutline,
+      chevronDownOutline,
     });
   }
 
+  ngOnInit() {
+    this.subscriptions.add(
+      this.accountService.selectedAccount$.subscribe(account => {
+        this.selectedDisplayAccount = account;
+        console.log('Dashboard: Cuenta seleccionada recibida:', account?.nombre);
+        if (account) {
+          this.loadDashboardDataForAccount(account);
+        } else {
+          this.resetDashboardData();
+          this.isLoading = false;
+        }
+      })
+    );
+
+    this.loadInitialAccountsAndSetDefault();
+  }
+
+  async loadInitialAccountsAndSetDefault() {
+    this.subscriptions.add(
+      this.accountService.getAccounts().pipe(
+        map((apiAccounts: Account[]) => {
+          return apiAccounts.map(apiAcc => ({
+            id: apiAcc.id,
+            nombre: apiAcc.name,
+            tipo: apiAcc.type,
+            // ===> CAMBIO CLAVE AQUÍ: Usar apiAcc.current_balance <===
+            saldo: apiAcc.current_balance ?? 0, // Usar apiAcc.current_balance
+            institucion: apiAcc.institution || '',
+            fechaActualizacion: apiAcc.updated_at
+          }));
+        })
+      ).subscribe({
+        next: (clientAccounts: ClientAccount[]) => {
+          if (!this.accountService.getSelectedAccount() && clientAccounts.length > 0) {
+            this.accountService.setSelectedAccount(clientAccounts[0]);
+            console.log('Dashboard: Estableciendo la primera cuenta como seleccionada por defecto.');
+          } else if (clientAccounts.length === 0) {
+            this.accountService.setSelectedAccount(null);
+            console.log('Dashboard: No hay cuentas disponibles, deseleccionando.');
+          }
+        },
+        error: (err) => {
+          console.error('Error cargando cuentas iniciales en Dashboard:', err);
+          this.accountService.setSelectedAccount(null);
+          this.presentToast('Error al cargar la lista de cuentas inicial.','danger');
+        }
+      })
+    );
+  }
+
   ngAfterViewInit(): void {
-    // The chart creation is now handled within loadDashboardData after data is fetched
-    // and a small timeout to ensure DOM is ready.
+    // La creación del gráfico se llama desde `loadDashboardDataForAccount` y `resetDashboardData`
+    // con un setTimeout para asegurar que el canvas esté en el DOM.
   }
 
   ngOnDestroy(): void {
-    if (this.accountSubscription) {
-      this.accountSubscription.unsubscribe();
-    }
-    // Destroy the Chart.js instance to prevent memory leaks
+    this.subscriptions.unsubscribe();
     if (this.chart) {
       this.chart.destroy();
     }
   }
 
-  async loadDashboardData(account: Account | null) { // Changed parameter type to accept the account object
+  async loadDashboardDataForAccount(account: ClientAccount | null) {
     this.isLoading = true;
-    const loading = await this.loadingController.create({
-      message: 'Loading dashboard...',
-      spinner: 'crescent'
+    const loading = await this.loadingCtrl.create({
+      message: 'Cargando datos del dashboard...',
+      spinner: 'crescent',
     });
-    await loading.present();
+    if (account) {
+      await loading.present();
+      console.log(`Dashboard: Iniciando carga de datos para cuenta: ${account.nombre}`);
+    } else {
+      console.log('Dashboard: No hay cuenta seleccionada, reseteando datos del dashboard.');
+      this.resetDashboardData();
+      this.isLoading = false;
+      return;
+    }
 
     try {
       const [
@@ -132,7 +239,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
         incomeExpenseChartData,
         recentTransactions,
         savingsGoals
-      ] = await Promise.all([ // Pass the account object to fetch methods
+      ] = await Promise.all([
         this.fetchCurrentBalance(account),
         this.fetchMonthlyIncomeExpense(account),
         this.fetchBudgetUtilization(account),
@@ -148,86 +255,190 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
       this.recentTransactions = recentTransactions;
       this.savingsGoals = savingsGoals;
 
-    } catch (error) {
-      console.error('Error loading dashboard data:', error);
-      // Optionally display an error message to the user
-    } finally {
-      this.isLoading = false;
-      loading.dismiss();
-      // Call createIncomeExpenseChart AFTER isLoading is false
-      // and after a small delay to ensure the DOM has updated.
+      this.cdRef.detectChanges();
       setTimeout(() => {
         this.createIncomeExpenseChart();
-      }, 0);
+      }, 50);
+      console.log('Dashboard: Todos los datos cargados y chart creado.');
+
+    } catch (error: any) {
+      console.error('Error al cargar datos del dashboard para la cuenta:', error);
+      this.presentToast(`Error al cargar datos del dashboard: ${error.message || 'Error desconocido'}`,'danger');
+      this.resetDashboardData();
+    } finally {
+      this.isLoading = false;
+      await loading.dismiss().catch(() => {});
     }
   }
 
-  // --- Data Fetching Methods (Replace with your actual service calls) ---
+  resetDashboardData() {
+    this.currentBalance = { current: this.selectedDisplayAccount ? this.selectedDisplayAccount.saldo : 0 };
+    this.monthlyIncomeExpense = { income: 0, expense: 0 };
+    this.budgetUtilization = { percentage: 0, utilized: 0, total: 0 };
+    this.incomeExpenseChartData = {
+      labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo'],
+      datasets: [
+        { label: 'Ingresos', data: [0, 0, 0, 0, 0], backgroundColor: '#28a745' },
+        { label: 'Gastos', data: [0, 0, 0, 0, 0], backgroundColor: '#dc3545' },
+      ]
+    };
+    this.recentTransactions = [];
+    this.savingsGoals = [];
 
-  async fetchCurrentBalance(account: Account | null): Promise<Balance> {
-    console.log(`WorkspaceCurrentBalance called with account: ${account ? account.nombre : 'null'}`); // Log account name
+    if (this.chart) {
+      this.chart.destroy();
+      this.chart = null;
+    }
+    this.cdRef.detectChanges();
+    setTimeout(() => {
+      this.createIncomeExpenseChart();
+    }, 50);
+    console.log('Dashboard: Datos del dashboard reseteados.');
+  }
+
+  // --- Funciones fetch simuladas, REEMPLAZAR CON LLAMADAS A TU API ---
+
+  async fetchCurrentBalance(account: ClientAccount | null): Promise<Balance> {
+    console.log(`fetchCurrentBalance called with account: ${account ? account.nombre : 'null'}`);
     return new Promise((resolve) => {
       setTimeout(() => {
-        if (account === null) {
-          resolve({ current: 0 });
+        resolve({ current: account && account.saldo !== undefined && account.saldo !== null ? account.saldo : 0 });
+      }, 300);
+    });
+  }
+
+  async fetchMonthlyIncomeExpense(account: ClientAccount | null): Promise<IncomeExpense> {
+    console.log(`fetchMonthlyIncomeExpense called with account: ${account ? account.nombre : 'null'}`);
+    return new Promise(resolve => {
+      setTimeout(() => {
+        if (account && account.id) {
+          switch (account.id) {
+            case 1: resolve({ income: 2500, expense: 1800 }); break;
+            case 2: resolve({ income: 800, expense: 600 }); break;
+            default: resolve({ income: 0, expense: 0 });
+          }
         } else {
-          // Use account.saldo directly as it's now a number
-          resolve({ current: account.saldo });
+          resolve({ income: 0, expense: 0 });
         }
-      }, 800); // Simulate network delay
+      }, 400);
     });
   }
 
-  async fetchMonthlyIncomeExpense(account: Account | null): Promise<IncomeExpense> { // Ensure this returns a Promise
-    console.log(`WorkspaceMonthlyIncomeExpense called with account: ${account ? account.nombre : 'null'}`);
-    return new Promise(resolve => {
-      setTimeout(() => {
-        // Always resolve with 0 income and expense as per requirement
-        resolve({ income: 0, expense: 0 });
-      }, 1000); // Simulate network delay
-    });
-  }
-
-  async fetchBudgetUtilization(account: Account | null): Promise<BudgetUtilization> {
+  async fetchBudgetUtilization(account: ClientAccount | null): Promise<BudgetUtilization> {
+    console.log(`fetchBudgetUtilization called with account: ${account ? account.nombre : 'null'}`);
     return new Promise((resolve) => {
       setTimeout(() => {
-        // As per requirement, always resolve with 0 utilization and total
-        // Note: Ensure the BudgetUtilization interface is updated if 'percentage', 'utilized' or 'total' are not the final properties needed.
-        resolve({ percentage: 0, utilized: 0, total: 0 });
-      }, 700); // Simulate network delay
+        if (account && account.id === 1) {
+          resolve({ percentage: 75, utilized: 750, total: 1000 });
+        } else {
+          resolve({ percentage: 0, utilized: 0, total: 0 });
+        }
+      }, 350);
     });
   }
 
-  async fetchIncomeExpenseChartData(account: Account | null): Promise<any> {
-    // Ensure fetchIncomeExpenseChartData returns empty data as per requirement
+  async fetchIncomeExpenseChartData(account: ClientAccount | null): Promise<any> {
+    console.log(`fetchIncomeExpenseChartData called with account: ${account ? account.nombre : 'null'}`);
     return new Promise(resolve => {
       setTimeout(() => {
-        resolve({ labels: [], datasets: [] });
-      }, 1200);
+        if (account && account.id) {
+          switch (account.id) {
+            case 1:
+              resolve({
+                labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo'],
+                datasets: [
+                  { label: 'Ingresos', data: [1200, 1500, 1300, 1600, 1400], backgroundColor: '#28a745' },
+                  { label: 'Gastos', data: [800, 900, 700, 1000, 850], backgroundColor: '#dc3545' },
+                ]
+              });
+              break;
+            case 2:
+              resolve({
+                labels: ['Marzo', 'Abril', 'Mayo'],
+                datasets: [
+                  { label: 'Ingresos', data: [300, 500, 400], backgroundColor: '#28a745' },
+                  { label: 'Gastos', data: [200, 350, 300], backgroundColor: '#dc3545' },
+                ]
+              });
+              break;
+            default:
+              resolve({
+                labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo'],
+                datasets: [
+                  { label: 'Ingresos', data: [0, 0, 0, 0, 0], backgroundColor: '#28a745' },
+                  { label: 'Gastos', data: [0, 0, 0, 0, 0], backgroundColor: '#dc3545' },
+                ]
+              });
+          }
+        } else {
+          resolve({
+            labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo'],
+            datasets: [
+              { label: 'Ingresos', data: [0, 0, 0, 0, 0], backgroundColor: '#28a745' },
+              { label: 'Gastos', data: [0, 0, 0, 0, 0], backgroundColor: '#dc3545' },
+            ]
+          });
+        }
+      }, 500);
     });
   }
 
-  async fetchRecentTransactions(account: Account | null): Promise<Transaction[]> {
-    console.log(`WorkspaceRecentTransactions called with account: ${account ? account.nombre : 'null'}`);
-    // As per requirement, always resolve with an empty array
+  async fetchRecentTransactions(account: ClientAccount | null): Promise<Transaction[]> {
+    console.log(`fetchRecentTransactions called with account: ${account ? account.nombre : 'null'}`);
     return new Promise((resolve) => {
       setTimeout(() => {
-        // Return empty array for transactions
-        resolve([]);
-      }, 900);
+        if (account && account.id) {
+          switch (account.id) {
+            case 1:
+              resolve([
+                { id: 1, description: 'Cafetería', amount: 4.50, date: '2025-05-27', type: 'expense' },
+                { id: 2, description: 'Transferencia recibida', amount: 200.00, date: '2025-05-26', type: 'income' },
+                { id: 3, description: 'Pago de Netflix', amount: 12.99, date: '2025-05-26', type: 'expense' },
+              ]);
+              break;
+            case 2:
+              resolve([
+                { id: 10, description: 'Alquiler', amount: 800.00, date: '2025-05-01', type: 'expense' },
+                { id: 11, description: 'Intereses', amount: 5.00, date: '2025-05-10', type: 'income' },
+              ]);
+              break;
+            default:
+              resolve([]);
+          }
+        } else {
+          resolve([]);
+        }
+      }, 450);
     });
   }
 
-  async fetchSavingsGoals(account: Account | null): Promise<SavingsGoal[]> {
-    console.log(`WorkspaceSavingsGoals called with account: ${account ? account.nombre : 'null'}`);
-    // As per requirement, always resolve with an empty array
-    // Removed simulation logic
-    return Promise.resolve([]);
+  async fetchSavingsGoals(account: ClientAccount | null): Promise<SavingsGoal[]> {
+    console.log(`fetchSavingsGoals called with account: ${account ? account.nombre : 'null'}`);
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const storedObjetivos = localStorage.getItem('objetivosAhorro');
+        let allObjetivos: any[] = [];
+        if (storedObjetivos) {
+          try {
+            allObjetivos = JSON.parse(storedObjetivos);
+          } catch (e) {
+            console.error('Error parsing stored savings goals:', e);
+          }
+        }
+        const filteredGoals: SavingsGoal[] = (account && account.id)
+          ? allObjetivos.filter(obj => (obj.accountId === account.id)).map(obj => ({
+            id: obj.id,
+            nombre: obj.nombre,
+            montoActual: obj.montoActual,
+            montoMeta: obj.montoMeta,
+          }))
+          : [];
+        resolve(filteredGoals);
+      }, 400);
+    });
   }
 
   createIncomeExpenseChart(): void {
-    console.log('createIncomeExpenseChart called');
-    console.log('incomeExpenseChartRef:', this.incomeExpenseChartRef);
     if (this.incomeExpenseChartRef && this.incomeExpenseChartRef.nativeElement) {
       const ctx = this.incomeExpenseChartRef.nativeElement.getContext('2d');
 
@@ -236,24 +447,19 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
       }
 
       if (ctx) {
-        // Fallback to empty data if incomeExpenseChartData is not available
         const chartData = this.incomeExpenseChartData || {
-          labels: [],
-          datasets: [], // Ensure datasets is an array of objects
+          labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo'],
+          datasets: [
+            { label: 'Ingresos', data: [0, 0, 0, 0, 0], backgroundColor: '#28a745' },
+            { label: 'Gastos', data: [0, 0, 0, 0, 0], backgroundColor: '#dc3545' },
+          ]
         };
 
         this.chart = new Chart(ctx, {
           type: 'bar',
           data: {
             labels: chartData.labels,
-            // Ensure datasets is correctly structured for Chart.js.
-            // If incomeExpenseChartData has `incomeData` and `expenseData` properties,
-            // you'll need to transform them into the `datasets` array here.
-            datasets: chartData.datasets.length > 0 ? chartData.datasets : [
-              // Example transformation if incomeExpenseChartData provides incomeData and expenseData
-              // { label: 'Ingresos', data: chartData.incomeData || [], backgroundColor: '#28a745' },
-              // { label: 'Gastos', data: chartData.expenseData || [], backgroundColor: '#dc3545' },
-            ],
+            datasets: chartData.datasets,
           },
           options: {
             responsive: true,
@@ -302,11 +508,40 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
           },
         });
       } else {
-        console.error('Failed to get canvas rendering context.');
+        console.error('Failed to get canvas rendering context. Canvas might not be available.');
       }
+    } else {
+      console.warn('No se pueden crear los gráficos: referencia al canvas no disponible o `incomeExpenseChartRef` es nulo.');
     }
-    else {
-      console.warn('No se pueden crear los gráficos: referencia al canvas no disponible.');
+  }
+
+  toggleHideBalance() {
+    this.hideBalance = !this.hideBalance;
+  }
+
+  formatDate(isoDate: string): string {
+    return formatDate(isoDate, 'MMM d, y', 'es-ES');
+  }
+
+  getAccountBalanceForDisplay(account: ClientAccount | null): string {
+    if (!account || account.saldo === undefined || account.saldo === null) {
+      return this.hideBalance ? '••••••' : '0,00 €';
     }
+    const formattedBalance = account.saldo.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return this.hideBalance ? '••••••' : `${formattedBalance} €`;
+  }
+
+  async presentToast(message: string, color: string = 'primary') {
+    const toast = await this.toastCtrl.create({
+      message: message,
+      duration: 2000,
+      color: color,
+      position: 'bottom',
+    });
+    toast.present();
+  }
+
+  openAccountSelector() {
+    this.router.navigateByUrl('/cuentas');
   }
 }

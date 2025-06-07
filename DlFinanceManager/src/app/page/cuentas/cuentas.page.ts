@@ -1,6 +1,7 @@
+// src/app/page/cuentas/cuentas.page.ts
 import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, formatDate } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms'; // RE-ADDED Reactive Forms imports
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
   IonBackButton,
   IonButtons,
@@ -27,15 +28,15 @@ import {
   IonCardTitle,
   IonCardSubtitle,
   IonBadge,
-  IonModal, // RE-ADDED IonModal
-  IonInput, // RE-ADDED IonInput
-  IonLabel, // RE-ADDED IonLabel
-  IonDatetime, // RE-ADDED IonDatetime
-  IonNote, // RE-ADDED IonNote
-  IonSpinner // RE-ADDED IonSpinner
+  IonModal,
+  IonInput,
+  IonLabel,
+  IonDatetime,
+  IonNote,
+  IonSpinner
 } from '@ionic/angular/standalone';
 import { HeaderComponent } from "../../component/header/header.component";
-import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
+import { SideMenuComponent } from "../../component/side-menu/side-menu.component"; // Asegúrate de la ruta correcta
 import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
 import {
@@ -47,14 +48,23 @@ import {
   cardOutline,
   cashOutline,
   analyticsOutline,
-  closeOutline, // RE-ADDED for modal
-  // saveOutline, // Not used but could be for consistency
-  // reloadCircle, // Not used but could be for consistency
-  businessOutline, // For loan type
-  calendarOutline // For last updated date
+  closeOutline,
+  businessOutline,
+  calendarOutline
 } from 'ionicons/icons';
-import { AccountService } from '../../services/account.service';
+
+import { AccountService, Account, AccountApiResponse } from '../../services/account.service';
 import { Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+export interface ClientAccount {
+  id?: number;
+  nombre: string;
+  tipo: string;
+  saldo: number; // En el frontend se llama 'saldo'
+  institucion: string;
+  fechaActualizacion?: string;
+}
 
 @Component({
   selector: 'app-cuentas',
@@ -63,8 +73,8 @@ import { Subscription } from 'rxjs';
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule, // Keep FormsModule if you have any template-driven forms, otherwise can remove
-    ReactiveFormsModule, // RE-ADDED
+    FormsModule,
+    ReactiveFormsModule,
     HeaderComponent,
     SideMenuComponent,
     RouterLink,
@@ -91,38 +101,38 @@ import { Subscription } from 'rxjs';
     IonBadge,
     IonItem,
     IonList,
-    IonModal, // RE-ADDED
-    IonInput, // RE-ADDED
-    IonLabel, // RE-ADDED
-    IonDatetime, // RE-ADDED
-    IonNote, // RE-ADDED
-    IonSpinner // RE-ADDED
+    IonModal,
+    IonInput,
+    IonLabel,
+    IonDatetime,
+    IonNote,
+    IonSpinner
   ]
 })
 export class CuentasPage implements OnInit, OnDestroy {
-  @ViewChild('accountModal') accountModal!: IonModal; // RE-ADDED ViewChild for modal
+  @ViewChild('accountModal') accountModal!: IonModal;
 
-  accounts: any[] = [];
+  accounts: ClientAccount[] = [];
   isLoading: boolean = true;
-  private accountsSubscription!: Subscription;
-  selectedAccount: any | null = null; // Variable to hold the selected account
+  private subscriptions: Subscription = new Subscription();
 
-  // Properties for the add/edit form - RE-ADDED AND ADAPTED
+  selectedAccount: ClientAccount | null = null; // Para el resaltado visual
+
   isModalOpen: boolean = false;
   isEditMode: boolean = false;
   accountForm: FormGroup;
   isSubmitting: boolean = false;
-  editingAccountId: string | null = null; // To hold the ID of the account being edited
+  editingAccountId: number | null = null;
 
-  accountTypes: string[] = ['Checking', 'Savings', 'Credit Card', 'Loan', 'Investment', 'Cash'];
+  accountTypes: string[] = ['cash', 'bank', 'credit_card', 'investment', 'other'];
 
   constructor(
     private loadingController: LoadingController,
     private alertController: AlertController,
     private toastController: ToastController,
-    private fb: FormBuilder, // RE-ADDED FormBuilder
+    private fb: FormBuilder,
     private accountService: AccountService,
-    private cdRef: ChangeDetectorRef // RE-ADDED ChangeDetectorRef
+    private cdRef: ChangeDetectorRef
   ) {
     addIcons({
       business,
@@ -133,154 +143,242 @@ export class CuentasPage implements OnInit, OnDestroy {
       cardOutline,
       cashOutline,
       analyticsOutline,
-      closeOutline, // RE-ADDED
+      closeOutline,
       businessOutline,
       calendarOutline
     });
 
-    // Initialize the Reactive Form for Accounts - RE-ADDED AND ADAPTED
     this.accountForm = this.fb.group({
-      id: [null], // Hidden field for ID, null for new accounts
+      id: [null],
       nombre: ['', [Validators.required, Validators.minLength(2)]],
       tipo: ['', Validators.required],
-      saldo: [null, [Validators.required, Validators.pattern(/^-?\d*\.?\d*$/)]], // Allows positive/negative decimals
-      institucion: [''], // Optional
-      fechaActualizacion: [new Date().toISOString()] // Default to today
+      // ===> Cambio: `saldo` en el formulario se mapea a `current_balance` en la API <===
+      saldo: [null, [Validators.required, Validators.pattern(/^-?\d*\.?\d*$/)]],
+      currency: ['EUR', Validators.required],
+      institucion: [''] // `institution` en el backend, `institucion` en el form
     });
   }
 
   ngOnInit() {
-    // Subscribe to the selected account changes
-    this.accountService.selectedAccount$.subscribe(account => {
-      this.selectedAccount = account;
-      this.cdRef.detectChanges(); // Update view when selected account changes
-    });
     this.loadAccounts();
-
+    this.subscriptions.add(
+      this.accountService.selectedAccount$.subscribe(account => {
+        this.selectedAccount = account;
+      })
+    );
   }
 
   ngOnDestroy() {
-    if (this.accountsSubscription) {
-      this.accountsSubscription.unsubscribe();
-    }
+    this.subscriptions.unsubscribe();
+  }
+
+  ionViewWillEnter() {
+    this.loadAccounts();
   }
 
   async loadAccounts() {
     this.isLoading = true;
     const loading = await this.loadingController.create({
-      message: 'Loading accounts...',
+      message: 'Cargando cuentas...',
       spinner: 'crescent'
     });
     await loading.present();
 
-    this.accountsSubscription = this.accountService.accounts$.subscribe(data => {
-      this.accounts = data;
-      this.isLoading = false;
-      loading.dismiss();
-    });
+    this.subscriptions.add(
+      this.accountService.getAccounts().pipe(
+        map((apiAccounts: Account[]) => {
+          return apiAccounts.map(apiAcc => ({
+            id: apiAcc.id,
+            nombre: apiAcc.name,
+            tipo: apiAcc.type,
+            // ===> CAMBIO CLAVE: Mapear 'current_balance' de la API a 'saldo' del frontend <===
+            saldo: apiAcc.current_balance ?? 0, // Usar 'current_balance' de la API
+            institucion: apiAcc.institution || '', // Tu backend no lo devuelve explícitamente en el modelo, pero lo mantenemos
+            fechaActualizacion: apiAcc.updated_at
+          }));
+        })
+      ).subscribe({
+        next: (clientAccounts: ClientAccount[]) => {
+          this.accounts = clientAccounts;
+          this.isLoading = false;
+          loading.dismiss();
+
+          if (!this.accountService.getSelectedAccount() && clientAccounts.length > 0) {
+            this.accountService.setSelectedAccount(clientAccounts[0]);
+          } else if (clientAccounts.length === 0) {
+            this.accountService.setSelectedAccount(null);
+          }
+        },
+        error: async (err) => {
+          console.error('Error al cargar cuentas:', err);
+          this.isLoading = false;
+          loading.dismiss();
+          this.accountService.setSelectedAccount(null);
+          const alert = await this.alertController.create({
+            header: 'Error',
+            message: err.message || 'No se pudieron cargar las cuentas. Por favor, intente de nuevo.',
+            buttons: ['OK']
+          });
+          await alert.present();
+        }
+      })
+    );
   }
 
-  // Method to open the add/edit modal - RE-ADDED AND ADAPTED
-  async openAccountModal(mode: 'add' | 'edit', account?: any) {
-    console.log('Edit button clicked for account:', account); // Log when edit button is clicked
+  async openAccountModal(mode: 'add' | 'edit', account?: ClientAccount) {
     this.isEditMode = (mode === 'edit');
-    this.isSubmitting = false; // Reset submitting state
+    this.isSubmitting = false;
 
-    if (this.isEditMode && account) {
+    if (this.isEditMode && account && account.id !== undefined) {
       this.editingAccountId = account.id;
-      // Reintroduce saldoValue to parse the saldo if it might be a string (e.g., from an API)
-      const saldoValue = parseFloat(String(account.saldo).replace(/[^\d.-]/g, ''));
-      console.log('Entering edit mode for account:', account); // Log when entering edit mode
       this.accountForm.patchValue({
         id: account.id,
         nombre: account.nombre,
         tipo: account.tipo,
-        saldo: saldoValue,
+        saldo: account.saldo, // Cargar 'saldo' del frontend
         institucion: account.institucion,
-        fechaActualizacion: account.fechaActualizacion // Assuming already compatible format or will be handled by form control
+        currency: 'EUR'
       });
     } else {
       this.editingAccountId = null;
       this.accountForm.reset({
         nombre: '',
-        tipo: '', // No default type, user must select
-        saldo: null,
+        tipo: 'cash',
+        saldo: 0,
         institucion: '',
-        fechaActualizacion: new Date().toISOString()
-      }); // Reset for new account
+        currency: 'EUR'
+      });
     }
-    this.isModalOpen = true; // Open the modal
-    this.cdRef.detectChanges(); // Force change detection after modal opens and form is updated
+    this.isModalOpen = true;
+    this.cdRef.detectChanges();
   }
 
-  // Method to handle form submission - RE-ADDED AND ADAPTED
   async submitAccountForm() {
-    this.accountForm.markAllAsTouched(); // Mark all fields as touched to show validation errors
+    this.accountForm.markAllAsTouched();
 
     if (this.accountForm.invalid) {
-      this.presentToast('Please fill in all required fields correctly.', 'danger');
+      this.presentToast('Por favor, complete todos los campos requeridos correctamente.', 'danger');
       return;
     }
 
     this.isSubmitting = true;
     const loading = await this.loadingController.create({
-      message: this.isEditMode ? 'Saving changes...' : 'Adding account...',
+      message: this.isEditMode ? 'Guardando cambios...' : 'Añadiendo cuenta...',
       spinner: 'crescent'
     });
     await loading.present();
 
-    const formData = { ...this.accountForm.value }; // Create a copy to avoid modifying the form value directly
+    const formData = this.accountForm.value;
 
-    // Clean and convert the saldo to a number before using it
-    // This handles cases where the user might enter currency symbols or commas in the input
-    const cleanedBalanceString = String(formData.saldo).replace(/[^\d.-]/g, ''); // Remove non-numeric characters except decimal point and hyphen
-    const numericBalance = parseFloat(cleanedBalanceString); // Convert to number
-
-    const accountToSave = {
-      ...formData,
-      id: this.editingAccountId || this.generateUniqueId(), // Use existing ID or generate new
-      saldo: numericBalance, // Store the cleaned and converted numeric balance (from form input)
+    const accountToSave: Account = {
+      name: formData.nombre,
+      type: formData.tipo,
+      // ===> CAMBIO CLAVE: Enviar 'current_balance' a la API desde 'saldo' del formulario <===
+      current_balance: parseFloat(formData.saldo), // 'saldo' del formulario se mapea a 'current_balance' para la API
+      currency: formData.currency,
+      institution: formData.institucion || null // Se envía si lo usas en el backend
     };
 
-    setTimeout(async () => { // Simulate API call delay, using the numeric balance
-      if (this.isEditMode) {
-        this.accountService.updateAccount(accountToSave);
-        this.presentToast('Account updated successfully!', 'success');
-      } else {
-        this.accountService.addAccount(accountToSave);
-        this.presentToast('Account added successfully!', 'success');
-      }
-      this.isSubmitting = false;
-      await loading.dismiss();
-      this.closeAccountModal(); // Close the modal
-    }, 700);
+    if (this.isEditMode && this.editingAccountId !== null) {
+      this.subscriptions.add(
+        this.accountService.updateAccount(this.editingAccountId, accountToSave).subscribe({
+          next: async (res: AccountApiResponse) => {
+            await loading.dismiss();
+            this.presentToast('¡Cuenta actualizada exitosamente!', 'success');
+            this.closeAccountModal();
+            await this.loadAccounts();
+            if (this.accountService.getSelectedAccount()?.id === res.account.id) {
+              this.accountService.setSelectedAccount({
+                id: res.account.id,
+                nombre: res.account.name,
+                tipo: res.account.type,
+                saldo: res.account.current_balance, // Usar current_balance de la respuesta de la API
+                institucion: res.account.institution || '',
+                fechaActualizacion: res.account.updated_at
+              });
+            }
+          },
+          error: async (err) => {
+            await loading.dismiss();
+            console.error('Error al actualizar cuenta:', err);
+            this.presentToast(err.message || 'No se pudo actualizar la cuenta. Intente de nuevo.', 'danger');
+          }
+        })
+      );
+    } else {
+      this.subscriptions.add(
+        this.accountService.createAccount(accountToSave).subscribe({
+          next: async (res: AccountApiResponse) => {
+            await loading.dismiss();
+            this.presentToast('¡Cuenta añadida exitosamente!', 'success');
+            this.closeAccountModal();
+            await this.loadAccounts();
+            if (!this.accountService.getSelectedAccount()) {
+              this.accountService.setSelectedAccount({
+                id: res.account.id,
+                nombre: res.account.name,
+                tipo: res.account.type,
+                saldo: res.account.current_balance, // Usar current_balance de la respuesta de la API
+                institucion: res.account.institution || '',
+                fechaActualizacion: res.account.updated_at
+              });
+            }
+          },
+          error: async (err) => {
+            await loading.dismiss();
+            console.error('Error al añadir cuenta:', err);
+            this.presentToast(err.message || 'No se pudo añadir la cuenta. Intente de nuevo.', 'danger');
+          }
+        })
+      );
+    }
   }
 
-  // Method to close the modal - RE-ADDED AND ADAPTED
   async closeAccountModal() {
     this.isModalOpen = false;
     this.isEditMode = false;
     this.isSubmitting = false;
     this.editingAccountId = null;
-    this.accountForm.reset(); // Reset form state
+    this.accountForm.reset();
   }
 
-  async deleteAccount(id: string) {
+  async deleteAccount(id: number) {
     const alert = await this.alertController.create({
-      header: 'Confirm Deletion',
-      message: 'Are you sure you want to delete this account? This action cannot be undone.',
+      header: 'Confirmar Eliminación',
+      message: '¿Está seguro de que desea eliminar esta cuenta? Esta acción no se puede deshacer.',
       buttons: [
         {
-          text: 'Cancel',
+          text: 'Cancelar',
           role: 'cancel',
           cssClass: 'secondary',
         },
         {
-          text: 'Delete',
+          text: 'Eliminar',
           cssClass: 'danger',
-          handler: () => {
-            this.accountService.deleteAccount(id);
-            this.presentToast('Account deleted successfully!', 'success');
+          handler: async () => {
+            const loading = await this.loadingController.create({
+              message: 'Eliminando cuenta...',
+              spinner: 'crescent'
+            });
+            await loading.present();
+
+            this.subscriptions.add(
+              this.accountService.deleteAccount(id).subscribe({
+                next: async () => {
+                  await loading.dismiss();
+                  this.presentToast('¡Cuenta eliminada exitosamente!', 'success');
+                  await this.loadAccounts();
+                  if (this.accountService.getSelectedAccount()?.id === id) {
+                    this.accountService.setSelectedAccount(this.accounts.length > 0 ? this.accounts[0] : null);
+                  }
+                },
+                error: async (err) => {
+                  await loading.dismiss();
+                  console.error('Error al eliminar cuenta:', err);
+                  this.presentToast(err.message || 'No se pudo eliminar la cuenta. Intente de nuevo.', 'danger');
+                }
+              })
+            );
           },
         },
       ],
@@ -289,8 +387,7 @@ export class CuentasPage implements OnInit, OnDestroy {
     await alert.present();
   }
 
-  selectAccount(account: any) {
-    console.log('Account selected:', account);
+  selectAccount(account: ClientAccount) {
     this.accountService.setSelectedAccount(account);
   }
 
@@ -308,38 +405,36 @@ export class CuentasPage implements OnInit, OnDestroy {
     switch (accountType) {
       case 'Checking':
       case 'Savings':
+      case 'bank':
         return 'wallet-outline';
       case 'Credit Card':
+      case 'credit_card':
         return 'card-outline';
       case 'Cash':
+      case 'cash':
         return 'cash-outline';
       case 'Investment':
+      case 'investment':
         return 'analytics-outline';
       case 'Loan':
-        return 'business-outline'; // Using business-outline for loans
+      case 'other':
+        return 'business-outline';
       default:
         return 'wallet-outline';
     }
   }
 
-  isNegativeBalance(account: any): boolean {
-    if (account && (typeof account.saldo === 'string' || typeof account.saldo === 'number')) {
-      const balance = parseFloat(account.saldo.toString().replace(/[^\d.-]/g, ''));
-      // Credit card and Loan accounts are "negative" if they have a positive balance (meaning you owe money)
-      return (account.tipo === 'Credit Card' || account.tipo === 'Loan') ? !isNaN(balance) && balance > 0 : !isNaN(balance) && balance < 0;
+  isNegativeBalance(account: ClientAccount): boolean {
+    if (account && typeof account.saldo === 'number') {
+      return (account.tipo === 'credit_card' || account.tipo === 'other') ? account.saldo > 0 : account.saldo < 0;
     }
-    return false; // Consider 0 or nulo/indefinido no negativo
+    return false;
   }
 
   formatDate(isoDate: string | undefined): string {
     if (!isoDate) {
       return '';
     }
-    // Ensure 'en-US' locale if you want month abbreviation, otherwise use a more generic format
-    return formatDate(isoDate, 'MMM d, y', 'en-US');
-  }
-
-  private generateUniqueId(): string {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    return formatDate(isoDate, 'MMM d, y', 'es-ES');
   }
 }

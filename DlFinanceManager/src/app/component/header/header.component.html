@@ -6,9 +6,14 @@
       </ion-buttons>
       <ion-title>{{ pageTitle }}</ion-title>
 
-      <div style="margin-left: 20px; font-size: 0.9em; color: #555;">
-        Selected Account: {{ selectedAccountName }}
-      </div>
+      <ion-buttons slot="primary" class="selected-account-display">
+        <ion-button (click)="openAccountSelector()">
+          <ion-icon name="wallet-outline" slot="start"></ion-icon>
+          <ion-label *ngIf="selectedAccount">{{ selectedAccount?.nombre }}</ion-label>
+          <ion-label *ngIf="!selectedAccount">Selecciona Cuenta</ion-label>
+          <ion-icon name="chevron-down-outline" slot="end"></ion-icon>
+        </ion-button>
+      </ion-buttons>
 
       <ion-searchbar
         class="search-bar"

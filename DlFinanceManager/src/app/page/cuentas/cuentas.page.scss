@@ -2,37 +2,37 @@
 
 /* --- Inlined CSS Variables for Accounts Page --- */
 :host { // Using :host to encapsulate these variables for this component
-  --page-background: #f8f9fa; // Very light grey for ion-content
-  --card-background: #ffffff; // Pure white for cards and distinct sections
-  --border-color: #e9ecef; // Light grey for subtle separation
-  --main-text-color: #343a40; // Dark grey for good contrast
-  --secondary-text-color: #6c757d; // Medium grey for less prominent text
-  --sidebar-background: #f0f0f0; // Adjusted to match Transactions page's light sidebar
-  --sidebar-text: #343a40; // Adjusted for dark text on light sidebar
-  --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.04); // Softer shadow for cards/lists
-  --shadow-subtle: 0 1px 3px rgba(0,0,0,0.03); // Very subtle shadow for input fields
-  --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.08); // Added for more pronounced form elements
+  --page-background: #f8f9fa; /* Very light grey for ion-content */
+  --card-background: #ffffff; /* Pure white for cards and distinct sections */
+  --border-color: #e9ecef; /* Light grey for subtle separation */
+  --main-text-color: #343a40; /* Dark grey for good contrast */
+  --secondary-text-color: #6c757d; /* Medium grey for less prominent text */
+  --sidebar-background: #f0f0f0; /* Adjusted to match Transactions page's light sidebar */
+  --sidebar-text: #343a40; /* Adjusted for dark text on light sidebar */
+  --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.04); /* Softer shadow for cards/lists */
+  --shadow-subtle: 0 1px 3px rgba(0,0,0,0.03); /* Very subtle shadow for input fields */
+  --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.08); /* Added for more pronounced form elements */
 
   // Ionic specific colors used within this page (ensure these match your global variables if you have them)
-  --ion-color-primary: #007bff; // A standard, vibrant blue (for the modal button)
+  --ion-color-primary: #007bff; /* A standard, vibrant blue (for the modal button) */
   --ion-color-primary-shade: #006bdf;
-  --ion-color-primary-tint: #e6f2ff; // Lighter tint for borders/backgrounds
-  --ion-color-primary-contrast: #ffffff; // White text on primary background
-  --ion-color-success: #28a745; // Green for success (if used elsewhere)
-  --ion-color-success-shade: #24943e; // Darker green for success shade
-  --ion-color-danger: #dc3545; // A clear red
+  --ion-color-primary-tint: #e6f2ff; /* Lighter tint for borders/backgrounds */
+  --ion-color-primary-contrast: #ffffff; /* White text on primary background */
+  --ion-color-success: #28a745; /* Green for success (if used elsewhere) */
+  --ion-color-success-shade: #24943e; /* Darker green for success shade */
+  --ion-color-danger: #dc3545; /* A clear red */
   --ion-color-danger-shade: #c12f3d;
-  --ion-color-light: #f8f9fa; // Used for modal header toolbar
-  --ion-color-step-50: #f0f2f5; // Slightly darker light step for input backgrounds for better contrast
-  --ion-color-step-100: #e9ecef; // For borders in light mode
+  --ion-color-light: #f8f9fa; /* Used for modal header toolbar */
+  --ion-color-step-50: #f0f2f5; /* Slightly darker light step for input backgrounds for better contrast */
+  --ion-color-step-100: #e9ecef; /* For borders in light mode */
 
   // Added label-color for dark theme consistency, though it's set in dark-theme
   --label-color: var(--secondary-text-color);
-  --input-border-color: #d1d5db; // A slightly darker default input border color
+  --input-border-color: #d1d5db; /* A slightly darker default input border color */
 
   // New Form/Modal specific variables (duplicated for consistency from Transactions page)
   --form-item-background: var(--card-background);
-  --form-item-border: 1px solid var(--border-color); // This variable is defined, but overridden below
+  --form-item-border: 1px solid var(--border-color); /* This variable is defined, but overridden below */
   --form-item-shadow: var(--shadow-subtle);
   --form-input-border-radius: 8px;
 }
@@ -46,13 +46,13 @@ body.dark-theme {
   --input-border-color: #444444; /* Specific input border for dark theme */
   --small-text-color: #aaaaaa;
   --hint-text-color: #999999;
-  --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.3); // More pronounced shadow for dark theme
+  --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.3); /* More pronounced shadow for dark theme */
   --shadow-subtle: 0 1px 3px rgba(0,0,0,0.1);
-  --shadow-medium: 0 6px 18px rgba(0, 0, 0, 0.4); // More pronounced for dark theme
+  --shadow-medium: 0 6px 18px rgba(0, 0, 0, 0.4); /* More pronounced for dark theme */
 
   // Dark theme specific input backgrounds
   ion-item {
-    --background: #333333; // Dark background for ion-item
+    --background: #333333; /* Dark background for ion-item */
   }
   ion-input, ion-select, ion-textarea {
     --background: #3a3a3a; /* Slightly darker input background for dark theme */
@@ -64,17 +64,17 @@ body.dark-theme {
   // Dark theme specific for outline buttons
   ion-card .card-footer {
     ion-button[fill="outline"] {
-      --color: var(--ion-color-primary); // Blue text in dark theme
-      --border-color: var(--ion-color-primary); // Blue border in dark theme
+      --color: var(--ion-color-primary); /* Blue text in dark theme */
+      --border-color: var(--ion-color-primary); /* Blue border in dark theme */
       &:hover {
-        --background: rgba(var(--ion-color-primary-rgb), 0.1); // Slight blue tint on hover
+        --background: rgba(var(--ion-color-primary-rgb), 0.1); /* Slight blue tint on hover */
       }
     }
     ion-button[color="danger"] {
-      --color: var(--ion-color-danger); // Red text in dark theme
-      --border-color: var(--ion-color-danger); // Red border in dark theme
+      --color: var(--ion-color-danger); /* Red text in dark theme */
+      --border-color: var(--ion-color-danger); /* Red border in dark theme */
       &:hover {
-        --background: rgba(var(--ion-color-danger-rgb), 0.1); // Slight red tint on hover
+        --background: rgba(var(--ion-color-danger-rgb), 0.1); /* Slight red tint on hover */
       }
     }
   }
@@ -99,10 +99,10 @@ body.dark-theme {
     .form-item ion-input,
     .form-item ion-select,
     .form-item ion-datetime {
-      --color: var(--main-text-color) !important; // Ensure text color is light
+      --color: var(--main-text-color) !important; /* Ensure text color is light */
     }
     .form-item ion-note {
-      color: var(--ion-color-danger) !important; // Error notes stay red
+      color: var(--ion-color-danger) !important; /* Error notes stay red */
     }
   }
 }

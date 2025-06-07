@@ -68,7 +68,7 @@
             <div>
               <p class="text-xs text-muted-foreground">Current Balance</p>
               <p class="text-3xl font-bold" [ngClass]="{'text-destructive': isNegativeBalance(account), 'text-foreground': !isNegativeBalance(account)}">
-                {{ account.saldo }}
+                {{ account.saldo | currency:'EUR':'symbol':'1.2-2' }}
               </p>
             </div>
             <div class="flex items-center text-xs text-muted-foreground" *ngIf="account.fechaActualizacion">
@@ -80,8 +80,7 @@
           <div class="card-footer flex justify-end gap-2 border-t pt-4">
             <ion-button fill="outline" size="small" (click)="openAccountModal('edit', account)"> <ion-icon name="pencil-outline" slot="start" class="h-4 w-4"></ion-icon> Edit
             </ion-button>
-            <ion-button color="danger" size="small" (click)="deleteAccount(account.id)">
-              <ion-icon name="trash-outline" slot="start" class="h-4 w-4"></ion-icon> Delete
+            <ion-button color="danger" size="small" (click)="deleteAccount(account.id!)"> <ion-icon name="trash-outline" slot="start" class="h-4 w-4"></ion-icon> Delete
             </ion-button>
           </div>
         </ion-card>

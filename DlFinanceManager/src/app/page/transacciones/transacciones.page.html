@@ -24,17 +24,17 @@
 
       <div *ngIf="!isLoading" class="transactions-header">
         <div class="header-left">
-          <h1>Transactions</h1>
-          <p>Manage your income and expenses.</p>
+          <h1>Transacciones</h1>
+          <p class="text-muted-foreground">Gestiona tus ingresos y gastos de la cuenta seleccionada.</p>
         </div>
         <div class="header-right">
-          <ion-button (click)="fileInput.click()">
+          <ion-button fill="outline" (click)="fileInput.click()">
             <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
-            Import from Excel
+            Importar Excel
           </ion-button>
-          <ion-button color="success" (click)="openAddEditModal('add')">
+          <ion-button color="primary" (click)="openAddEditModal('add')">
             <ion-icon name="add-circle-outline" slot="start"></ion-icon>
-            Add Transaction
+            Añadir Transacción
           </ion-button>
         </div>
       </div>
@@ -50,26 +50,43 @@
 
       <div *ngIf="!isLoading" class="transactions-filter">
         <div class="search-bar">
-          <ion-searchbar placeholder="Search transactions..."></ion-searchbar>
+          <ion-searchbar placeholder="Buscar transacciones..." (ionInput)="onSearchChange($event)"></ion-searchbar>
         </div>
         <div class="category-filter">
-          <ion-select placeholder="All Categories">
-            <ion-select-option value="all">All Categories</ion-select-option>
-            <ion-select-option value="food">Food</ion-select-option>
-            <ion-select-option value="transport">Transport</ion-select-option>
-            <ion-select-option value="housing">Housing</ion-select-option>
-            <ion-select-option value="utilities">Utilities</ion-select-option>
-            <ion-select-option value="entertainment">Entertainment</ion-select-option>
-            <ion-select-option value="healthcare">Healthcare</ion-select-option>
-            <ion-select-option value="education">Education</ion-select-option>
-            <ion-select-option value="salary">Salary</ion-select-option>
-            <ion-select-option value="investment">Investment</ion-select-option>
-            <ion-select-option value="other">Other</ion-select-option>
+          <ion-select placeholder="Todas las categorías" [(ngModel)]="selectedCategoryFilter" (ionChange)="onCategorySelectChange($event)">
+            <ion-select-option value="all">Todas las categorías</ion-select-option>
+            <ion-select-option *ngFor="let category of categories" [value]="category.name">{{ category.name }}</ion-select-option>
           </ion-select>
+        </div>
+        <div class="type-filter">
+          <ion-segment mode="md" [(ngModel)]="selectedTypeFilter" (ionChange)="onTypeSegmentChange($event)">
+            <ion-segment-button value="all">
+              <ion-label>Todas</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="income">
+              <ion-label>Ingresos</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="expense">
+              <ion-label>Gastos</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="transfer">
+              <ion-label>Transferencias</ion-label>
+            </ion-segment-button>
+          </ion-segment>
         </div>
       </div>
 
-      <div *ngIf="isLoading" class="transactions-list skeleton-list">
+      <ion-card *ngIf="!isLoading && selectedAccountId === null" class="shadow-md border-2 border-dashed border-muted-foreground/30 col-span-full">
+        <ion-card-content class="p-10 text-center flex flex-col items-center">
+          <div style="width: 180px; height: 120px; background-color: #ddd; border-radius: 8px; margin-bottom: 1.5rem;"></div>
+          <h3 class="text-xl font-semibold text-muted-foreground mb-2">Ninguna cuenta seleccionada</h3>
+          <p class="text-sm text-muted-foreground max-w-xs">
+            Por favor, selecciona una cuenta en la sección "Cuentas" para ver y añadir transacciones.
+          </p>
+        </ion-card-content>
+      </ion-card>
+
+      <div *ngIf="isLoading && selectedAccountId !== null" class="transactions-list skeleton-list">
         <ion-grid class="transacciones-grid">
           <ion-row class="header-row">
             <ion-col><div class="skeleton h-4 w-3/4"></div></ion-col>
@@ -90,60 +107,57 @@
         </ion-grid>
       </div>
 
-      <div *ngIf="!isLoading" class="transactions-list">
+      <div *ngIf="!isLoading && selectedAccountId !== null" class="transactions-list">
         <ion-grid class="transacciones-grid">
           <ion-row class="header-row">
-            <ion-col class="col-type"><strong>Type</strong></ion-col>
-            <ion-col class="col-date"><strong>Date</strong></ion-col>
-            <ion-col class="col-category"><strong>Category</strong></ion-col>
-            <ion-col class="col-description"><strong>Description</strong></ion-col>
-            <ion-col class="col-amount ion-text-right"><strong>Amount</strong></ion-col>
-            <ion-col class="col-actions ion-text-right"><strong>Actions</strong></ion-col>
+            <ion-col class="col-type"><strong>Tipo</strong></ion-col>
+            <ion-col class="col-date"><strong>Fecha</strong></ion-col>
+            <ion-col class="col-account"><strong>Cuenta</strong></ion-col> <ion-col class="col-category"><strong>Categoría</strong></ion-col>
+            <ion-col class="col-description"><strong>Descripción</strong></ion-col>
+            <ion-col class="col-amount ion-text-right"><strong>Cantidad</strong></ion-col>
+            <ion-col class="col-payee"><strong>Beneficiario</strong></ion-col> <ion-col class="col-actions ion-text-right"><strong>Acciones</strong></ion-col>
           </ion-row>
 
-          <ion-row *ngFor="let transaccion of transacciones">
+          <ion-row *ngFor="let transaccion of filteredTransactions">
             <ion-col class="col-type">
-              <ion-icon *ngIf="transaccion.tipo === 'Expense'" color="danger" name="arrow-down-circle"></ion-icon>
-              <ion-icon *ngIf="transaccion.tipo === 'Income'" color="success" name="arrow-up-circle"></ion-icon>
-              {{ transaccion.tipo }}
+              <ion-icon [name]="getIconForTransactionType(transaccion.type)" [color]="getAmountColor(transaccion.type)"></ion-icon>
+              <span class="ml-1 capitalize">{{ transaccion.type }}</span>
             </ion-col>
-            <ion-col class="col-date">{{ transaccion.fecha }}</ion-col>
-            <ion-col class="col-category">{{ transaccion.categoria }}</ion-col>
-            <ion-col class="col-description">{{ transaccion.descripcion }}</ion-col>
-            <ion-col class="col-amount ion-text-right"
-                     [ngClass]="{'expense': transaccion.tipo === 'Expense', 'income': transaccion.tipo === 'Income'}">
-              {{ transaccion.cantidad }}
+            <ion-col class="col-date">{{ formatDate(transaccion.transaction_date) }}</ion-col> <ion-col class="col-account">{{ transaccion.accountName }}</ion-col> <ion-col class="col-category">{{ transaccion.categoryName }}</ion-col>
+            <ion-col class="col-description">{{ transaccion.description }}</ion-col>
+            <ion-col class="col-amount ion-text-right" [ngClass]="{'expense': transaccion.type === 'expense', 'income': transaccion.type === 'income'}">
+              {{ transaccion.amount | currency:'EUR':'symbol':'1.2-2' }}
             </ion-col>
-            <ion-col class="col-actions ion-text-right">
-              <ion-button size="small" [id]="'popover-trigger-' + transaccion.id">
-                <ion-icon name="ellipsis-vertical"></ion-icon>
-              </ion-button>
+            <ion-col class="col-payee">{{ transaccion.payee || '-' }}</ion-col> <ion-col class="col-actions ion-text-right">
+            <ion-button size="small" [id]="'popover-trigger-' + transaccion.id">
+              <ion-icon name="ellipsis-vertical"></ion-icon>
+            </ion-button>
 
-              <ion-popover [trigger]="'popover-trigger-' + transaccion.id" [dismissOnSelect]="true">
-                <ng-template>
-                  <ion-content>
-                    <ion-list>
-                      <ion-item button (click)="openAddEditModal('edit', transaccion)">
-                        <ion-icon slot="start" name="pencil-outline"></ion-icon>
-                        Edit
-                      </ion-item>
-                      <ion-item button color="danger" (click)="eliminarTransaccion(transaccion)">
-                        <ion-icon slot="start" name="trash-outline"></ion-icon>
-                        Delete
-                      </ion-item>
-                    </ion-list>
-                  </ion-content>
-                </ng-template>
-              </ion-popover>
-            </ion-col>
+            <ion-popover [trigger]="'popover-trigger-' + transaccion.id" [dismissOnSelect]="true">
+              <ng-template>
+                <ion-content>
+                  <ion-list>
+                    <ion-item button (click)="openAddEditModal('edit', transaccion)">
+                      <ion-icon slot="start" name="pencil-outline"></ion-icon>
+                      Editar
+                    </ion-item>
+                    <ion-item button color="danger" (click)="deleteTransaction(transaccion.id)">
+                      <ion-icon slot="start" name="trash-outline"></ion-icon>
+                      Eliminar
+                    </ion-item>
+                  </ion-list>
+                </ion-content>
+              </ng-template>
+            </ion-popover>
+          </ion-col>
           </ion-row>
         </ion-grid>
 
-        <div *ngIf="!isLoading && transacciones.length === 0" class="no-transactions">
-          <p>No transactions found. Add your first transaction!</p>
-          <ion-button color="success" (click)="openAddEditModal('add')">
+        <div *ngIf="!isLoading && filteredTransactions.length === 0" class="no-transactions">
+          <p>No se encontraron transacciones. ¡Añade tu primera transacción!</p>
+          <ion-button color="primary" (click)="openAddEditModal('add')">
             <ion-icon name="add-circle-outline" slot="start"></ion-icon>
-            Add Transaction
+            Añadir Transacción
           </ion-button>
         </div>
       </div>
@@ -151,13 +165,13 @@
     </div>
   </div>
 
-  <ion-modal #addEditModal [isOpen]="isModalOpen" (didDismiss)="cancelModal()">
+  <ion-modal #addEditModal [isOpen]="isModalOpen" (didDismiss)="closeTransactionModal()">
     <ng-template>
       <ion-header class="ion-no-border">
         <ion-toolbar>
-          <ion-title>{{ isEditMode ? 'Edit Transaction' : 'Add New Transaction' }}</ion-title>
+          <ion-title>{{ isEditMode ? 'Editar Transacción' : 'Añadir Nueva Transacción' }}</ion-title>
           <ion-buttons slot="end">
-            <ion-button (click)="cancelModal()">
+            <ion-button (click)="closeTransactionModal()">
               <ion-icon name="close-outline"></ion-icon>
             </ion-button>
           </ion-buttons>
@@ -167,63 +181,76 @@
         <form [formGroup]="transactionForm" (ngSubmit)="saveTransaction()">
           <ion-list lines="none" class="form-list">
             <ion-item class="form-item">
-              <ion-label position="floating">Type</ion-label>
-              <ion-select formControlName="tipo" interface="popover">
-                <ion-select-option value="Income">Income</ion-select-option>
-                <ion-select-option value="Expense">Expense</ion-select-option>
+              <ion-label position="floating">Tipo</ion-label>
+              <ion-select formControlName="type" interface="popover">
+                <ion-select-option value="income">Ingreso</ion-select-option>
+                <ion-select-option value="expense">Gasto</ion-select-option>
+                <ion-select-option value="transfer">Transferencia</ion-select-option>
               </ion-select>
-              <ion-note color="danger" *ngIf="transactionForm.get('tipo')?.invalid && (transactionForm.get('tipo')?.dirty || transactionForm.get('tipo')?.touched)">
-                Type is required.
+              <ion-note color="danger" *ngIf="transactionForm.get('type')?.invalid && (transactionForm.get('type')?.dirty || transactionForm.get('type')?.touched)">
+                El tipo es requerido.
               </ion-note>
             </ion-item>
 
             <ion-item class="form-item">
-              <ion-label position="floating">Date</ion-label>
-              <ion-datetime formControlName="fecha" presentation="date" [showDefaultButtons]="true"></ion-datetime>
-              <ion-note color="danger" *ngIf="transactionForm.get('fecha')?.invalid && (transactionForm.get('fecha')?.dirty || transactionForm.get('fecha')?.touched)">
-                Date is required.
+              <ion-label position="floating">Fecha</ion-label>
+              <ion-datetime formControlName="transaction_date" presentation="date" [showDefaultButtons]="true" displayFormat="MMM DD, YYYY"></ion-datetime>
+              <ion-note color="danger" *ngIf="transactionForm.get('transaction_date')?.invalid && (transactionForm.get('transaction_date')?.dirty || transactionForm.get('transaction_date')?.touched)">
+                La fecha es requerida.
               </ion-note>
             </ion-item>
 
             <ion-item class="form-item">
-              <ion-label position="floating">Category</ion-label>
-              <ion-select formControlName="categoria" interface="popover">
-                <ion-select-option value="Food">Food</ion-select-option>
-                <ion-select-option value="Transport">Transport</ion-select-option>
-                <ion-select-option value="Housing">Housing</ion-select-option>
-                <ion-select-option value="Utilities">Utilities</ion-select-option>
-                <ion-select-option value="Entertainment">Entertainment</ion-select-option>
-                <ion-select-option value="Healthcare">Healthcare</ion-select-option>
-                <ion-select-option value="Education">Education</ion-select-option>
-                <ion-select-option value="Salary">Salary</ion-select-option>
-                <ion-select-option value="Investment">Investment</ion-select-option>
-                <ion-select-option value="Other">Other</ion-select-option>
+              <ion-label position="floating">Cuenta</ion-label>
+              <ion-select formControlName="account_id" interface="popover" placeholder="Seleccionar una Cuenta">
+                <ion-select-option *ngFor="let acc of accounts" [value]="acc.id">{{ acc.nombre }}</ion-select-option>
               </ion-select>
-              <ion-note color="danger" *ngIf="transactionForm.get('categoria')?.invalid && (transactionForm.get('categoria')?.dirty || transactionForm.get('categoria')?.touched)">
-                Category is required.
+              <ion-note color="danger" *ngIf="transactionForm.get('account_id')?.invalid && (transactionForm.get('account_id')?.dirty || transactionForm.get('account_id')?.touched)">
+                La cuenta es requerida.
               </ion-note>
             </ion-item>
 
             <ion-item class="form-item">
-              <ion-label position="floating">Description</ion-label>
-              <ion-input formControlName="descripcion" type="text"></ion-input>
-              <ion-note color="danger" *ngIf="transactionForm.get('descripcion')?.invalid && (transactionForm.get('descripcion')?.dirty || transactionForm.get('descripcion')?.touched)">
-                Description is required.
+              <ion-label position="floating">Categoría</ion-label>
+              <ion-select formControlName="category_id" interface="popover" placeholder="Seleccionar Categoría">
+                <ion-select-option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</ion-select-option>
+              </ion-select>
+              <ion-note color="danger" *ngIf="transactionForm.get('category_id')?.invalid && (transactionForm.get('category_id')?.dirty || transactionForm.get('category_id')?.touched)">
+                La categoría es requerida.
               </ion-note>
             </ion-item>
 
             <ion-item class="form-item">
-              <ion-label position="floating">Amount (€)</ion-label>
-              <ion-input formControlName="cantidad" type="number" step="0.01"></ion-input>
-              <ion-note color="danger" *ngIf="transactionForm.get('cantidad')?.invalid && (transactionForm.get('cantidad')?.dirty || transactionForm.get('cantidad')?.touched)">
-                Amount is required and must be a positive number.
+              <ion-label position="floating">Descripción</ion-label>
+              <ion-input formControlName="description" type="text"></ion-input>
+              <ion-note color="danger" *ngIf="transactionForm.get('description')?.invalid && (transactionForm.get('description')?.dirty || transactionForm.get('description')?.touched)">
+                La descripción es requerida.
               </ion-note>
             </ion-item>
+
+            <ion-item class="form-item">
+              <ion-label position="floating">Cantidad (€)</ion-label>
+              <ion-input formControlName="amount" type="number" step="0.01"></ion-input>
+              <ion-note color="danger" *ngIf="transactionForm.get('amount')?.invalid && (transactionForm.get('amount')?.dirty || transactionForm.get('amount')?.touched)">
+                La cantidad es requerida y debe ser un número positivo.
+              </ion-note>
+            </ion-item>
+
+            <ion-item class="form-item">
+              <ion-label position="floating">Beneficiario (Opcional)</ion-label>
+              <ion-input formControlName="payee" type="text"></ion-input>
+            </ion-item>
+
+            <ion-item class="form-item">
+              <ion-label position="floating">Notas (Opcional)</ion-label>
+              <ion-input formControlName="notes" type="text"></ion-input>
+            </ion-item>
+
           </ion-list>
 
-          <ion-button expand="block" type="submit" class="ion-margin-top" [color]="isEditMode ? 'primary' : 'success'">
+          <ion-button expand="block" type="submit" class="ion-margin-top" [color]="isEditMode ? 'primary' : 'primary'">
             <ion-spinner name="crescent" *ngIf="isSubmitting"></ion-spinner>
-            <span *ngIf="!isSubmitting">{{ isEditMode ? 'Save Changes' : 'Add Transaction' }}</span>
+            <span *ngIf="!isSubmitting">{{ isEditMode ? 'Guardar Cambios' : 'Añadir Transacción' }}</span>
           </ion-button>
         </form>
       </ion-content>

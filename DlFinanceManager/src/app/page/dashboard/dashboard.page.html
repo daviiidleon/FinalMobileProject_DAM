@@ -1,5 +1,19 @@
 <ion-header [translucent]="true">
-  <app-header></app-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Dashboard</ion-title>
+
+    <ion-buttons slot="end" class="selected-account-display">
+      <ion-button (click)="openAccountSelector()">
+        <ion-icon name="wallet-outline" slot="start"></ion-icon>
+        <ion-label *ngIf="selectedDisplayAccount">{{ selectedDisplayAccount?.nombre }}</ion-label>
+        <ion-label *ngIf="!selectedDisplayAccount">Seleccionar Cuenta</ion-label>
+        <ion-icon name="chevron-down-outline" slot="end"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
@@ -13,89 +27,120 @@
         <h1 class="page-title">Dashboard</h1>
       </div>
 
-      <div *ngIf="isLoading" class="summary-cards">
+      <div *ngIf="isLoading" class="summary-cards skeleton-summary-cards">
         <div class="card skeleton-card" *ngFor="let i of [1,2,3,4]">
-          <div class="skeleton h-6 w-3/4 mb-2"></div>
-          <div class="skeleton h-10 w-full"></div>
+          <div class="skeleton-line h-6 w-3/4"></div>
+          <div class="skeleton-line h-10 w-full"></div>
         </div>
       </div>
 
-      <div *ngIf="!isLoading" class="summary-cards">
-        <div class="card" *ngIf="currentBalance">
-          <div class="card-title">Saldo actual</div>
-          <div class="card-value">{{ currentBalance.current | number:'1.2-2' }} €</div>
-        </div>
-        <div class="card" *ngIf="monthlyIncomeExpense">
-          <div class="card-title">Ingresos totales (mes)</div>
-          <div class="card-value">{{ monthlyIncomeExpense.income | number:'1.2-2' }} €</div>
-        </div>
-        <div class="card" *ngIf="monthlyIncomeExpense">
-          <div class="card-title">Gastos totales (mes)</div>
-          <div class="card-value">{{ monthlyIncomeExpense.expense | number:'1.2-2' }} €</div>
-        </div>
-        <div class="card" *ngIf="budgetUtilization">
-          <div class="card-title">Utilización del presupuesto</div>
-          <div class="card-value">{{ budgetUtilization.percentage }}%</div>
-        </div>
+      <div *ngIf="!isLoading && !selectedDisplayAccount" class="no-account-selected-message">
+        <ion-card class="shadow-md border-2 border-dashed border-muted-foreground/30 ion-text-center ion-padding">
+          <ion-card-content class="flex flex-col items-center">
+            <img src="https://via.placeholder.com/150x100?text=No+Account" alt="No account selected" style="width: 150px; height: 100px; margin-bottom: 1rem; border-radius: 8px;">
+            <h3 class="text-xl font-semibold text-muted-foreground mb-2">¡Ninguna cuenta seleccionada!</h3>
+            <p class="text-sm text-muted-foreground max-w-xs">
+              Por favor, selecciona una cuenta en el menú lateral o añade una nueva para ver el resumen financiero.
+            </p>
+            <ion-button class="mt-4" routerLink="/cuentas">
+              <ion-icon name="add-outline" slot="start"></ion-icon>
+              Gestionar Cuentas
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
       </div>
 
-      <div *ngIf="isLoading" class="chart-section skeleton-widget">
-        <div class="skeleton h-8 w-1/2 mb-4"></div>
-        <div class="skeleton h-4 w-full mb-2"></div>
-        <div class="skeleton h-48 w-full"></div>
-      </div>
-
-      <div *ngIf="!isLoading" class="chart-section">
-        <div class="card-title2">Resumen de ingresos y gastos</div>
-        <p style="text-align: center; color: #777; margin-bottom: 15px;">Desempeño financiero mensual</p>
-        <div class="chart-placeholder">
-          <canvas id="incomeExpenseChart" #incomeExpenseChart></canvas>
-        </div>
-      </div>
-
-      <div *ngIf="isLoading" class="bottom-widgets">
-        <div class="recent-transactions-section skeleton-widget">
-          <div class="skeleton h-8 w-3/4 mb-4"></div>
-          <div class="skeleton h-4 w-full mb-2" *ngFor="let i of [1,2,3]"></div>
-        </div>
-        <div class="savings-goals-section skeleton-widget">
-          <div class="skeleton h-8 w-3/4 mb-4"></div>
-          <div class="skeleton h-4 w-full mb-2" *ngFor="let i of [1,2]"></div>
-        </div>
-      </div>
-
-      <div *ngIf="!isLoading" class="bottom-widgets">
-        <div class="recent-transactions-section">
-          <div class="section-header">
-            <div class="card-title2">Transacciones recientes</div>
+      <div *ngIf="!isLoading && selectedDisplayAccount">
+        <div class="summary-cards">
+          <div class="card" *ngIf="currentBalance">
+            <div class="card-title">Saldo actual</div>
+            <div class="card-value-container">
+              <span class="card-value">{{ getAccountBalanceForDisplay(selectedDisplayAccount) }}</span>
+              <ion-button fill="clear" size="small" (click)="toggleHideBalance()">
+                <ion-icon [name]="hideBalance ? 'eye-outline' : 'eye-off-outline'" slot="icon-only"></ion-icon>
+              </ion-button>
+            </div>
           </div>
-          <div class="recent-transactions-placeholder">
-            <ng-template #noTransactions>
-              <div class="no-data-container">
-                <p style="text-align: center; color: #777;">No hay transacciones recientes.</p>
-                <div>
-                  <ion-button routerLink="/transacciones">Ir a Transacciones</ion-button>
+
+          <div class="card" *ngIf="monthlyIncomeExpense">
+            <div class="card-title">Ingresos totales (mes)</div>
+            <div class="card-value">{{ monthlyIncomeExpense.income | currency:'EUR':'symbol':'1.2-2' }}</div>
+          </div>
+
+          <div class="card" *ngIf="monthlyIncomeExpense">
+            <div class="card-title">Gastos totales (mes)</div>
+            <div class="card-value">{{ monthlyIncomeExpense.expense | currency:'EUR':'symbol':'1.2-2' }}</div>
+          </div>
+
+          <div class="card" *ngIf="budgetUtilization">
+            <div class="card-title">Utilización del presupuesto</div>
+            <div class="card-value">{{ budgetUtilization.percentage }}%</div>
+          </div>
+        </div>
+
+        <div class="chart-section">
+          <div class="card-title2">Resumen de ingresos y gastos</div>
+          <p style="text-align: center; color: #777; margin-bottom: 15px;">Desempeño financiero mensual</p>
+          <div class="chart-placeholder">
+            <canvas id="incomeExpenseChart" #incomeExpenseChart></canvas>
+          </div>
+        </div>
+
+        <div class="bottom-widgets">
+          <div class="recent-transactions-section">
+            <div class="section-header">
+              <div class="card-title2">Transacciones recientes</div>
+              <ion-button fill="clear" size="small" routerLink="/transacciones">Ver todo <ion-icon name="chevron-forward-outline" slot="end"></ion-icon></ion-button>
+            </div>
+            <div class="recent-transactions-placeholder">
+              <ng-container *ngIf="recentTransactions.length > 0; else noTransactions">
+                <ul>
+                  <li *ngFor="let transaction of recentTransactions">
+                    <ion-icon [name]="transaction.type === 'income' ? 'arrow-up-circle-outline' : 'arrow-down-circle-outline'"
+                              [color]="transaction.type === 'income' ? 'success' : 'danger'"></ion-icon>
+                    {{ transaction.description }} -
+                    <span [ngClass]="{'text-success': transaction.type === 'income', 'text-danger': transaction.type === 'expense'}">
+                      {{ transaction.amount | currency:'EUR':'symbol':'1.2-2' }}
+                    </span>
+                    ({{ formatDate(transaction.date) }})
+                  </li>
+                </ul>
+              </ng-container>
+              <ng-template #noTransactions>
+                <div class="no-data-container">
+                  <p style="text-align: center; color: #777;">No hay transacciones recientes.</p>
+                  <div>
+                    <ion-button routerLink="/transacciones">Ir a Transacciones</ion-button>
+                  </div>
                 </div>
-              </div>
-            </ng-template>
-            <ng-container *ngTemplateOutlet="noTransactions"></ng-container>
+              </ng-template>
+            </div>
           </div>
-        </div>
 
-        <div class="savings-goals-section">
-          <div class="section-header">
-            <div class="card-title2">Metas de ahorro</div>
-          </div>
-          <div class="savings-goals-placeholder">
-            <ng-template #noGoals>
-              <div class="no-data-container">
-                <p style="text-align: center; color: #777;">No hay metas de ahorro activas.</p>
-                <div>
-                  <ion-button routerLink="/ahorro">Ir a Ahorro</ion-button>
+          <div class="savings-goals-section">
+            <div class="section-header">
+              <div class="card-title2">Metas de ahorro</div>
+              <ion-button fill="clear" size="small" routerLink="/ahorro">Ver todo <ion-icon name="chevron-forward-outline" slot="end"></ion-icon></ion-button>
+            </div>
+            <div class="savings-goals-placeholder">
+              <ng-container *ngIf="savingsGoals.length > 0; else noGoals">
+                <ul>
+                  <li *ngFor="let goal of savingsGoals">
+                    {{ goal.nombre }}:
+                    {{ goal.montoActual | currency:'EUR':'symbol':'1.2-2' }} /
+                    {{ goal.montoMeta | currency:'EUR':'symbol':'1.2-2' }}
+                  </li>
+                </ul>
+              </ng-container>
+              <ng-template #noGoals>
+                <div class="no-data-container">
+                  <p style="text-align: center; color: #777;">No hay metas de ahorro activas.</p>
+                  <div>
+                    <ion-button routerLink="/ahorro">Ir a Ahorro</ion-button>
+                  </div>
                 </div>
-              </div>
-            </ng-template>
-            <ng-container *ngTemplateOutlet="noGoals"></ng-container>
+              </ng-template>
+            </div>
           </div>
         </div>
       </div>

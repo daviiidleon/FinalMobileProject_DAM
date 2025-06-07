@@ -1,8 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
-import { AccountService } from './services/account.service';
+import { RouterOutlet } from '@angular/router';
+import { IonicModule, Platform } from '@ionic/angular';
+import { Storage } from '@ionic/storage-angular';
 import { Subscription } from 'rxjs';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -11,26 +13,40 @@ import { Subscription } from 'rxjs';
   standalone: true,
   imports: [
     CommonModule,
-    IonApp,
-    IonRouterOutlet,
+    RouterOutlet,
+    IonicModule,
   ],
 })
 export class AppComponent implements OnInit, OnDestroy {
-  selectedAccountName: string = 'Select Account';
-  private accountSubscription!: Subscription;
+  private authSubscription!: Subscription;
 
-  constructor(private accountService: AccountService) {}
+  constructor(
+    private storage: Storage,
+    private platform: Platform,
+    private authService: AuthService,
+  ) {
+    this.initializeApp();
+  }
 
-  ngOnInit() {
-    this.accountSubscription = this.accountService.selectedAccount$.subscribe(account => {
-      console.log('Selected account updated in AppComponent:', account);
-      this.selectedAccountName = account ? account.nombre : 'Select Account';
+  async initializeApp() {
+    // La creación del storage se movió al AuthService para asegurar que se hace antes de usarse.
+    // Aquí puedes dejar otras lógicas de inicialización de la plataforma si las hay.
+    this.platform.ready().then(() => {
+      // Cualquier otra lógica de inicialización específica de la plataforma
     });
   }
 
+  ngOnInit() {
+    this.authSubscription = this.authService.isAuthenticated.subscribe(
+      (isAuthenticated) => {
+        console.log('App authenticated state:', isAuthenticated);
+      }
+    );
+  }
+
   ngOnDestroy() {
-    if (this.accountSubscription) {
-      this.accountSubscription.unsubscribe();
+    if (this.authSubscription) {
+      this.authSubscription.unsubscribe();
     }
   }
 }

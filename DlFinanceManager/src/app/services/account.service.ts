@@ -1,110 +1,120 @@
 // src/app/services/account.service.ts
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { v4 as uuidv4 } from 'uuid'; // Don't forget to install uuid!
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { environment } from '../../environments/environment';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
-// Define and export the Account interface
+// Interfaz para el objeto Cuenta (ESTA ES LA INTERFAZ QUE ESPERA TU API DE LARAVEL)
 export interface Account {
-  id: string; // id is always a string
-  nombre: string;
-  tipo: string;
-  saldo: number; // Balance of the account, changed to number for calculations
-  institucion: string;
-  fechaActualizacion: string;
+  id?: number;
+  user_id?: number;
+  name: string;
+  // ===> ¡CAMBIO CLAVE AQUÍ! Renombrado a 'current_balance' para coincidir con el backend <===
+  current_balance: number;
+  currency: string;
+  type: 'cash' | 'bank' | 'credit_card' | 'investment' | 'other'; // Asegúrate que estos ENUMs coincidan con tu backend
+  institution?: string | null;
+  initial_balance?: number;
+  is_active?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Importar ClientAccount para la visualización en el frontend si es necesario en el servicio
+import { ClientAccount } from '../page/cuentas/cuentas.page'; // Asegúrate de que esta ruta sea correcta
+
+// --- Interfaz para la respuesta de la API (cuando creas/actualizas una cuenta) ---
+export interface AccountApiResponse {
+  message: string;
+  account: Account; // La cuenta real devuelta por la API
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class AccountService {
-  // Use the Account interface for type safety
-  private _accounts = new BehaviorSubject<Account[]>([]);
-  public readonly accounts$: Observable<Account[]> = this._accounts.asObservable();
+  private apiUrl = environment.apiUrl;
 
-  private selectedAccountSubject: BehaviorSubject<Account | null> = new BehaviorSubject<Account | null>(null);
-  public selectedAccount$: Observable<Account | null> = this.selectedAccountSubject.asObservable();
+  // BehaviorSubject para la cuenta seleccionada, inicializado en null
+  private selectedAccountSubject = new BehaviorSubject<ClientAccount | null>(null);
+  public selectedAccount$: Observable<ClientAccount | null> = this.selectedAccountSubject.asObservable();
 
-  constructor() {
-    this.loadInitialAccounts();
-  }
-
-  private loadInitialAccounts() {
-    // Define the structure for the raw initial data, where 'id' is optional
-    // and 'saldo' is a string before parsing.
-    const rawInitialData: { nombre: string; tipo: string; saldo: string; institucion: string; fechaActualizacion: string }[] = [
-      { nombre: 'Main Checking', tipo: 'Checking', saldo: '$1250.75', institucion: 'Bank of America', fechaActualizacion: '2023-11-20T10:00:00Z' },
-      { nombre: 'Savings for House', tipo: 'Savings', saldo: '$15000.00', institucion: 'Ally Bank', fechaActualizacion: '2023-11-19T14:30:00Z' },
-      { nombre: 'Visa Rewards', tipo: 'Credit Card', saldo: '+$500.00', institucion: 'Capital One', fechaActualizacion: '2023-11-21T09:15:00Z' },
-      { nombre: 'Personal Loan', tipo: 'Loan', saldo: '+$10000.00', institucion: 'LendingClub', fechaActualizacion: '2023-11-18T11:45:00Z' },
-      { nombre: 'Investment Portfolio', tipo: 'Investment', saldo: '$2500.25', institucion: 'Fidelity', fechaActualizacion: '2023-11-20T16:00:00Z' },
-      { nombre: 'Cash in Wallet', tipo: 'Cash', saldo: '$150.00', institucion: '', fechaActualizacion: '2023-11-21T18:00:00Z' }
-    ];
-
-    // Map raw data to Account type, ensuring 'id' is always assigned a uuid and parsing 'saldo' to a number
-    const accounts: Account[] = rawInitialData.map(data => ({
-      id: uuidv4(), // Explicitly assign a new UUID here, ensuring 'id' is always present
-      nombre: data.nombre,
-      tipo: data.tipo,
-      saldo: parseFloat(data.saldo.replace(/[^\d.-]/g, '')), // Remove non-numeric characters and parse
-      institucion: data.institucion,
-      fechaActualizacion: data.fechaActualizacion
-    }));
-
-    this._accounts.next(accounts);
-
-    // Set the first account as selected by default, if available
-    if (accounts.length > 0) {
-      this.setSelectedAccount(accounts[0]);
+  constructor(private http: HttpClient) {
+    // Cargar la cuenta seleccionada desde localStorage al inicio
+    const storedAccount = localStorage.getItem('selectedAccount');
+    if (storedAccount) {
+      try {
+        this.selectedAccountSubject.next(JSON.parse(storedAccount));
+      } catch (e) {
+        console.error("Error al parsear la cuenta seleccionada almacenada:", e);
+        localStorage.removeItem('selectedAccount'); // Limpiar si está corrupto
+      }
     }
   }
 
-  addAccount(newAccount: Omit<Account, 'id'>) { // 'newAccount' won't have an ID yet
-    const currentAccounts = this._accounts.getValue();
-    // When adding, create the full Account object with a generated ID
-    const accountWithId: Account = { ...newAccount, id: uuidv4() };
-    this._accounts.next([...currentAccounts, accountWithId]);
-  }
-
-  updateAccount(updatedAccount: Account) { // 'updatedAccount' will have an ID
-    const currentAccounts = this._accounts.getValue();
-    const index = currentAccounts.findIndex(a => a.id === updatedAccount.id);
-
-    if (index > -1) {
-      const newAccounts = [...currentAccounts];
-      newAccounts[index] = updatedAccount;
-      this._accounts.next(newAccounts);
-      // If the updated account is the currently selected one, update the observable
-      if (this.selectedAccountSubject.getValue()?.id === updatedAccount.id) {
-        this.selectedAccountSubject.next(updatedAccount);
+  private handleError(error: HttpErrorResponse) {
+    let errorMessage = 'Ocurrió un error inesperado al procesar la solicitud.';
+    if (error.error instanceof ErrorEvent) {
+      errorMessage = `Error del cliente: ${error.error.message}`;
+    } else if (error.error && error.error.errors) {
+      const laravelErrors = Object.values(error.error.errors).flat();
+      errorMessage = laravelErrors.join('\n');
+    } else if (error.error && error.error.message) {
+      errorMessage = error.error.message;
+    } else if (error.status) {
+      errorMessage = `Error del servidor: ${error.status} - ${error.statusText}`;
+      if (error.status === 0) {
+        errorMessage = 'No se pudo conectar con el servidor. Verifique su conexión, CORS, o que el servidor esté funcionando.';
       }
     } else {
-      console.warn('Account not found for update:', updatedAccount.id);
+      errorMessage = 'No se pudo conectar con el servidor. Intente de nuevo más tarde.';
     }
+    console.error('AccountService Error:', errorMessage, error);
+    return throwError(() => new Error(errorMessage));
   }
 
-  deleteAccount(id: string) {
-    const currentAccounts = this._accounts.getValue();
-    const filteredAccounts = currentAccounts.filter(a => a.id !== id);
-    this._accounts.next(filteredAccounts);
-
-    // If the deleted account was the selected one, clear selection or select another
-    if (this.selectedAccountSubject.getValue()?.id === id) {
-      this.selectedAccountSubject.next(filteredAccounts.length > 0 ? filteredAccounts[0] : null);
-    }
-  }
-
-  getAccountById(id: string): Observable<Account | undefined> {
-    return this.accounts$.pipe(
-      map(accounts => accounts.find(a => a.id === id))
+  getAccounts(): Observable<Account[]> {
+    return this.http.get<Account[]>(`${this.apiUrl}/accounts`).pipe(
+      catchError(this.handleError)
     );
   }
 
-  setSelectedAccount(account: Account | null) {
-    this.selectedAccountSubject.next(account);
+  getAccountById(id: number): Observable<Account> {
+    return this.http.get<Account>(`${this.apiUrl}/accounts/${id}`).pipe(
+      catchError(this.handleError)
+    );
   }
 
-  getSelectedAccount(): Account | null {
+  createAccount(account: Account): Observable<AccountApiResponse> {
+    return this.http.post<AccountApiResponse>(`${this.apiUrl}/accounts`, account).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  updateAccount(id: number, account: Account): Observable<AccountApiResponse> {
+    return this.http.put<AccountApiResponse>(`${this.apiUrl}/accounts/${id}`, account).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  deleteAccount(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/accounts/${id}`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  setSelectedAccount(account: ClientAccount | null) {
+    this.selectedAccountSubject.next(account);
+    console.log('AccountService: Cuenta seleccionada establecida:', account ? account.nombre : 'ninguna');
+    if (account) {
+      localStorage.setItem('selectedAccount', JSON.stringify(account));
+    } else {
+      localStorage.removeItem('selectedAccount');
+    }
+  }
+
+  getSelectedAccount(): ClientAccount | null {
     return this.selectedAccountSubject.getValue();
   }
 }
