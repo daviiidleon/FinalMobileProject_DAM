@@ -9,42 +9,23 @@
     </div>
 
     <div class="main-content">
-      <div *ngIf="isLoading" class="page-title skeleton-title">
-        <div class="skeleton h-6 w-60"></div>
-      </div>
-      <div *ngIf="!isLoading" class="page-title">Informes y reportes</div>
+      <div class="page-title">Informes y Reportes</div>
 
-      <div class="chart-section">
-        <div *ngIf="isLoading" class="chart-placeholder skeleton-placeholder">
-          <div class="skeleton h-8 w-64"></div>
-        </div>
-        <div *ngIf="isLoading" class="chart-placeholder2 skeleton-placeholder">
-          <div class="skeleton h-8 w-64"></div>
-        </div>
-        <div *ngIf="isLoading" class="chart-placeholder3 skeleton-placeholder">
-          <div class="skeleton h-8 w-64"></div>
-        </div>
+      <div class="report-options-container">
+        <ng-container *ngIf="isLoading">
+          <div class="report-card skeleton-card"></div>
+          <div class="report-card skeleton-card"></div>
+        </ng-container>
 
         <ng-container *ngIf="!isLoading">
-          <div class="chart-placeholder">
-            <ion-button size="large">
-              <ion-icon name="document-outline" slot="start"></ion-icon>
-              Generar informe en PDF
-            </ion-button>
+          <div class="report-card" (click)="onGeneratePdf()" role="button" tabindex="0">
+            <ion-icon name="document-text-outline" color="danger"></ion-icon>
+            <span>Generar informe en PDF</span>
           </div>
 
-          <div class="chart-placeholder2">
-            <ion-button size="large">
-              <ion-icon name="document-text-outline" slot="start"></ion-icon>
-              Generar informe en Excel
-            </ion-button>
-          </div>
-
-          <div class="chart-placeholder3">
-            <ion-button size="large">
-              <ion-icon name="document-attach-outline" slot="start"></ion-icon>
-              Generar informe en CSV
-            </ion-button>
+          <div class="report-card" (click)="onGenerateExcel()" role="button" tabindex="0">
+            <ion-icon name="stats-chart-outline" color="success"></ion-icon>
+            <span>Generar informe en Excel</span>
           </div>
         </ng-container>
       </div>

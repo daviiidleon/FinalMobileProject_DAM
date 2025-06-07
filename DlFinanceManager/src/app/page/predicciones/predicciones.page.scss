@@ -1,34 +1,34 @@
-/* --- Inlined CSS Variables for Predicciones Page (similar to Savings Page for consistency) --- */
-:host { // Using :host to encapsulate these variables for this component
-  --page-background: #f8f9fa; // Very light grey for ion-content
-  --card-background: #ffffff; // Pure white for cards and distinct sections
-  --border-color: #e9ecef; // Light grey for subtle separation
-  --main-text-color: #343a40; // Dark grey for good contrast
-  --secondary-text-color: #6c757d; // Medium grey for less prominent text
-  --sidebar-background: #222; // Dark background for the side menu
-  --sidebar-text: #fff; // White text for the side menu
-  --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.04); // Softer shadow for cards/lists
-  --shadow-subtle: 0 1px 3px rgba(0,0,0,0.03); // Very subtle shadow for input fields
+// src/app/pages/predicciones/predicciones.page.scss
 
-  // Ionic specific colors used within this page (ensure these match your global variables if you have them)
-  --ion-color-primary: #007bff; // A standard, vibrant blue
+/* --- Inlined CSS Variables (From User) --- */
+:host {
+  --page-background: #f8f9fa;
+  --card-background: #ffffff;
+  --border-color: #e9ecef;
+  --main-text-color: #343a40;
+  --secondary-text-color: #6c757d;
+  --sidebar-background: #222;
+  --sidebar-text: #fff;
+  --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-subtle: 0 1px 3px rgba(0,0,0,0.03);
+
+  --ion-color-primary: #007bff;
+  --ion-color-primary-rgb: 0,123,255; // Needed for rgba hover
   --ion-color-primary-shade: #006bdf;
   --ion-color-primary-contrast: #ffffff;
-  --ion-color-danger: #dc3545; // A clear red
+  --ion-color-danger: #dc3545;
   --ion-color-danger-shade: #c12f3d;
-  --ion-color-light: #f8f9fa; // Used for modal header toolbar
-  --ion-color-step-50: #f8f8f8; // Light step for input backgrounds
+  --ion-color-medium: #6c757d; // For less important buttons
+  --ion-color-secondary: #6610f2; // Color for personalized suggestion icons
 }
 
-/* --- Dashboard Layout and General Styles (shared with other pages, now inlined) --- */
+/* --- Dashboard Layout and General Styles (From User) --- */
 ion-content {
-  --background: var(--page-background); /* Set page background */
+  --background: var(--page-background);
 }
 
 ion-header {
-  --background: var(--card-background); /* Header background */
-  border-bottom: 1px solid var(--border-color); /* Subtle header border */
-  box-shadow: 0 1px 4px rgba(0,0,0,0.03); /* Subtle header shadow */
+  box-shadow: none; // Removing shadow to match the clean design
 }
 
 .dashboard-layout {
@@ -36,9 +36,9 @@ ion-header {
   flex-direction: row;
   height: 100%;
   width: 100%;
-  background-color: var(--page-background); /* Ensure consistent background */
+  background-color: var(--page-background);
 
-  @media (max-width: 768px) {
+  @media (max-width: 991px) {
     flex-direction: column;
   }
 }
@@ -46,68 +46,86 @@ ion-header {
 .first-content {
   width: 15%;
   background-color: transparent;
-  color: var(--sidebar-text);
-  @media (max-width: 768px) {
+
+  @media (max-width: 991px) {
     width: 100%;
+    height: auto; // Allow mobile menu to take its own height
   }
 }
 
 .main-content {
   flex-grow: 1;
-  padding: 20px;
+  padding: 24px;
   overflow-y: auto;
   box-sizing: border-box;
 }
 
 .page-title {
   font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 20px;
+  font-weight: 700; // Bolder
+  margin-bottom: 24px;
   color: var(--main-text-color);
 }
 
-/* Skeleton for the page title */
-.skeleton-title {
-  .skeleton {
-    margin-bottom: 20px;
-  }
-}
-
-.sugerencias-container { /* Asumo que esta clase se usa en la página de Predicciones también para las cards */
+.sugerencias-container {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding: 10px;
 }
 
-.sugerencia-card { /* Asumo que esta clase se usa en la página de Predicciones también para las cards */
+/* --- Section Title Style (Added) --- */
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--main-text-color);
+  padding-bottom: 10px;
+  margin-top: 10px;
+  border-bottom: 1px solid var(--border-color);
+  &:first-of-type {
+    margin-top: 0;
+  }
+}
+
+/* --- Card Styles (From User, refined) --- */
+.sugerencia-card {
   background: var(--card-background);
-  border-radius: 8px;
+  border-radius: 12px; // Slightly more rounded
   box-shadow: var(--shadow-light);
   padding: 20px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   border: 1px solid var(--border-color);
 
   &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
   }
 }
 
 .sugerencia-text {
-  font-size: 18px;
-  font-weight: 500;
-  margin-bottom: 10px;
+  font-size: 1.1em;
+  font-weight: 600;
+  margin-bottom: 12px;
   color: var(--main-text-color);
+  display: flex;
+  align-items: center;
+  gap: 10px; // Space between icon and text
+  ion-icon {
+    font-size: 1.4em;
+  }
 }
 
 .sugerencia-info {
   margin-top: 10px;
+  p {
+    margin: 0 0 10px 0;
+    color: var(--secondary-text-color);
+    line-height: 1.6;
+  }
 }
 
 .sugerencia-impacto {
   font-size: 14px;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
   color: var(--secondary-text-color);
 }
 
@@ -116,120 +134,80 @@ ion-header {
   background: var(--border-color);
   border-radius: 4px;
   overflow: hidden;
+  margin-top: 8px;
 }
 
 .progreso {
   height: 100%;
   background-color: var(--ion-color-primary);
-  transition: width 0.3s ease;
+  transition: width 0.5s ease-in-out;
   border-radius: 4px;
 }
 
-.sugerencia-actions { /* Asumo que esta clase se usa en la página de Predicciones también para las acciones de las cards */
-  margin-top: 15px;
+.sugerencia-actions {
+  margin-top: 20px;
   display: flex;
-  gap: 10px;
+  justify-content: flex-end; // Align buttons to the right
+  gap: 12px;
 
   ion-button {
-    height: 36px;
-    --padding-start: 12px;
-    --padding-end: 12px;
+    height: 40px;
+    --padding-start: 16px;
+    --padding-end: 16px;
     font-size: 0.9em;
     --border-radius: 8px;
     font-weight: 600;
     text-transform: none;
   }
 
-  ion-button[fill="outline"][color="primary"] { /* Targeting "Aceptar" button */
-    --background: transparent;
-    --border-color: var(--ion-color-primary);
-    --color: var(--ion-color-primary);
-    --border-width: 1px;
-    &:hover {
-      --background: rgba(var(--ion-color-primary-rgb), 0.1);
-    }
+  ion-button[fill="outline"] {
+    --border-width: 2px;
   }
 
-  /* MODIFICACIÓN CLAVE EN EL CSS PARA fill="solid" */
   ion-button[fill="solid"][color="danger"] {
-    --background: var(--ion-color-danger); /* Fondo rojo sólido */
-    --color: var(--ion-color-primary-contrast); /* Texto blanco */
-    --border-radius: 8px; /* Bordes redondeados */
-    box-shadow: var(--shadow-subtle); /* Sombra sutil */
+    --background: var(--ion-color-danger);
+    --color: var(--ion-color-primary-contrast);
+    --box-shadow: none;
     &:hover {
-      --background: var(--ion-color-danger-shade); /* Tono más oscuro al pasar el ratón */
+      --background: var(--ion-color-danger-shade);
     }
   }
 }
 
-/* Skeleton Loader Base Styles */
+/* --- Skeleton Loader Styles (From User, refined) --- */
 .skeleton {
-  background: linear-gradient(90deg, var(--border-color) 25%, #e0e0e0 50%, var(--border-color) 75%);
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
   background-size: 200% 100%;
-  animation: loading 1.5s infinite;
-  border-radius: 4px;
+  animation: loading 1.5s infinite linear;
+  border-radius: 6px;
 }
 
 @keyframes loading {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
-/* Utility classes for skeleton dimensions (re-use from other pages) */
-.h-2 { height: 0.5rem; }
-.h-4 { height: 1rem; }
-.h-5 { height: 1.25rem; }
-.h-6 { height: 1.5rem; }
-.h-8 { height: 2rem; }
-
-.w-full { width: 100%; }
-.w-3\/4 { width: 75%; }
-.w-1\/2 { width: 50%; }
-.w-20 { width: 5rem; }
-.w-60 { width: 15rem; }
-
-.mb-2 { margin-bottom: 0.5rem; }
-.mb-4 { margin-bottom: 1rem; }
-
-
-/* Specific skeleton layout adjustments for cards */
+.skeleton-title .skeleton { margin-bottom: 24px; }
 .skeleton-card {
-  background-color: var(--card-background);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-light);
-  border-radius: 8px;
-  .skeleton-info {
-    margin-bottom: 10px;
-  }
-
-  .skeleton-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-start;
-  }
+  .skeleton-actions { display: flex; gap: 10px; margin-top: 20px; }
 }
 
-/* Responsive */
+.h-5 { height: 1.25rem; } .h-6 { height: 1.5rem; } .h-8 { height: 2rem; } .h-4 { height: 1rem; }
+.w-full { width: 100%; } .w-3\/4 { width: 75%; } .w-1\/2 { width: 50%; } .w-20 { width: 5rem; } .w-60 { width: 15rem; }
+.mb-2 { margin-bottom: 0.5rem; } .mb-4 { margin-bottom: 1rem; }
+
+/* --- Responsive Adjustments --- */
 @media (max-width: 991px) {
-  .dashboard-layout {
-    flex-direction: column;
-  }
-
-  .first-content {
-    width: 100%;
-    order: 2;
-  }
-
   .main-content {
-    order: 1;
-    padding: 10px;
+    padding: 16px;
   }
-
   .sugerencia-card {
-    padding: 15px;
+    padding: 16px;
+  }
+  .sugerencia-actions {
+    flex-direction: column;
+    ion-button {
+      width: 100%;
+    }
   }
 }

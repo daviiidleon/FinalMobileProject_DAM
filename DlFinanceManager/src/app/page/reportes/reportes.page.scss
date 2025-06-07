@@ -1,230 +1,83 @@
-/* --- Inlined CSS Variables for Reports Page --- */
-:host { // Using :host to encapsulate these variables for this component
-  --page-background: #f8f9fa; // Very light grey for ion-content
-  --card-background: #ffffff; // Pure white for cards and distinct sections
-  --border-color: #e9ecef; // Light grey for subtle separation
-  --main-text-color: #343a40; // Dark grey for good contrast
-  --secondary-text-color: #6c757d; // Medium grey for less prominent text
-  --sidebar-background: #222; // Dark background for the side menu
-  --sidebar-text: #fff; // White text for the side menu
-  --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.04); // Softer shadow for cards/lists
-  --shadow-subtle: 0 1px 3px rgba(0,0,0,0.03); // Very subtle shadow for input fields
-
-  // Ionic specific colors used within this page (ensure these match your global variables if you have them)
-  --ion-color-primary: #007bff; // A standard, vibrant blue
-  --ion-color-primary-shade: #006bdf;
-  --ion-color-primary-contrast: #ffffff;
+// src/app/pages/reportes/reportes.page.scss
+:host {
+  --page-background: #f8f9fa;
+  --card-background: #ffffff;
+  --border-color: #e9ecef;
+  --main-text-color: #343a40;
+  --secondary-text-color: #6c757d;
+  --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --ion-color-danger: #dc3545; // PDF Icon
+  --ion-color-success: #28a745; // Excel Icon
 }
 
-/* --- Dashboard Layout and General Styles (shared with other pages, now inlined) --- */
 ion-content {
-  --background: var(--page-background); /* Set page background */
-}
-
-ion-header {
-  --background: var(--card-background); /* Header background */
-  border-bottom: 1px solid var(--border-color); /* Subtle header border */
-  box-shadow: 0 1px 4px rgba(0,0,0,0.03); /* Subtle header shadow */
+  --background: var(--page-background);
 }
 
 .dashboard-layout {
   display: flex;
-  flex-direction: row;
   height: 100%;
-  width: 100%;
-  background-color: var(--page-background); // Ensure consistent background
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-  }
 }
 
 .first-content {
   width: 15%;
-  // 💥💥💥 CORRECCIÓN AQUÍ: ¡CAMBIO APLICADO! 💥💥💥
-  // Cambiamos el fondo de first-content para que sea transparente,
-  // permitiendo que se vea el color de fondo de ion-content.
-  background-color: transparent; /* Changed from var(--sidebar-background) to transparent! */
-  color: var(--sidebar-text);
-  @media (max-width: 768px) {
-    width: 100%;
+  @media (max-width: 991px) {
+    display: none; // Ocultar en móvil, se maneja con menú hamburguesa
   }
 }
 
 .main-content {
   flex-grow: 1;
-  padding: 20px;
+  padding: 24px;
   overflow-y: auto;
-  box-sizing: border-box;
 }
 
 .page-title {
   font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 20px;
-  margin-left: 6%; /* Keeping original margin */
-  margin-top: 3%; /* Keeping original margin */
-  color: var(--main-text-color); /* Using inlined variable */
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: var(--main-text-color);
 }
 
-/* Skeleton for the page title */
-.skeleton-title {
-  .skeleton {
-    margin-bottom: 20px; /* Aligns with actual title's margin-bottom */
-    margin-left: 6%;
-    margin-top: 3%;
-  }
+.report-options-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
 }
 
-.chart-section {
+.report-card {
+  background: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 32px 24px;
   display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.chart-placeholder,
-.chart-placeholder2,
-.chart-placeholder3 {
-  border: 1px solid var(--border-color); /* Add a border for better definition */
-  box-shadow: var(--shadow-light); /* Consistent shadow */
-  height: 120px;
-  width: 80%;
-  background: var(--card-background); /* Using inlined variable */
-  border-radius: 12px; /* Slightly smaller radius for consistency */
-  display: flex;
-  justify-content: center;
   align-items: center;
-  margin: 0 auto;
-  transition: transform 0.2s ease, box-shadow 0.2s ease; /* Add transition for shadow */
+  gap: 20px;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: var(--main-text-color);
+  box-shadow: var(--shadow-light);
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+
+  ion-icon {
+    font-size: 2.5em; // Iconos más grandes
+  }
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08); /* A slightly more pronounced hover shadow */
-  }
-
-  ion-button {
-    font-size: 18px;
-    --color: var(--main-text-color); /* Using inlined variable for button text */
-    --background: transparent;
-    --box-shadow: none;
-    display: flex;
-    align-items: center;
-    font-weight: 600; // Make button text bolder
-    text-transform: none; // Keep button text as is
-    --padding-start: 20px;
-    --padding-end: 20px;
-    --height: 50px; // Ensure consistent button height
-
-    ion-icon {
-      margin-right: 10px;
-      font-size: 24px; // Larger icons for clarity
-      color: var(--ion-color-primary); // Use primary color for icons
-    }
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
   }
 }
 
-
-/* Skeleton styles */
-.skeleton-placeholder {
-  background-color: var(--card-background); // Match card background
-  border: 1px solid var(--border-color); // Match card border
-  box-shadow: var(--shadow-light); // Match card shadow
-  animation: pulse 1.5s infinite ease-in-out;
-  border-radius: 12px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.skeleton {
-  background: linear-gradient(90deg, var(--border-color) 25%, #e0e0e0 50%, var(--border-color) 75%);
+.skeleton-card {
+  height: 115px; // Altura fija para el esqueleto
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
   background-size: 200% 100%;
-  animation: loading 1.5s infinite;
-  border-radius: 4px;
+  animation: loading 1.5s infinite linear;
 }
 
 @keyframes loading {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-/* Utility classes for skeleton dimensions */
-.h-6 { height: 1.5rem; }
-.h-8 { height: 2rem; }
-
-.w-60 { width: 15rem; }
-.w-64{ width: 16rem; }
-
-/* Pulse animation for skeleton effect */
-@keyframes pulse {
-  0% {
-    background-color: #e0e0e0;
-  }
-
-  50% {
-    background-color: #f0f0f0;
-  }
-
-  100% {
-    background-color: #e0e0e0;
-  }
-}
-
-/* Responsive */
-@media (max-width: 991px) {
-  .dashboard-layout {
-    flex-direction: column;
-  }
-
-  .first-content {
-    width: 100%;
-    order: 2;
-  }
-
-  .main-content {
-    padding: 10px;
-    order: 1;
-  }
-
-  .page-title {
-    font-size: 20px;
-    margin-left: 0;
-    text-align: center;
-  }
-
-  .chart-placeholder,
-  .chart-placeholder2,
-  .chart-placeholder3 {
-    width: 95%;
-    height: auto;
-    padding: 20px;
-  }
-
-  ion-button {
-    font-size: 16px;
-    width: 100%;
-    text-align: center;
-    justify-content: center;
-    --padding-start: 10px;
-    --padding-end: 10px;
-    --height: 45px;
-  }
-}
-
-@media (max-width: 576px) {
-  ion-button {
-    font-size: 14px;
-    --height: 40px;
-  }
-
-  .chart-placeholder,
-  .chart-placeholder2,
-  .chart-placeholder3 {
-    height: auto;
-    padding: 15px;
-  }
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }

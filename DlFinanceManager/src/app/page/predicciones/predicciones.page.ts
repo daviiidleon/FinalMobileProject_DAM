@@ -1,20 +1,19 @@
+// src/app/page/predicciones/predicciones.page.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
-  IonButton,
-  IonCol,
-  IonContent, IonGrid,
-  IonHeader,
-  IonIcon,
-  IonRow,
-  IonTitle,
-  IonToolbar, IonItem, IonLabel,
-  IonList,
-  LoadingController // <--- Import LoadingController
+  IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonCardHeader,
+  IonCardTitle, IonCardSubtitle, IonCardContent, IonButton, IonIcon,
+  IonLabel, IonSpinner, IonProgressBar, IonList, IonItem
 } from '@ionic/angular/standalone';
-import { HeaderComponent } from "../../component/header/header.component";
-import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
+import { addIcons } from 'ionicons';
+import { bulbOutline, saveOutline, syncCircleOutline, receiptOutline, walletOutline, analyticsOutline, calculatorOutline, searchCircleOutline, fastFoodOutline, flashOffOutline, schoolOutline, handLeftOutline, chevronForwardOutline, closeCircleOutline, golfOutline, alertCircleOutline, syncOutline, trendingUpOutline } from 'ionicons/icons';
+
+import { HeaderComponent } from '../../component/header/header.component';
+import { SideMenuComponent } from '../../component/side-menu/side-menu.component';
+// CORRECCIÓN 1: Ruta del servicio ajustada para una carpeta 'services'
+import { PredictionsService, FinancialTip, PersonalizedSuggestion } from '../../services/predictions.service';
 
 @Component({
   selector: 'app-predicciones',
@@ -22,61 +21,71 @@ import { SideMenuComponent } from "../../component/side-menu/side-menu.component
   styleUrls: ['./predicciones.page.scss'],
   standalone: true,
   imports: [
-    IonContent, IonHeader, IonTitle, IonToolbar,
-    CommonModule, FormsModule, HeaderComponent,
-    SideMenuComponent, IonIcon, IonButton, IonRow,
-    IonCol, IonGrid, CurrencyPipe, IonItem, IonLabel, IonList
+    CommonModule, FormsModule, CurrencyPipe, HeaderComponent, SideMenuComponent,
+    IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonCardHeader,
+    IonCardTitle, IonCardSubtitle, IonCardContent, IonButton, IonIcon,
+    IonLabel, IonSpinner, IonProgressBar, IonList, IonItem
   ]
 })
 export class PrediccionesPage implements OnInit {
 
-  sugerencias: any[] = []; // Property to hold prediction data
-  isLoading: boolean = true; // <--- Initialize to true
+  isLoading: boolean = true;
 
-  selectedAccount: any | null = null; // To hold the selected account
+  private availableEconomicTipsPool: FinancialTip[] = [];
+  public displayedEconomicTips: FinancialTip[] = [];
+  private masterTipList: FinancialTip[] = [];
 
-  constructor(private loadingController: LoadingController) { }
+  public personalizedSuggestions: PersonalizedSuggestion[] = [];
 
-  ngOnInit() {
-    // ngOnInit is typically for one-time initialization.
-    // For data loading that should happen every time the page is entered,
-    // we'll use ionViewWillEnter.
+  constructor(private predictionsService: PredictionsService) {
+    addIcons({ bulbOutline, saveOutline, syncCircleOutline, receiptOutline, walletOutline, analyticsOutline, calculatorOutline, searchCircleOutline, fastFoodOutline, flashOffOutline, schoolOutline, handLeftOutline, chevronForwardOutline, closeCircleOutline, golfOutline, alertCircleOutline, syncOutline, trendingUpOutline });
   }
 
-  // Ionic lifecycle hook - fires every time the view is about to become active
-  async ionViewWillEnter() {
-    await this.loadSugerencias();
+  ngOnInit() {}
+
+  ionViewWillEnter() {
+    this.loadInitialData();
   }
 
-  // Method responsible for loading data
-  // Ensure prediction data is initialized to an empty array
-  async loadSugerencias() {
-    // Check if an account is selected. If so, show no data for now.
-    if (this.selectedAccount) {
-      this.sugerencias = []; // Initialize prediction data to an empty array
-      this.isLoading = false; // Set loading to false
-      console.log('Account selected, prediction data initialized to empty.');
-      return; // Skip data loading logic if an account is selected
-    }
+  async loadInitialData() {
+    this.isLoading = true;
+    this.personalizedSuggestions = [];
+    this.displayedEconomicTips = [];
 
-    // <--- Start Dashboard-style LoadingController
-    this.isLoading = true; // Set loading to true to show skeleton
-    const loading = await this.loadingController.create({
-      message: 'Cargando sugerencias...',
-      spinner: 'crescent'
+    // CORRECCIÓN 2: Se añade el tipo explícito 'FinancialTip[]' a 'allTips'
+    this.predictionsService.getEconomicTips().subscribe((allTips: FinancialTip[]) => {
+      this.masterTipList = allTips;
+      this.initializeEconomicTips();
+      this.loadPersonalizedSuggestions();
     });
-    await loading.present();
-    // End Dashboard-style LoadingController --->
+  }
 
-    // Original logic for loading data (now only runs if no account is selected)
-    // This part can be removed entirely if you never want simulated data.
-    await new Promise(resolve => setTimeout(resolve, 1500)); // 1.5 second delay
+  loadPersonalizedSuggestions() {
+    // CORRECCIÓN 3: Se añade el tipo explícito 'PersonalizedSuggestion[]' a 'suggestions'
+    this.predictionsService.getPersonalizedSuggestions().subscribe((suggestions: PersonalizedSuggestion[]) => {
+      this.personalizedSuggestions = suggestions;
+      this.isLoading = false;
+    });
+  }
 
-    // Initialize prediction data to an empty array
-    // Remove existing logic that attempts to fetch or simulate prediction data.
-    this.sugerencias = [];
+  initializeEconomicTips() {
+    this.availableEconomicTipsPool = [...this.masterTipList].sort(() => 0.5 - Math.random());
+    this.displayedEconomicTips = this.availableEconomicTipsPool.splice(0, 3);
+  }
 
-    this.isLoading = false; // Set loading to false to hide skeleton
-    loading.dismiss(); // <--- Dismiss the LoadingController
+  replaceEconomicTip(index: number) {
+    if (this.availableEconomicTipsPool.length === 0) {
+      this.availableEconomicTipsPool = [...this.masterTipList]
+        .filter(tip => !this.displayedEconomicTips.some(displayedTip => displayedTip.title === tip.title))
+        .sort(() => 0.5 - Math.random());
+    }
+    const newTip = this.availableEconomicTipsPool.pop();
+    if (newTip) {
+      this.displayedEconomicTips[index] = newTip;
+    }
+  }
+
+  dismissPersonalizedSuggestion(index: number) {
+    this.personalizedSuggestions.splice(index, 1);
   }
 }

@@ -33,6 +33,8 @@
     "chart.js": "^4.4.9",
     "date-fns": "^4.1.0",
     "ionicons": "^7.0.0",
+    "jspdf": "^3.0.1",
+    "jspdf-autotable": "^5.0.2",
     "lucide-angular": "^0.511.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",

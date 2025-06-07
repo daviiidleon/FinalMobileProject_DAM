@@ -1,51 +1,76 @@
-<ion-header [translucent]="true">
+<ion-header>
   <app-header></app-header>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content>
   <div class="dashboard-layout">
     <div class="first-content">
       <app-side-menu></app-side-menu>
     </div>
 
     <div class="main-content">
+      <div *ngIf="!isLoading" class="page-title">Predicciones y Sugerencias</div>
       <div *ngIf="isLoading" class="page-title skeleton-title">
         <div class="skeleton h-6 w-60"></div>
       </div>
-      <div *ngIf="!isLoading" class="page-title">Sugerencias de Ahorro</div>
 
       <div class="sugerencias-container">
-        <div class="sugerencia-card skeleton-card" *ngIf="isLoading">
-          <div class="skeleton h-5 w-full mb-2"></div>
-          <div class="skeleton h-4 w-3/4 mb-4"></div>
-
-          <div class="sugerencia-info skeleton-info">
-            <div class="skeleton h-4 w-1/2 mb-2"></div>
-            <div class="skeleton h-2 w-full"></div>
+        <ng-container *ngIf="isLoading">
+          <div class="sugerencia-card skeleton-card" *ngFor="let item of [1, 2, 3]">
+            <div class="skeleton h-5 w-3/4 mb-4"></div>
+            <div class="skeleton h-4 w-full mb-2"></div>
+            <div class="skeleton h-4 w-1/2 mb-4"></div>
+            <div class="sugerencia-actions skeleton-actions">
+              <div class="skeleton h-8 w-20"></div>
+              <div class="skeleton h-8 w-20"></div>
+            </div>
           </div>
-
-          <div class="sugerencia-actions skeleton-actions">
-            <div class="skeleton h-8 w-20"></div>
-            <div class="skeleton h-8 w-20"></div>
-          </div>
-        </div>
+        </ng-container>
 
         <ng-container *ngIf="!isLoading">
-          <div class="sugerencia-card" *ngFor="let sugerencia of sugerencias">
-            <div class="sugerencia-text">{{ sugerencia.texto }}</div>
-
+          <div class="section-title">Consejos Económicos y Financieros</div>
+          <div class="sugerencia-card" *ngFor="let tip of displayedEconomicTips; let i = index">
+            <div class="sugerencia-text">
+              <ion-icon [name]="tip.icon" color="primary" slot="start"></ion-icon>
+              {{ tip.title }}
+            </div>
             <div class="sugerencia-info">
-              <div class="sugerencia-impacto">
-                <strong>Impacto estimado:</strong> {{ sugerencia.impacto | currency:'EUR':'symbol':'1.0-0' }}
-              </div>
-              <div class="sugerencia-barra">
-                <div class="progreso" [style.width.%]="sugerencia.porcentaje"></div>
+              <p>{{ tip.message }}</p>
+            </div>
+            <div class="sugerencia-actions">
+              <ion-button fill="solid" color="primary" (click)="replaceEconomicTip(i)">
+                Siguiente
+              </ion-button>
+              <ion-button fill="outline" color="medium" (click)="replaceEconomicTip(i)">
+                Descartar
+              </ion-button>
+            </div>
+          </div>
+
+          <div class="section-title">Sugerencias Personalizadas</div>
+          <div class="sugerencia-card" *ngFor="let suggestion of personalizedSuggestions; let i = index">
+            <div class="sugerencia-text">
+              <ion-icon [name]="suggestion.icon" color="secondary" slot="start"></ion-icon>
+              {{ suggestion.title }}
+            </div>
+            <div class="sugerencia-info">
+              <p>{{ suggestion.message }}</p>
+
+              <div *ngIf="suggestion.type === 'SAVINGS_GOAL'">
+                <div class="sugerencia-impacto">
+                  <strong>Progreso:</strong>
+                  {{ suggestion.details.savedAmount | currency:'EUR' }} / {{ suggestion.details.targetAmount | currency:'EUR' }}
+                </div>
+                <div class="sugerencia-barra">
+                  <div class="progreso" [style.width.%]="suggestion.details.progress * 100"></div>
+                </div>
               </div>
             </div>
-
             <div class="sugerencia-actions">
-              <ion-button fill="outline" color="primary">Aceptar</ion-button>
-              <ion-button fill="solid" color="danger">Descartar</ion-button>
+              <ion-button fill="outline" color="primary">Ver Detalles</ion-button>
+              <ion-button fill="solid" color="danger" (click)="dismissPersonalizedSuggestion(i)">
+                Descartar
+              </ion-button>
             </div>
           </div>
         </ng-container>

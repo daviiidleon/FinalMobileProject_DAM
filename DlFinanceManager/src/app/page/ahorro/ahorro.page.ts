@@ -1,6 +1,5 @@
-// src/app/page/ahorro/ahorro.page.ts
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
-import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
+import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { CommonModule, formatDate, DatePipe, CurrencyPipe } from '@angular/common'; // Importar formatDate aquí
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 import {
@@ -15,16 +14,18 @@ import {
   IonGrid,
   IonProgressBar,
   IonModal,
-  IonItem, IonLabel, IonInput, IonDatetime, IonButtons, IonNote, IonSpinner, IonList, IonSelect, IonSelectOption,
+  IonItem, IonLabel, IonInput, IonDatetime, IonButtons, IonNote, IonSpinner, IonList, IonSelect, IonSelectOption, IonTextarea,
   LoadingController,
   IonMenuButton,
   AlertController,
-  ToastController
+  ToastController,
+  IonBadge
 } from '@ionic/angular/standalone';
 
 import { HeaderComponent } from '../../component/header/header.component';
 import { SideMenuComponent } from '../../component/side-menu/side-menu.component';
 import { Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { addIcons } from 'ionicons';
 import {
   addOutline,
@@ -36,21 +37,28 @@ import {
   closeOutline
 } from 'ionicons/icons';
 
-import { AccountService, Account } from '../../services/account.service'; // Account ahora tiene current_balance
-import { ClientAccount } from '../cuentas/cuentas.page'; // Importar ClientAccount
+import { AccountService, Account } from '../../services/account.service';
+import { ClientAccount } from '../cuentas/cuentas.page';
 
-// Import the 'map' operator
-import { map } from 'rxjs/operators';
+import { SavingsGoalService, SavingsGoal } from '../../services/savings-goal.service';
 
 
-interface ObjetivoAhorro {
-  id: string;
-  nombre: string;
-  montoMeta: number;
-  montoActual: number;
-  fechaLimite?: string | null;
-  progreso: number;
-  accountId: number; // Añadimos accountId para asociar el objetivo a una cuenta
+interface ClientSavingsGoal {
+  id?: number;
+  name: string;
+  target_amount: number;
+  saved_amount: number;
+  target_date?: string | null;
+  description?: string | null;
+  is_achieved: boolean;
+  progress: number; // Calculado en el frontend
+  account_id: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface BudgetAlert {
+  message: string;
 }
 
 @Component({
@@ -74,7 +82,8 @@ interface ObjetivoAhorro {
     IonGrid,
     IonProgressBar,
     IonModal,
-    IonItem, IonLabel, IonInput, IonDatetime, IonButtons, IonNote, IonSpinner, IonList, IonSelect, IonSelectOption,
+    IonItem, IonLabel, IonInput, IonDatetime, IonButtons, IonNote, IonSpinner, IonList, IonSelect, IonSelectOption, IonTextarea,
+    IonBadge,
 
     DatePipe,
     CurrencyPipe,
@@ -84,7 +93,7 @@ interface ObjetivoAhorro {
   ],
 })
 export class AhorroPage implements OnInit, OnDestroy {
-  objetivos: ObjetivoAhorro[] = [];
+  objetivos: ClientSavingsGoal[] = [];
   isLoading = true;
 
   @ViewChild('goalModal') goalModal!: IonModal;
@@ -95,16 +104,14 @@ export class AhorroPage implements OnInit, OnDestroy {
   isEditMode: boolean = false;
   goalForm: FormGroup;
   isSubmitting: boolean = false;
-  editingGoalId: string | null = null;
+  editingGoalId: number | null = null;
   fundsToAdd: number | null = null;
-  showDatePicker: boolean = false;
-  selectedGoal: ObjetivoAhorro | null = null;
+  selectedGoal: ClientSavingsGoal | null = null;
 
-  accounts: ClientAccount[] = []; // Lista de cuentas para el select
-  selectedAccountId: number | null = null; // ID de la cuenta seleccionada (para el select de filtro)
-  currentAccountDetails: ClientAccount | null = null; // Detalles de la cuenta actualmente seleccionada (del AccountService)
+  accounts: ClientAccount[] = [];
+  selectedAccountId: number | null = null;
+  currentAccountDetails: ClientAccount | null = null;
 
-  private storageKey = 'objetivosAhorro';
   private subscriptions: Subscription = new Subscription();
 
   constructor(
@@ -113,6 +120,7 @@ export class AhorroPage implements OnInit, OnDestroy {
     private alertController: AlertController,
     private toastController: ToastController,
     private accountService: AccountService,
+    private savingsGoalService: SavingsGoalService,
     private cdRef: ChangeDetectorRef
   ) {
     addIcons({
@@ -126,50 +134,45 @@ export class AhorroPage implements OnInit, OnDestroy {
     });
 
     this.goalForm = this.fb.group({
-      id: [''],
-      nombre: ['', [Validators.required, Validators.minLength(3)]],
-      montoMeta: [null, [Validators.required, Validators.min(0.01)]],
-      montoActual: [0, Validators.min(0)],
-      fechaLimite: [null],
-      accountId: [null, Validators.required] // Campo para asociar el objetivo a una cuenta
+      name: ['', [Validators.required, Validators.minLength(3)]],
+      target_amount: [null, [Validators.required, Validators.min(0.01)]],
+      saved_amount: [0, Validators.min(0)],
+      target_date: [null],
+      description: [null],
+      account_id: [null, Validators.required]
     });
   }
 
   async ngOnInit() {
-    // 1. Suscribirse a la cuenta seleccionada del servicio
     this.subscriptions.add(
       this.accountService.selectedAccount$.subscribe(async account => {
-        this.currentAccountDetails = account; // Actualizar los detalles de la cuenta principal
+        this.currentAccountDetails = account;
         if (account && account.id !== undefined) {
-          this.selectedAccountId = account.id; // Mantener el ID del select sincronizado
+          this.selectedAccountId = account.id;
           console.log('AhorroPage: Cuenta seleccionada desde servicio:', account.nombre);
+          if (!this.isEditMode && (this.goalForm.get('account_id')?.value === null || this.goalForm.get('account_id')?.value === undefined)) {
+            this.goalForm.patchValue({ account_id: this.selectedAccountId });
+          }
         } else {
           this.selectedAccountId = null;
           console.log('AhorroPage: Ninguna cuenta seleccionada desde servicio.');
         }
-        await this.loadObjetivosFromStorage(); // Recargar objetivos cuando cambia la cuenta
-        this.cdRef.detectChanges(); // Forzar la detección de cambios
+        await this.loadSavingsGoals();
+        this.cdRef.detectChanges();
       })
     );
 
-    // 2. Cargar la lista de todas las cuentas (para el ion-select en el futuro, si lo pones)
     await this.loadAccounts();
-
-    // NOTA: loadObjetivosFromStorage ya se llama dentro de la suscripción a selectedAccount$,
-    // lo que asegura que los objetivos se carguen solo para la cuenta correcta.
   }
 
   async ionViewWillEnter() {
-    // Recargar cuentas y objetivos cada vez que la vista entra para asegurar la frescura de los datos
     await this.loadAccounts();
-    // La suscripción a selectedAccount$ ya disparará loadObjetivosFromStorage
   }
 
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
   }
 
-  // --- Lógica de Carga de Cuentas (para el select, si lo usas) ---
   async loadAccounts() {
     this.subscriptions.add(
       this.accountService.getAccounts().pipe(
@@ -178,8 +181,7 @@ export class AhorroPage implements OnInit, OnDestroy {
             id: apiAcc.id,
             nombre: apiAcc.name,
             tipo: apiAcc.type,
-            // ===> CAMBIO CLAVE AQUÍ: Usar apiAcc.current_balance <===
-            saldo: apiAcc.current_balance ?? 0, // Usar apiAcc.current_balance
+            saldo: apiAcc.current_balance ?? 0,
             institucion: apiAcc.institution || '',
             fechaActualizacion: apiAcc.updated_at
           }));
@@ -187,12 +189,10 @@ export class AhorroPage implements OnInit, OnDestroy {
       ).subscribe({
         next: (clientAccounts: ClientAccount[]) => {
           this.accounts = clientAccounts;
-          // Si no hay cuenta seleccionada en el servicio, y hay cuentas disponibles,
-          // establece la primera como seleccionada (para que otras páginas reaccionen)
           if (!this.accountService.getSelectedAccount() && clientAccounts.length > 0) {
             this.accountService.setSelectedAccount(clientAccounts[0]);
           } else if (clientAccounts.length === 0) {
-            this.accountService.setSelectedAccount(null); // Si no hay cuentas, deselecciona
+            this.accountService.setSelectedAccount(null);
           }
         },
         error: async (err) => {
@@ -204,22 +204,7 @@ export class AhorroPage implements OnInit, OnDestroy {
     );
   }
 
-  // Este método ya no es para cambiar la cuenta principal, sino si tuvieras un select en AhorroPage
-  onAccountChange(event: any) {
-    const accountId = event.detail.value;
-    // Esto solo actualizaría el filtro local si tuvieras un select de cuenta en AhorroPage.
-    // La cuenta principal se gestiona vía AccountService.selectedAccount$.
-    console.log('AhorroPage: Cambió la cuenta seleccionada en el select local a:', accountId);
-    // Si quieres que cambiar el select en AhorroPage cambie la cuenta globalmente:
-    const selectedAccount = this.accounts.find(acc => acc.id === accountId);
-    if (selectedAccount) {
-      this.accountService.setSelectedAccount(selectedAccount);
-    }
-  }
-
-
-  // --- Lógica de Carga y Guardado de Objetivos ---
-  private async loadObjetivosFromStorage() {
+  private async loadSavingsGoals() {
     this.isLoading = true;
     const loading = await this.loadingCtrl.create({
       message: 'Cargando tus metas de ahorro...',
@@ -227,104 +212,67 @@ export class AhorroPage implements OnInit, OnDestroy {
     });
     await loading.present();
 
-    const currentAccountId = this.selectedAccountId;
-    if (currentAccountId === null) {
-      this.objetivos = []; // Si no hay cuenta seleccionada, no hay objetivos
-      this.isLoading = false;
-      await loading.dismiss();
-      return;
-    }
-
-    try {
-      const storedObjetivos = localStorage.getItem(this.storageKey);
-      if (storedObjetivos) {
-        const allObjetivos: ObjetivoAhorro[] = JSON.parse(storedObjetivos);
-        // Filtrar objetivos que pertenecen a la cuenta seleccionada
-        this.objetivos = allObjetivos.filter(obj => obj.accountId === currentAccountId).map((obj: ObjetivoAhorro) => {
-          const montoActualClamped = Math.min(obj.montoActual, obj.montoMeta);
-          return {
-            ...obj,
-            montoActual: montoActualClamped,
-            progreso: (obj.montoMeta > 0) ? (montoActualClamped / obj.montoMeta) * 100 : 0,
-          };
-        });
-        console.log(`Metas cargadas para cuenta ${currentAccountId} desde localStorage:`, this.objetivos.length);
-      } else {
-        this.objetivos = [];
-        console.log('No se encontraron metas en localStorage.');
-      }
-    } catch (error) {
-      console.error('Error al cargar metas:', error);
+    if (this.selectedAccountId === null) {
       this.objetivos = [];
-    } finally {
       this.isLoading = false;
       await loading.dismiss();
-    }
-  }
-
-  saveObjetivos() {
-    let allObjetivos: ObjetivoAhorro[] = [];
-    try {
-      const storedObjetivos = localStorage.getItem(this.storageKey);
-      if (storedObjetivos) {
-        allObjetivos = JSON.parse(storedObjetivos);
-      }
-    }
-    catch (e) {
-      console.error('Error al parsear objetivos de localStorage para guardar:', e);
-    }
-
-    const currentAccountId = this.selectedAccountId;
-    if (currentAccountId === null) {
-      console.warn('No hay cuenta seleccionada para guardar objetivos.');
+      this.cdRef.detectChanges();
       return;
     }
 
-    // Filtra objetivos de otras cuentas y añade/actualiza los de la cuenta actual
-    const updatedAllObjetivos = allObjetivos.filter(obj => obj.accountId !== currentAccountId);
-    this.objetivos.forEach(obj => {
-      // Asegura que el accountId se guarde con el objetivo
-      updatedAllObjetivos.push({ ...obj, accountId: currentAccountId });
-    });
-
-    localStorage.setItem(
-      this.storageKey,
-      JSON.stringify(updatedAllObjetivos.map((obj:any) => {
-        const { progreso, ...rest } = obj;
-        return rest;
-      }))
+    this.subscriptions.add(
+      this.savingsGoalService.getSavingsGoals(this.selectedAccountId).subscribe({
+        next: (apiGoals: SavingsGoal[]) => {
+          console.log('AhorroPage: Metas de ahorro recibidas de la API (raw):', apiGoals);
+          this.objetivos = apiGoals.map(goal => ({
+            ...goal,
+            progress: (Number(goal.target_amount) > 0) ? (Number(goal.saved_amount) / Number(goal.target_amount)) * 100 : 0,
+            saved_amount: Math.min(Number(goal.saved_amount), Number(goal.target_amount))
+          }));
+          console.log('AhorroPage: Metas de ahorro mapeadas para UI:', this.objetivos);
+          this.isLoading = false;
+          loading.dismiss();
+          this.cdRef.detectChanges();
+        },
+        error: async (err) => {
+          console.error('ERROR AhorroPage: Error al cargar metas de ahorro desde API:', err);
+          this.isLoading = false;
+          loading.dismiss();
+          const alert = await this.alertController.create({
+            header: 'Error de Carga',
+            message: err.message || 'No se pudieron cargar las metas de ahorro. Por favor, intente de nuevo o verifique su conexión.',
+            buttons: ['OK']
+          });
+          await alert.present();
+          this.cdRef.detectChanges();
+        }
+      })
     );
-    console.log('Metas guardadas en localStorage.');
   }
 
-  generateId(): string {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-  }
-
-  formatDate(date: string | null | undefined): string | null {
+  formatDateForDisplay(date: string | null | undefined): string | null {
     if (!date) {
       return null;
     }
     const dateObj = new Date(date);
     const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
-    return new Intl.DateTimeFormat('es-ES', options).format(dateObj); // Usar es-ES
+    return new Intl.DateTimeFormat('es-ES', options).format(dateObj);
   }
 
-  isDeadlinePassed(fechaLimite: string | null | undefined): boolean {
-    if (!fechaLimite) {
+  isDeadlinePassed(targetDate: string | null | undefined): boolean {
+    if (!targetDate) {
       return false;
     }
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const deadline = new Date(fechaLimite);
+    const deadline = new Date(targetDate);
     deadline.setHours(0, 0, 0, 0);
 
     return deadline < today;
   }
 
-  // --- Goal Modal Methods ---
-  async openGoalModal(mode: 'add' | 'edit', goal?: ObjetivoAhorro) {
+  async openGoalModal(mode: 'add' | 'edit', goal?: ClientSavingsGoal) {
     if (this.selectedAccountId === null) {
       await this.presentToast('Por favor, selecciona una cuenta antes de añadir o editar una meta de ahorro.', 'warning');
       return;
@@ -335,26 +283,24 @@ export class AhorroPage implements OnInit, OnDestroy {
     this.goalForm.reset();
     this.editingGoalId = null;
     this.isSubmitting = false;
-    this.showDatePicker = false;
 
-    // Asegura que el accountId del formulario se establezca correctamente
-    this.goalForm.get('accountId')?.setValue(this.selectedAccountId);
-    this.goalForm.get('accountId')?.disable(); // Para que el usuario no cambie la cuenta desde el modal
+    this.goalForm.get('account_id')?.setValue(this.selectedAccountId);
+    this.goalForm.get('account_id')?.disable();
 
     if (this.isEditMode && goal) {
-      this.editingGoalId = goal.id;
+      this.editingGoalId = goal.id || null;
       this.goalForm.patchValue({
-        id: goal.id,
-        nombre: goal.nombre,
-        montoMeta: goal.montoMeta,
-        montoActual: goal.montoActual,
-        fechaLimite: goal.fechaLimite ? new Date(goal.fechaLimite).toISOString() : null,
+        name: goal.name,
+        target_amount: goal.target_amount,
+        saved_amount: goal.saved_amount,
+        target_date: goal.target_date ? new Date(goal.target_date).toISOString() : null,
+        description: goal.description,
+        account_id: goal.account_id
       });
-      this.goalForm.get('montoActual')?.disable(); // montoActual solo se cambia vía "Add Funds"
+      this.goalForm.get('saved_amount')?.disable();
     } else {
-      this.goalForm.get('montoActual')?.enable();
-      this.goalForm.patchValue({ montoActual: 0 });
-      this.goalForm.get('id')?.setValue(this.generateId());
+      this.goalForm.get('saved_amount')?.enable();
+      this.goalForm.patchValue({ saved_amount: 0 });
     }
   }
 
@@ -364,68 +310,86 @@ export class AhorroPage implements OnInit, OnDestroy {
     this.isSubmitting = false;
     this.goalForm.reset();
     this.editingGoalId = null;
-    this.showDatePicker = false;
-    this.goalForm.get('montoActual')?.enable();
-    this.goalForm.get('accountId')?.enable(); // Re-habilitar accountId
+    this.goalForm.get('saved_amount')?.enable();
+    this.goalForm.get('account_id')?.enable();
   }
 
-  toggleDatePicker() {
-    this.showDatePicker = !this.showDatePicker;
-  }
+  onDateSelected() { /* No necesita lógica si ion-datetime está usando formControlName */ }
 
-  onDateSelected(event: any) {
-    this.showDatePicker = false;
-  }
 
   async submitGoalForm() {
     this.goalForm.markAllAsTouched();
     if (this.goalForm.invalid) {
-      await this.presentToast('Please fill all required fields correctly.', 'danger');
+      await this.presentToast('Por favor, completa todos los campos requeridos correctamente.', 'danger');
       return;
     }
 
     this.isSubmitting = true;
     const loading = await this.loadingCtrl.create({
-      message: this.isEditMode ? 'Saving changes...' : 'Adding goal...',
+      message: this.isEditMode ? 'Guardando cambios...' : 'Añadiendo meta...',
       spinner: 'crescent'
     });
     await loading.present();
 
     const formValue = this.goalForm.getRawValue();
-    const newGoal: ObjetivoAhorro = {
-      id: formValue.id || this.generateId(),
-      nombre: formValue.nombre,
-      montoMeta: parseFloat(formValue.montoMeta),
-      montoActual: parseFloat(formValue.montoActual),
-      fechaLimite: formValue.fechaLimite ? new Date(formValue.fechaLimite).toISOString() : null,
-      progreso: 0, // Se recalculará
-      accountId: formValue.accountId // Asegura que se pase el accountId
+
+    const goalToSend: SavingsGoal = {
+      name: formValue.name,
+      target_amount: parseFloat(formValue.target_amount),
+      saved_amount: parseFloat(formValue.saved_amount),
+      target_date: formValue.target_date ? formatDate(formValue.target_date, 'yyyy-MM-dd HH:mm:ss', 'en-US') : null,
+      description: formValue.description || null,
+      account_id: formValue.account_id,
+      is_achieved: (parseFloat(formValue.saved_amount) >= parseFloat(formValue.target_amount)),
     };
 
-    if (this.isEditMode && this.editingGoalId) {
-      const index = this.objetivos.findIndex(g => g.id === this.editingGoalId);
-      if (index !== -1) {
-        newGoal.montoActual = this.objetivos[index].montoActual; // Preservar montoActual
-        newGoal.progreso = (newGoal.montoActual / newGoal.montoMeta) * 100;
-        if (newGoal.progreso > 100) newGoal.progreso = 100;
+    if (this.isEditMode && this.editingGoalId !== null) {
+      const updatePayload: Partial<SavingsGoal> = {
+        name: goalToSend.name,
+        target_amount: goalToSend.target_amount,
+        target_date: goalToSend.target_date,
+        description: goalToSend.description,
+        account_id: goalToSend.account_id,
+        is_achieved: goalToSend.is_achieved
+      };
 
-        this.objetivos[index] = { ...newGoal };
-        await this.presentToast('Goal updated successfully!', 'success');
-      }
+      this.subscriptions.add(
+        this.savingsGoalService.updateSavingsGoal(this.editingGoalId, updatePayload as SavingsGoal).subscribe({
+          next: async (res) => {
+            console.log('AhorroPage: Meta actualizada con éxito:', res);
+            await loading.dismiss();
+            this.presentToast('¡Meta actualizada con éxito!', 'success');
+            this.closeGoalModal();
+            await this.loadSavingsGoals();
+          },
+          error: async (err) => {
+            console.error('ERROR AhorroPage: Error al actualizar meta:', err);
+            await loading.dismiss();
+            this.presentToast(err.message || 'No se pudo actualizar la meta. Intente de nuevo.', 'danger');
+          }
+        })
+      );
     } else {
-      this.objetivos.unshift(newGoal);
-      await this.presentToast('Goal added successfully!', 'success');
+      this.subscriptions.add(
+        this.savingsGoalService.createSavingsGoal(goalToSend).subscribe({
+          next: async (res) => {
+            console.log('AhorroPage: Meta añadida con éxito:', res);
+            await loading.dismiss();
+            this.presentToast('¡Meta añadida con éxito!', 'success');
+            this.closeGoalModal();
+            await this.loadSavingsGoals();
+          },
+          error: async (err) => {
+            console.error('ERROR AhorroPage: Error al añadir meta:', err);
+            await loading.dismiss();
+            this.presentToast(err.message || 'No se pudo añadir la meta. Intente de nuevo.', 'danger');
+          }
+        })
+      );
     }
-
-    this.saveObjetivos();
-    this.isSubmitting = false;
-    await loading.dismiss();
-    await this.closeGoalModal();
-    await this.loadObjetivosFromStorage(); // Recargar para actualizar la UI
   }
 
-  // --- Add Funds Modal Methods ---
-  openAddFundsModal(goal: ObjetivoAhorro) {
+  openAddFundsModal(goal: ClientSavingsGoal) {
     this.isAddFundsModalOpen = true;
     this.selectedGoal = goal;
     this.fundsToAdd = null;
@@ -441,72 +405,87 @@ export class AhorroPage implements OnInit, OnDestroy {
 
   async addFunds() {
     if (!this.selectedGoal || typeof this.fundsToAdd !== 'number' || this.fundsToAdd <= 0) {
-      await this.presentToast('Please enter a valid amount to add.', 'danger');
+      await this.presentToast('Por favor, introduce una cantidad válida para añadir.', 'danger');
       return;
     }
 
     this.isSubmitting = true;
     const loading = await this.loadingCtrl.create({
-      message: 'Adding funds...',
+      message: 'Añadiendo fondos...',
       spinner: 'crescent'
     });
     await loading.present();
 
-    const index = this.objetivos.findIndex(g => g.id === this.selectedGoal?.id);
-    if (index !== -1) {
-      const goal = this.objetivos[index];
-      goal.montoActual += this.fundsToAdd;
-      if (goal.montoActual > goal.montoMeta) {
-        goal.montoActual = goal.montoMeta;
-      }
-      goal.progreso = (goal.montoMeta > 0) ? (goal.montoActual / goal.montoMeta) * 100 : 0;
-      if (goal.progreso > 100) goal.progreso = 100;
-
-      this.objetivos[index] = { ...goal };
-      this.saveObjetivos();
-      await this.presentToast('Funds added successfully!', 'success');
-    } else {
-      await this.presentToast('Goal not found.', 'danger');
-    }
-
-    this.isSubmitting = false;
-    await loading.dismiss();
-    this.closeAddFundsModal();
-    await this.loadObjetivosFromStorage(); // Recargar para actualizar UI
+    // Pasar el account_id de la meta seleccionada en el payload
+    this.subscriptions.add(
+      this.savingsGoalService.addFundsToGoal(this.selectedGoal.id!, this.fundsToAdd, this.selectedGoal.account_id!).subscribe({ // <-- Se pasa account_id
+        next: async (res) => {
+          console.log('AhorroPage: Fondos añadidos con éxito:', res);
+          await loading.dismiss();
+          this.presentToast('¡Fondos añadidos con éxito!', 'success');
+          this.closeAddFundsModal();
+          await this.loadSavingsGoals();
+        },
+        error: async (err) => {
+          console.error('ERROR AhorroPage: Error al añadir fondos:', err);
+          await loading.dismiss();
+          this.presentToast(err.message || 'No se pudieron añadir los fondos. Intente de nuevo.', 'danger');
+        }
+      })
+    );
   }
 
-  // --- General Methods ---
-  async deleteGoal(goalId: string) {
+  async confirmDeleteGoal(goalId: number | undefined) {
+    if (goalId === undefined || goalId === null) {
+      await this.presentToast('No se pudo eliminar la meta: ID no válido.', 'danger');
+      return;
+    }
+
     const alert = await this.alertController.create({
-      header: 'Confirm Deletion',
-      message: 'Are you sure you want to delete this goal? This action cannot be undone.',
+      header: 'Confirmar Eliminación',
+      message: '¿Estás seguro de que deseas eliminar esta meta? Esta acción no se puede deshacer.',
       buttons: [
         {
-          text: 'Cancel',
+          text: 'Cancelar',
           role: 'cancel',
           handler: () => {
-            console.log('Delete cancelled');
+            console.log('Eliminación cancelada');
           },
         },
         {
-          text: 'Delete',
+          text: 'Eliminar',
           cssClass: 'danger',
           handler: async () => {
-            const loading = await this.loadingCtrl.create({
-              message: 'Deleting goal...',
-            });
-            await loading.present();
-            this.objetivos = this.objetivos.filter((obj) => obj.id !== goalId);
-            this.saveObjetivos();
-            await loading.dismiss();
-            await this.presentToast('Goal deleted successfully!', 'success');
-            await this.loadObjetivosFromStorage(); // Recargar para actualizar UI
+            await this.deleteGoal(goalId);
           },
         },
       ],
     });
-
     await alert.present();
+  }
+
+  async deleteGoal(goalId: number) {
+    const loading = await this.loadingCtrl.create({
+      message: 'Eliminando meta...',
+      spinner: 'crescent'
+    });
+    await loading.present();
+
+    this.subscriptions.add(
+      this.savingsGoalService.deleteSavingsGoal(goalId).subscribe({
+        next: async () => {
+          console.log('AhorroPage: Meta eliminada con éxito.');
+          await loading.dismiss();
+          this.presentToast('¡Meta eliminada con éxito!', 'success');
+          await this.loadSavingsGoals();
+        },
+        error: async (err) => {
+          console.error('ERROR AhorroPage: Error al eliminar meta:', err);
+          await loading.dismiss();
+          this.presentToast(err.message || 'No se pudo eliminar la meta. Intente de nuevo.', 'danger');
+        }
+      })
+    );
   }
 
   async presentToast(message: string, color: string = 'primary') {
