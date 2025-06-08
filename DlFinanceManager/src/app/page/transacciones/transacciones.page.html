@@ -3,173 +3,134 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="dashboard-layout">
-
-    <div class="first-content">
-      <app-side-menu></app-side-menu>
+  <div class="main-content">
+    <div class="transactions-header">
+      <div class="header-left">
+        <h1>Transacciones</h1>
+        <p>Gestiona y visualiza todas tus transacciones.</p>
+      </div>
+      <div class="header-right">
+        <input type="file" #fileInput style="display: none;" (change)="handleFileSelect($event)" accept=".xlsx">
+        <ion-button (click)="fileInput.click()">
+          <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
+          Importar Excel
+        </ion-button>
+        <ion-button (click)="openAddEditModal('add')">
+          <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+          Nueva Transacción
+        </ion-button>
+      </div>
     </div>
 
-    <div class="main-content">
-      <div *ngIf="isLoading" class="transactions-header skeleton-header">
-        <div class="header-left">
-          <div class="skeleton h-8 w-2/3 mb-2"></div>
-          <div class="skeleton h-4 w-1/2"></div>
-        </div>
-        <div class="header-right">
-          <div class="skeleton h-10 w-40 ml-2"></div>
-          <div class="skeleton h-10 w-40"></div>
-        </div>
-      </div>
-      <input type="file" #fileInput hidden accept=".xlsx" (change)="handleFileSelect($event)">
+    <div class="transactions-filter">
+      <ion-searchbar
+        class="search-bar"
+        placeholder="Buscar transacción..."
+        (ionChange)="onSearchChange($event)"
+      ></ion-searchbar>
 
-      <div *ngIf="!isLoading" class="transactions-header">
-        <div class="header-left">
-          <h1>Transacciones</h1>
-          <p class="text-muted-foreground">Gestiona tus ingresos y gastos de la cuenta seleccionada.</p>
-        </div>
-        <div class="header-right">
-          <ion-button fill="outline" (click)="fileInput.click()">
-            <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
-            Importar Excel
-          </ion-button>
-          <ion-button color="primary" (click)="openAddEditModal('add')">
-            <ion-icon name="add-circle-outline" slot="start"></ion-icon>
-            Añadir Transacción
-          </ion-button>
-        </div>
-      </div>
+      <ion-select
+        class="category-filter"
+        aria-label="Categoría"
+        interface="popover"
+        placeholder="Todas las categorías"
+        (ionChange)="onCategorySelectChange($event)"
+      >
+        <ion-select-option value="all">Todas las categorías</ion-select-option>
+        <ion-select-option *ngFor="let category of categories" [value]="category.name">{{ category.name }}</ion-select-option>
+      </ion-select>
 
-      <div *ngIf="isLoading" class="transactions-filter skeleton-filter">
-        <div class="search-bar">
-          <div class="skeleton h-12 w-full"></div>
-        </div>
-        <div class="category-filter">
-          <div class="skeleton h-12 w-full"></div>
-        </div>
-      </div>
+      <ion-segment [value]="selectedTypeFilter" (ionChange)="onTypeSegmentChange($event)">
+        <ion-segment-button value="all">
+          <ion-label>Todo</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="income">
+          <ion-label>Ingresos</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="expense">
+          <ion-label>Gastos</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="transfer">
+          <ion-label>Transferencias</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </div>
 
-      <div *ngIf="!isLoading" class="transactions-filter">
-        <div class="search-bar">
-          <ion-searchbar placeholder="Buscar transacciones..." (ionInput)="onSearchChange($event)"></ion-searchbar>
-        </div>
-        <div class="category-filter">
-          <ion-select placeholder="Todas las categorías" [(ngModel)]="selectedCategoryFilter" (ionChange)="onCategorySelectChange($event)">
-            <ion-select-option value="all">Todas las categorías</ion-select-option>
-            <ion-select-option *ngFor="let category of categories" [value]="category.name">{{ category.name }}</ion-select-option>
-          </ion-select>
-        </div>
-        <div class="type-filter">
-          <ion-segment mode="md" [(ngModel)]="selectedTypeFilter" (ionChange)="onTypeSegmentChange($event)">
-            <ion-segment-button value="all">
-              <ion-label>Todas</ion-label>
-            </ion-segment-button>
-            <ion-segment-button value="income">
-              <ion-label>Ingresos</ion-label>
-            </ion-segment-button>
-            <ion-segment-button value="expense">
-              <ion-label>Gastos</ion-label>
-            </ion-segment-button>
-            <ion-segment-button value="transfer">
-              <ion-label>Transferencias</ion-label>
-            </ion-segment-button>
-          </ion-segment>
-        </div>
-      </div>
+    <div *ngIf="isLoading" class="transactions-list skeleton-list">
+      <ion-grid class="transacciones-grid">
+        <ion-row class="header-row">
+          <ion-col class="col-type"><div class="skeleton h-4 w-1/2"></div></ion-col>
+          <ion-col class="col-account"><div class="skeleton h-4 w-3/4"></div></ion-col> <ion-col class="col-date"><div class="skeleton h-4 w-3/4"></div></ion-col>
+          <ion-col class="col-category"><div class="skeleton h-4 w-2/3"></div></ion-col>
+          <ion-col class="col-description"><div class="skeleton h-4 w-full"></div></ion-col>
+          <ion-col class="col-amount"><div class="skeleton h-4 w-1/2"></div></ion-col>
+          <ion-col class="col-actions"><div class="skeleton h-4 w-1/2"></div></ion-col>
+        </ion-row>
+        <ion-row *ngFor="let i of [1,2,3,4,5]">
+          <ion-col class="col-type"><div class="skeleton h-4 w-2/3"></div></ion-col>
+          <ion-col class="col-account"><div class="skeleton h-4 w-full"></div></ion-col> <ion-col class="col-date"><div class="skeleton h-4 w-full"></div></ion-col>
+          <ion-col class="col-category"><div class="skeleton h-4 w-3/4"></div></ion-col>
+          <ion-col class="col-description"><div class="skeleton h-4 w-full"></div></ion-col>
+          <ion-col class="col-amount"><div class="skeleton h-4 w-2/3"></div></ion-col>
+          <ion-col class="col-actions"><div class="skeleton h-8 w-full"></div></ion-col>
+        </ion-row>
+      </ion-grid>
+    </div>
 
-      <ion-card *ngIf="!isLoading && selectedAccountId === null" class="shadow-md border-2 border-dashed border-muted-foreground/30 col-span-full">
-        <ion-card-content class="p-10 text-center flex flex-col items-center">
-          <div style="width: 180px; height: 120px; background-color: #ddd; border-radius: 8px; margin-bottom: 1.5rem;"></div>
-          <h3 class="text-xl font-semibold text-muted-foreground mb-2">Ninguna cuenta seleccionada</h3>
-          <p class="text-sm text-muted-foreground max-w-xs">
-            Por favor, selecciona una cuenta en la sección "Cuentas" para ver y añadir transacciones.
-          </p>
-        </ion-card-content>
-      </ion-card>
+    <div *ngIf="!isLoading && filteredTransactions.length > 0" class="transactions-list">
+      <ion-grid class="transacciones-grid">
+        <ion-row class="header-row">
+          <ion-col size="auto" class="col-type">Tipo</ion-col>
+          <ion-col size="auto" class="col-account">Cuenta</ion-col> <ion-col size="auto" class="col-date">Fecha</ion-col>
+          <ion-col size="auto" class="col-category">Categoría</ion-col>
+          <ion-col>Descripción</ion-col>
+          <ion-col size="auto" class="col-amount">Monto</ion-col>
+          <ion-col size="auto" class="col-actions">Acciones</ion-col>
+        </ion-row>
 
-      <div *ngIf="isLoading && selectedAccountId !== null" class="transactions-list skeleton-list">
-        <ion-grid class="transacciones-grid">
-          <ion-row class="header-row">
-            <ion-col><div class="skeleton h-4 w-3/4"></div></ion-col>
-            <ion-col><div class="skeleton h-4 w-3/4"></div></ion-col>
-            <ion-col><div class="skeleton h-4 w-3/4"></div></ion-col>
-            <ion-col><div class="skeleton h-4 w-full"></div></ion-col>
-            <ion-col class="ion-text-right"><div class="skeleton h-4 w-3/4"></div></ion-col>
-            <ion-col class="ion-text-right"><div class="skeleton h-4 w-3/4"></div></ion-col>
-          </ion-row>
-          <ion-row *ngFor="let i of [1,2,3,4,5,6]">
-            <ion-col><div class="skeleton h-4 w-full"></div></ion-col>
-            <ion-col><div class="skeleton h-4 w-full"></div></ion-col>
-            <ion-col><div class="skeleton h-4 w-full"></div></ion-col>
-            <ion-col><div class="skeleton h-4 w-full"></div></ion-col>
-            <ion-col class="ion-text-right"><div class="skeleton h-4 w-full"></div></ion-col>
-            <ion-col class="ion-text-right"><div class="skeleton h-4 w-full"></div></ion-col>
-          </ion-row>
-        </ion-grid>
-      </div>
-
-      <div *ngIf="!isLoading && selectedAccountId !== null" class="transactions-list">
-        <ion-grid class="transacciones-grid">
-          <ion-row class="header-row">
-            <ion-col class="col-type"><strong>Tipo</strong></ion-col>
-            <ion-col class="col-date"><strong>Fecha</strong></ion-col>
-            <ion-col class="col-account"><strong>Cuenta</strong></ion-col> <ion-col class="col-category"><strong>Categoría</strong></ion-col>
-            <ion-col class="col-description"><strong>Descripción</strong></ion-col>
-            <ion-col class="col-amount ion-text-right"><strong>Cantidad</strong></ion-col>
-            <ion-col class="col-payee"><strong>Beneficiario</strong></ion-col> <ion-col class="col-actions ion-text-right"><strong>Acciones</strong></ion-col>
-          </ion-row>
-
-          <ion-row *ngFor="let transaccion of filteredTransactions">
-            <ion-col class="col-type">
-              <ion-icon [name]="getIconForTransactionType(transaccion.type)" [color]="getAmountColor(transaccion.type)"></ion-icon>
-              <span class="ml-1 capitalize">{{ transaccion.type }}</span>
-            </ion-col>
-            <ion-col class="col-date">{{ formatDate(transaccion.transaction_date) }}</ion-col> <ion-col class="col-account">{{ transaccion.accountName }}</ion-col> <ion-col class="col-category">{{ transaccion.categoryName }}</ion-col>
-            <ion-col class="col-description">{{ transaccion.description }}</ion-col>
-            <ion-col class="col-amount ion-text-right" [ngClass]="{'expense': transaccion.type === 'expense', 'income': transaccion.type === 'income'}">
-              {{ transaccion.amount | currency:'EUR':'symbol':'1.2-2' }}
-            </ion-col>
-            <ion-col class="col-payee">{{ transaccion.payee || '-' }}</ion-col> <ion-col class="col-actions ion-text-right">
-            <ion-button size="small" [id]="'popover-trigger-' + transaccion.id">
-              <ion-icon name="ellipsis-vertical"></ion-icon>
-            </ion-button>
-
-            <ion-popover [trigger]="'popover-trigger-' + transaccion.id" [dismissOnSelect]="true">
-              <ng-template>
-                <ion-content>
-                  <ion-list>
-                    <ion-item button (click)="openAddEditModal('edit', transaccion)">
-                      <ion-icon slot="start" name="pencil-outline"></ion-icon>
-                      Editar
-                    </ion-item>
-                    <ion-item button color="danger" (click)="deleteTransaction(transaccion.id)">
-                      <ion-icon slot="start" name="trash-outline"></ion-icon>
-                      Eliminar
-                    </ion-item>
-                  </ion-list>
-                </ion-content>
-              </ng-template>
-            </ion-popover>
+        <ion-row *ngFor="let transaction of filteredTransactions">
+          <ion-col size="auto" class="col-type">
+            <ion-icon [name]="getIconForTransactionType(transaction.type)" [color]="getAmountColor(transaction.type)"></ion-icon>
           </ion-col>
-          </ion-row>
-        </ion-grid>
+          <ion-col size="auto" class="col-account"> {{ transaction.accountName }}
+          </ion-col>
+          <ion-col size="auto" class="col-date">
+            {{ formatDate(transaction.transaction_date) }}
+          </ion-col>
+          <ion-col size="auto" class="col-category">
+            {{ transaction.categoryName }}
+          </ion-col>
+          <ion-col class="col-description">
+            {{ transaction.description }}
+          </ion-col>
+          <ion-col size="auto" class="col-amount" [ngClass]="getAmountColor(transaction.type)">
+            {{ transaction.amount | currency:'EUR':'symbol':'1.2-2' }}
+          </ion-col>
+          <ion-col size="auto" class="col-actions">
+            <ion-button fill="clear" size="small" (click)="openAddEditModal('edit', transaction)">
+              <ion-icon slot="icon-only" name="pencil-outline"></ion-icon>
+            </ion-button>
+            <ion-button fill="clear" color="danger" size="small" (click)="deleteTransaction(transaction.id)">
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </div>
 
-        <div *ngIf="!isLoading && filteredTransactions.length === 0" class="no-transactions">
-          <p>No se encontraron transacciones. ¡Añade tu primera transacción!</p>
-          <ion-button color="primary" (click)="openAddEditModal('add')">
-            <ion-icon name="add-circle-outline" slot="start"></ion-icon>
-            Añadir Transacción
-          </ion-button>
-        </div>
-      </div>
-
+    <div *ngIf="!isLoading && filteredTransactions.length === 0" class="no-transactions">
+      <p>No se encontraron transacciones para la cuenta seleccionada o con los filtros aplicados.</p>
+      <ion-button (click)="openAddEditModal('add')">
+        <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+        Añadir Primera Transacción
+      </ion-button>
     </div>
   </div>
-
   <ion-modal #addEditModal [isOpen]="isModalOpen" (didDismiss)="closeTransactionModal()">
     <ng-template>
       <ion-header class="ion-no-border">
         <ion-toolbar>
-          <ion-title>{{ isEditMode ? 'Editar Transacción' : 'Añadir Nueva Transacción' }}</ion-title>
+          <ion-title>{{ isEditMode ? 'Editar Transacción' : 'Nueva Transacción' }}</ion-title>
           <ion-buttons slot="end">
             <ion-button (click)="closeTransactionModal()">
               <ion-icon name="close-outline"></ion-icon>
@@ -181,10 +142,20 @@
         <form [formGroup]="transactionForm" (ngSubmit)="saveTransaction()">
           <ion-list lines="none" class="form-list">
             <ion-item class="form-item">
-              <ion-label position="floating">Tipo</ion-label>
+              <ion-label position="floating">Cuenta</ion-label>
+              <ion-select formControlName="account_id" interface="popover" placeholder="Selecciona una cuenta">
+                <ion-select-option *ngFor="let acc of accounts" [value]="acc.id">{{ acc.nombre }}</ion-select-option>
+              </ion-select>
+              <ion-note color="danger" *ngIf="transactionForm.get('account_id')?.invalid && (transactionForm.get('account_id')?.dirty || transactionForm.get('account_id')?.touched)">
+                La cuenta es requerida.
+              </ion-note>
+            </ion-item>
+
+            <ion-item class="form-item">
+              <ion-label position="floating">Tipo de Transacción</ion-label>
               <ion-select formControlName="type" interface="popover">
-                <ion-select-option value="income">Ingreso</ion-select-option>
                 <ion-select-option value="expense">Gasto</ion-select-option>
+                <ion-select-option value="income">Ingreso</ion-select-option>
                 <ion-select-option value="transfer">Transferencia</ion-select-option>
               </ion-select>
               <ion-note color="danger" *ngIf="transactionForm.get('type')?.invalid && (transactionForm.get('type')?.dirty || transactionForm.get('type')?.touched)">
@@ -194,26 +165,22 @@
 
             <ion-item class="form-item">
               <ion-label position="floating">Fecha</ion-label>
-              <ion-datetime formControlName="transaction_date" presentation="date" [showDefaultButtons]="true" displayFormat="MMM DD, YYYY"></ion-datetime>
+              <ion-datetime
+                formControlName="transaction_date"
+                presentation="date"
+                displayFormat="DD MMM隷"
+                pickerFormat="DD MMM隷"
+                [max]="todayIsoDate"
+              ></ion-datetime>
               <ion-note color="danger" *ngIf="transactionForm.get('transaction_date')?.invalid && (transactionForm.get('transaction_date')?.dirty || transactionForm.get('transaction_date')?.touched)">
                 La fecha es requerida.
               </ion-note>
             </ion-item>
 
             <ion-item class="form-item">
-              <ion-label position="floating">Cuenta</ion-label>
-              <ion-select formControlName="account_id" interface="popover" placeholder="Seleccionar una Cuenta">
-                <ion-select-option *ngFor="let acc of accounts" [value]="acc.id">{{ acc.nombre }}</ion-select-option>
-              </ion-select>
-              <ion-note color="danger" *ngIf="transactionForm.get('account_id')?.invalid && (transactionForm.get('account_id')?.dirty || transactionForm.get('account_id')?.touched)">
-                La cuenta es requerida.
-              </ion-note>
-            </ion-item>
-
-            <ion-item class="form-item">
               <ion-label position="floating">Categoría</ion-label>
-              <ion-select formControlName="category_id" interface="popover" placeholder="Seleccionar Categoría">
-                <ion-select-option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</ion-select-option>
+              <ion-select formControlName="category_id" interface="popover" placeholder="Selecciona una categoría">
+                <ion-select-option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</ion-select-option>
               </ion-select>
               <ion-note color="danger" *ngIf="transactionForm.get('category_id')?.invalid && (transactionForm.get('category_id')?.dirty || transactionForm.get('category_id')?.touched)">
                 La categoría es requerida.
@@ -229,10 +196,10 @@
             </ion-item>
 
             <ion-item class="form-item">
-              <ion-label position="floating">Cantidad (€)</ion-label>
+              <ion-label position="floating">Monto (€)</ion-label>
               <ion-input formControlName="amount" type="number" step="0.01"></ion-input>
               <ion-note color="danger" *ngIf="transactionForm.get('amount')?.invalid && (transactionForm.get('amount')?.dirty || transactionForm.get('amount')?.touched)">
-                La cantidad es requerida y debe ser un número positivo.
+                El monto es requerido y debe ser mayor que 0.
               </ion-note>
             </ion-item>
 
@@ -245,7 +212,6 @@
               <ion-label position="floating">Notas (Opcional)</ion-label>
               <ion-input formControlName="notes" type="text"></ion-input>
             </ion-item>
-
           </ion-list>
 
           <ion-button expand="block" type="submit" class="ion-margin-top" [color]="isEditMode ? 'primary' : 'primary'">
@@ -256,5 +222,4 @@
       </ion-content>
     </ng-template>
   </ion-modal>
-
 </ion-content>

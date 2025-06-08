@@ -21,7 +21,7 @@ import {
   IonBadge
 } from '@ionic/angular/standalone';
 import { HeaderComponent } from "../../component/header/header.component";
-import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
+// Eliminado: import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
 import { addIcons } from 'ionicons';
 import {
   addOutline,
@@ -96,7 +96,7 @@ interface BudgetAlert {
     PercentPipe,
 
     HeaderComponent,
-    SideMenuComponent,
+    // Eliminado: SideMenuComponent,
   ]
 })
 export class PresupuestosPage implements OnInit, OnDestroy {
@@ -210,7 +210,7 @@ export class PresupuestosPage implements OnInit, OnDestroy {
       })
     );
     await this.loadAccounts();
-    console.log('PresupuestosPage: Cuentas cargadas para el select del formulario.');
+    console.log('PresupuestosPage: Cuentas cargadas para el select.');
   }
 
   ionViewWillEnter() {
@@ -387,6 +387,11 @@ export class PresupuestosPage implements OnInit, OnDestroy {
   }
 
   async openBudgetModal(mode: 'add' | 'edit', budget?: ClientBudget) {
+    if (this.selectedAccountId === null) {
+      await this.presentToast('Por favor, selecciona una cuenta antes de añadir o editar un presupuesto.', 'warning');
+      return;
+    }
+
     this.isModalOpen = true;
     this.isEditMode = mode === 'edit';
     this.budgetForm.reset();

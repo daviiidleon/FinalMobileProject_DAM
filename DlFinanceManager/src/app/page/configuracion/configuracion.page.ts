@@ -24,7 +24,7 @@ import {
   AlertController
 } from '@ionic/angular/standalone';
 import { HeaderComponent } from "../../component/header/header.component";
-import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
+// ELIMINADO: import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
 import { addIcons } from 'ionicons';
 import { personCircleOutline, mailOutline, colorPaletteOutline, notificationsOutline, lockClosedOutline, saveOutline, logOutOutline, cameraOutline } from 'ionicons/icons';
 
@@ -60,7 +60,7 @@ import { environment } from 'src/environments/environment';
     IonItem,
     IonInput,
     HeaderComponent,
-    SideMenuComponent,
+    // ELIMINADO: SideMenuComponent,
   ]
 })
 export class ConfiguracionPage implements OnInit {

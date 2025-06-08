@@ -36,7 +36,7 @@ import {
   IonSpinner
 } from '@ionic/angular/standalone';
 import { HeaderComponent } from "../../component/header/header.component";
-import { SideMenuComponent } from "../../component/side-menu/side-menu.component"; // Asegúrate de la ruta correcta
+// Removed: import { SideMenuComponent } from "../../component/side-menu/side-menu.component"; // Asegúrate de la ruta correcta
 import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
 import {
@@ -76,7 +76,8 @@ export interface ClientAccount {
     FormsModule,
     ReactiveFormsModule,
     HeaderComponent,
-    SideMenuComponent,
+    // Removed: SideMenuComponent,
+
     RouterLink,
 
     IonContent,

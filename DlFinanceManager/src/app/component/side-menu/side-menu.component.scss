@@ -1,43 +1,4 @@
-:host {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  width: var(--side-menu-expanded-width, 250px);
-  background-color: var(--global-menu-bg);
-  color: var(--global-menu-text-color);
-  border-right: 1px solid var(--global-menu-border-color);
-  transition: width 0.3s ease-in-out;
-
-  &.collapsed {
-    width: var(--side-menu-collapsed-width, 64px);
-
-    // Centrar el logo en el header cuando colapsado
-    .logo-area {
-      justify-content: center;
-      .header-logo-image {
-        margin: 0 auto;
-        max-width: var(--side-menu-collapsed-width) - 20px;
-      }
-    }
-  }
-
-  @media (max-width: 991px) {
-    position: absolute;
-    z-index: 9999;
-    width: 100%;
-    max-width: 260px;
-    transition: transform 0.3s ease-in-out;
-    transform: translateX(0);
-    background-color: var(--global-menu-bg);
-    border-right: none;
-
-    &.collapsed {
-      transform: translateX(-100%);
-    }
-  }
-}
-
-/* Global Variables */
+/* --- Inlined CSS Variables for Side Menu Component --- */
 :host {
   --global-menu-bg: #faf6e9;
   --global-menu-text-color: #3a3a3a;
@@ -50,10 +11,55 @@
   --side-menu-header-height: 70px;
   --side-menu-footer-padding: 8px;
   --side-menu-item-height: 48px;
-  --side-menu-expanded-width: 220px;
-  --side-menu-collapsed-width: 64px; // Ancho para solo iconos
-  // Define el tamaño del "slot" de iconos para alinear todo
-  --icon-slot-size: 32px; // Un poco más grande para darles espacio para centrarse
+  --side-menu-expanded-width: 300px; /* Mantener este, pero el control final lo tendrá ion-menu */
+  --side-menu-collapsed-width: 64px;
+  --icon-slot-size: 32px;
+
+  /* Asegura que el host del componente (app-side-menu) ocupe la altura completa y el ancho dado por ion-menu */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%; /* ¡IMPORTANTE! Ocupar el 100% del ancho que le da el ion-menu padre */
+  background-color: var(--global-menu-bg);
+  color: var(--global-menu-text-color);
+  border-right: 1px solid var(--global-menu-border-color);
+  transition: width 0.3s ease-in-out;
+
+  &.collapsed {
+    width: var(--side-menu-collapsed-width);
+
+    .logo-area {
+      justify-content: center;
+      .header-logo-image {
+        margin: 0 auto;
+        max-width: var(--side-menu-collapsed-width) - 20px;
+      }
+    }
+  }
+
+  /*
+    Referencia al ion-menu padre. NO ES RECOMENDADO ESTABLECER --width AQUÍ,
+    ya que el --width es para el ion-menu, no para su contenido.
+    La regla en app.component.scss es más adecuada.
+    Si de todas formas quieres influir desde aquí, es un hack y podría tener efectos inesperados:
+  */
+  // ion-menu[menu-id="main-menu"] {
+  //   --width: var(--side-menu-expanded-width) !important;
+  //   @media (max-width: 991px) {
+  //       --width: 100vw !important; /* Si quieres que ocupe todo el ancho de la pantalla móvil */
+  //       max-width: 300px !important; /* Y un max-width para que sea un cajón, no pantalla completa */
+  //   }
+  // }
+
+  /* Comportamiento en móvil: */
+  @media (max-width: 991px) {
+    width: 100%; /* El SideMenuComponent siempre debe ocupar el 100% del ancho que le dé su contenedor (ion-menu) */
+    transform: none !important;
+    position: relative !important;
+    border-right: none !important;
+    max-width: 280px; /* Esto no es para el 'cajón' del menú, sino para limitar tu componente si ion-menu no lo hace */
+    /* Si el ion-menu ya define el max-width, esto podría ser redundante o generar conflicto */
+  }
 }
 
 /* Header */
@@ -89,19 +95,6 @@
       transition: max-width 0.3s ease-in-out, margin-right 0.3s ease-in-out;
     }
   }
-
-  .collapse-toggle-button {
-    --color: var(--global-menu-icon-color);
-    font-size: 20px;
-    min-width: 40px;
-    margin-left: auto;
-  }
-
-  @media (max-width: 991px) {
-    .collapse-toggle-button {
-      display: none;
-    }
-  }
 }
 
 /* Content */
@@ -126,6 +119,7 @@
   background-color: var(--global-menu-bg);
   padding: var(--side-menu-footer-padding) 8px;
   box-shadow: none;
+  margin-top: auto;
 
   ion-list.footer-elements-list {
     --background: var(--global-menu-bg);
@@ -168,12 +162,12 @@ ion-item {
     }
   }
 
-  ion-icon[slot="start"] { /* Dirigimos al icono dentro del slot start */
+  ion-icon[slot="start"] {
     color: var(--global-menu-icon-color);
     font-size: 20px;
     margin-right: 16px;
-    min-width: var(--icon-slot-size); /* Asegura que el slot del icono tenga un ancho fijo */
-    text-align: center; /* Centra el icono dentro de su min-width */
+    min-width: var(--icon-slot-size);
+    text-align: center;
     transition: margin-right 0.2s ease-in-out;
   }
 
@@ -189,16 +183,15 @@ ion-item {
     padding-left: 0;
   }
 
-  /* Estado colapsado para ion-item */
   :host(.collapsed) & {
-    --padding-start: calc((var(--side-menu-collapsed-width) - var(--icon-slot-size)) / 2); /* Calcula padding para centrar el icono */
-    --padding-end: 0; // Opcional, pero para evitar conflictos con padding-start
-    margin: 4px auto; // Centra el ítem
-    width: var(--side-menu-collapsed-width); // Asegura el ancho del ítem
-    justify-content: flex-start; // Los iconos están en slot="start", entonces alineamos al inicio y el padding los empuja
+    --padding-start: calc((var(--side-menu-collapsed-width) - var(--icon-slot-size)) / 2);
+    --padding-end: 0;
+    margin: 4px auto;
+    width: var(--side-menu-collapsed-width);
+    justify-content: flex-start;
 
     ion-icon[slot="start"] {
-      margin-right: 0; /* Elimina margen derecho al colapsar */
+      margin-right: 0;
     }
 
     .menu-item-label {
@@ -224,7 +217,7 @@ ion-item {
   background-color: transparent !important;
   --background: transparent;
   transition: background-color 0.2s ease-in-out;
-  min-height: var(--side-menu-item-height); /* Darle la misma altura que los ion-item */
+  min-height: var(--side-menu-item-height);
 
 
   &:hover {
@@ -235,8 +228,8 @@ ion-item {
     color: var(--global-menu-icon-color);
     font-size: 20px;
     margin-right: 16px;
-    min-width: var(--icon-slot-size); /* Mismo tamaño de slot para iconos */
-    text-align: center; /* Centra el icono */
+    min-width: var(--icon-slot-size);
+    text-align: center;
     transition: margin-right 0.2s ease-in-out;
   }
 
@@ -254,13 +247,13 @@ ion-item {
   &.user-profile-item {
     padding-left: 16px;
     .user-avatar {
-      width: var(--icon-slot-size); /* El avatar ocupa el mismo ancho que el slot de icono */
-      height: var(--icon-slot-size); /* Altura igual */
+      width: var(--icon-slot-size);
+      height: var(--icon-slot-size);
       margin-right: 12px;
       border: 1px solid var(--global-menu-border-color);
       min-width: var(--icon-slot-size);
       transition: margin-right 0.2s ease-in-out;
-      display: flex; /* Añadir flex para centrar contenido del avatar si fuera necesario */
+      display: flex;
       justify-content: center;
       align-items: center;
     }
@@ -268,7 +261,7 @@ ion-item {
 
   /* Ajuste para el estado colapsado de las acciones del footer */
   :host(.collapsed) & {
-    padding-left: calc((var(--side-menu-collapsed-width) - var(--icon-slot-size)) / 2); /* Calcula padding para centrar */
+    padding-left: calc((var(--side-menu-collapsed-width) - var(--icon-slot-size)) / 2);
     padding-right: 0;
     margin: 4px auto;
     width: var(--side-menu-collapsed-width);

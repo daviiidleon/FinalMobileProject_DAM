@@ -47,12 +47,14 @@ ion-title {
 }
 
 ion-menu-button{
-  display: block;
+  display: block; /* Muestra el botón de menú siempre */
   margin-right: 1rem;
 }
 
+/* Si quisieras que el botón de menú se ocultara en escritorio:
 @media (min-width: 768px) {
   ion-menu-button {
-    display: none;
+    display: none; // Oculta el botón de menú en escritorio
   }
 }
+*/

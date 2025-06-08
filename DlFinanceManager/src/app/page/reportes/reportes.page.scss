@@ -14,6 +14,8 @@ ion-content {
   --background: var(--page-background);
 }
 
+/* ELIMINADO: .dashboard-layout y .first-content */
+/*
 .dashboard-layout {
   display: flex;
   height: 100%;
@@ -22,14 +24,16 @@ ion-content {
 .first-content {
   width: 15%;
   @media (max-width: 991px) {
-    display: none; // Ocultar en móvil, se maneja con menú hamburguesa
+    display: none;
   }
 }
+*/
 
 .main-content {
   flex-grow: 1;
   padding: 24px;
   overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .page-title {

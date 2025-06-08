@@ -10,7 +10,7 @@ import { addIcons } from 'ionicons';
 import { documentTextOutline, statsChartOutline } from 'ionicons/icons';
 
 import { HeaderComponent } from "../../component/header/header.component";
-import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
+// ELIMINADO: import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
 
 // Importamos el servicio generador y TU servicio de transacciones
 import { ReportGeneratorService } from '../../services/report-generator.service';
@@ -22,7 +22,8 @@ import { TransactionService, Transaction } from '../../services/transaction.serv
   styleUrls: ['./reportes.page.scss'],
   standalone: true,
   imports: [
-    CommonModule, FormsModule, HeaderComponent, SideMenuComponent,
+    CommonModule, FormsModule, HeaderComponent,
+    // ELIMINADO: SideMenuComponent,
     IonContent, IonHeader, IonTitle, IonToolbar, IonIcon
   ]
 })

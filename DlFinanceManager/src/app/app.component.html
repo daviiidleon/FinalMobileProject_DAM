@@ -1,3 +1,11 @@
 <ion-app>
-  <ion-router-outlet></ion-router-outlet>
+  <!-- Este es tu menú lateral GLOBAL -->
+  <!-- Aquí incluimos el SideMenuComponent como el contenido de ion-menu -->
+  <ion-menu side="start" menuId="main-menu" contentId="main-content">
+    <app-side-menu></app-side-menu>
+  </ion-menu>
+
+  <!-- Esta es el área donde se cargan las páginas de tu aplicación.
+       Es importante que tenga el id="main-content" para que el ion-menu lo controle. -->
+  <ion-router-outlet id="main-content"></ion-router-outlet>
 </ion-app>

@@ -3,78 +3,72 @@
 </ion-header>
 
 <ion-content>
-  <div class="dashboard-layout">
-    <div class="first-content">
-      <app-side-menu></app-side-menu>
+  <div class="main-content">
+    <div *ngIf="!isLoading" class="page-title">Predicciones y Sugerencias</div>
+    <div *ngIf="isLoading" class="page-title skeleton-title">
+      <div class="skeleton h-6 w-60"></div>
     </div>
 
-    <div class="main-content">
-      <div *ngIf="!isLoading" class="page-title">Predicciones y Sugerencias</div>
-      <div *ngIf="isLoading" class="page-title skeleton-title">
-        <div class="skeleton h-6 w-60"></div>
-      </div>
-
-      <div class="sugerencias-container">
-        <ng-container *ngIf="isLoading">
-          <div class="sugerencia-card skeleton-card" *ngFor="let item of [1, 2, 3]">
-            <div class="skeleton h-5 w-3/4 mb-4"></div>
-            <div class="skeleton h-4 w-full mb-2"></div>
-            <div class="skeleton h-4 w-1/2 mb-4"></div>
-            <div class="sugerencia-actions skeleton-actions">
-              <div class="skeleton h-8 w-20"></div>
-              <div class="skeleton h-8 w-20"></div>
-            </div>
+    <div class="sugerencias-container">
+      <ng-container *ngIf="isLoading">
+        <div class="sugerencia-card skeleton-card" *ngFor="let item of [1, 2, 3]">
+          <div class="skeleton h-5 w-3/4 mb-4"></div>
+          <div class="skeleton h-4 w-full mb-2"></div>
+          <div class="skeleton h-4 w-1/2 mb-4"></div>
+          <div class="sugerencia-actions skeleton-actions">
+            <div class="skeleton h-8 w-20"></div>
+            <div class="skeleton h-8 w-20"></div>
           </div>
-        </ng-container>
+        </div>
+      </ng-container>
 
-        <ng-container *ngIf="!isLoading">
-          <div class="section-title">Consejos Económicos y Financieros</div>
-          <div class="sugerencia-card" *ngFor="let tip of displayedEconomicTips; let i = index">
-            <div class="sugerencia-text">
-              <ion-icon [name]="tip.icon" color="primary" slot="start"></ion-icon>
-              {{ tip.title }}
-            </div>
-            <div class="sugerencia-info">
-              <p>{{ tip.message }}</p>
-            </div>
-            <div class="sugerencia-actions">
-              <ion-button fill="solid" color="primary" (click)="replaceEconomicTip(i)">
-                Siguiente
-              </ion-button>
-              <ion-button fill="outline" color="medium" (click)="replaceEconomicTip(i)">
-                Descartar
-              </ion-button>
-            </div>
+      <ng-container *ngIf="!isLoading">
+        <div class="section-title">Consejos Económicos y Financieros</div>
+        <div class="sugerencia-card" *ngFor="let tip of displayedEconomicTips; let i = index">
+          <div class="sugerencia-text">
+            <ion-icon [name]="tip.icon" color="primary" slot="start"></ion-icon>
+            {{ tip.title }}
           </div>
+          <div class="sugerencia-info">
+            <p>{{ tip.message }}</p>
+          </div>
+          <div class="sugerencia-actions">
+            <ion-button fill="solid" color="primary" (click)="replaceEconomicTip(i)">
+              Siguiente
+            </ion-button>
+            <ion-button fill="outline" color="medium" (click)="replaceEconomicTip(i)">
+              Descartar
+            </ion-button>
+          </div>
+        </div>
 
-          <div class="section-title">Sugerencias Personalizadas</div>
-          <div class="sugerencia-card" *ngFor="let suggestion of personalizedSuggestions; let i = index">
-            <div class="sugerencia-text">
-              <ion-icon [name]="suggestion.icon" color="secondary" slot="start"></ion-icon>
-              {{ suggestion.title }}
-            </div>
-            <div class="sugerencia-info">
-              <p>{{ suggestion.message }}</p>
+        <div class="section-title">Sugerencias Personalizadas</div>
+        <div class="sugerencia-card" *ngFor="let suggestion of personalizedSuggestions; let i = index">
+          <div class="sugerencia-text">
+            <ion-icon [name]="suggestion.icon" color="secondary" slot="start"></ion-icon>
+            {{ suggestion.title }}
+          </div>
+          <div class="sugerencia-info">
+            <p>{{ suggestion.message }}</p>
 
-              <div *ngIf="suggestion.type === 'SAVINGS_GOAL'">
-                <div class="sugerencia-impacto">
-                  <strong>Progreso:</strong>
-                  {{ suggestion.details.savedAmount | currency:'EUR' }} / {{ suggestion.details.targetAmount | currency:'EUR' }}
-                </div>
-                <div class="sugerencia-barra">
-                  <div class="progreso" [style.width.%]="suggestion.details.progress * 100"></div>
-                </div>
+            <div *ngIf="suggestion.type === 'SAVINGS_GOAL'">
+              <div class="sugerencia-impacto">
+                <strong>Progreso:</strong>
+                {{ suggestion.details.savedAmount | currency:'EUR' }} / {{ suggestion.details.targetAmount | currency:'EUR' }}
+              </div>
+              <div class="sugerencia-barra">
+                <div class="progreso" [style.width.%]="suggestion.details.progress * 100"></div>
               </div>
             </div>
-            <div class="sugerencia-actions">
-              <ion-button fill="outline" color="primary">Ver Detalles</ion-button>
-              <ion-button fill="solid" color="danger" (click)="dismissPersonalizedSuggestion(i)">
-                Descartar
-              </ion-button>
-            </div>
           </div>
-        </ng-container>
-      </div>
+          <div class="sugerencia-actions">
+            <ion-button fill="outline" color="primary">Ver Detalles</ion-button>
+            <ion-button fill="solid" color="danger" (click)="dismissPersonalizedSuggestion(i)">
+              Descartar
+            </ion-button>
+          </div>
+        </div>
+      </ng-container>
     </div>
   </div>
 </ion-content>

@@ -31,6 +31,8 @@ ion-header {
   box-shadow: none; // Removing shadow to match the clean design
 }
 
+/* ELIMINADO: .dashboard-layout y .first-content */
+/*
 .dashboard-layout {
   display: flex;
   flex-direction: row;
@@ -49,9 +51,10 @@ ion-header {
 
   @media (max-width: 991px) {
     width: 100%;
-    height: auto; // Allow mobile menu to take its own height
+    height: auto;
   }
 }
+*/
 
 .main-content {
   flex-grow: 1;

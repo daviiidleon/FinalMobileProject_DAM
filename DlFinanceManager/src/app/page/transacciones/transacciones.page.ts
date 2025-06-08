@@ -35,7 +35,7 @@ import {
   IonCard, IonCardHeader, IonCardContent, IonCardTitle, IonCardSubtitle, IonFab, IonFabButton
 } from '@ionic/angular/standalone';
 import { HeaderComponent } from "../../component/header/header.component";
-import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
+// Removed: import { SideMenuComponent } from "../../component/side-menu/side-menu.component";
 import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
 import {
@@ -88,7 +88,7 @@ interface ClientTransaction {
     FormsModule,
     ReactiveFormsModule,
     HeaderComponent,
-    SideMenuComponent,
+    // Removed: SideMenuComponent,
     RouterLink,
     IonContent,
     IonHeader,
@@ -154,6 +154,10 @@ export class TransaccionesPage implements OnInit, OnDestroy {
     { id: 10, name: 'Otros' }
   ];
 
+  // Add this property to hold the current date in ISO string format
+  todayIsoDate: string = new Date().toISOString();
+
+
   constructor(
     private accountService: AccountService,
     private loadingController: LoadingController,
@@ -184,7 +188,7 @@ export class TransaccionesPage implements OnInit, OnDestroy {
       id: [null],
       account_id: [null, Validators.required],
       type: ['expense', Validators.required],
-      transaction_date: [new Date().toISOString(), Validators.required],
+      transaction_date: [this.todayIsoDate, Validators.required], // Use the property here
       category_id: [null, Validators.required],
       description: ['', Validators.required],
       amount: [null, [Validators.required, Validators.min(0.01)]],
@@ -387,7 +391,7 @@ export class TransaccionesPage implements OnInit, OnDestroy {
       this.transactionForm.reset({
         account_id: this.selectedAccountId,
         type: 'expense',
-        transaction_date: new Date().toISOString(),
+        transaction_date: this.todayIsoDate, // Use the property here
         category_id: null,
         description: '',
         amount: null,

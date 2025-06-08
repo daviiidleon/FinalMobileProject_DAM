@@ -3,120 +3,112 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="dashboard-layout">
-
-    <div class="first-content">
-      <app-side-menu></app-side-menu>
+  <div class="main-content">
+    <div *ngIf="isLoading" class="budgets-header skeleton-header">
+      <div class="page-title">
+        <div class="skeleton h-8 w-40 mb-2"></div>
+        <div class="skeleton h-4 w-60"></div>
+      </div>
+      <div class="skeleton h-10 w-32 create-budget-button"></div>
     </div>
 
-    <div class="main-content">
-      <div *ngIf="isLoading" class="budgets-header skeleton-header">
-        <div class="page-title">
-          <div class="skeleton h-8 w-40 mb-2"></div>
-          <div class="skeleton h-4 w-60"></div>
-        </div>
-        <div class="skeleton h-10 w-32 create-budget-button"></div>
+    <div *ngIf="!isLoading" class="budgets-header">
+      <div class="page-title">
+        <h2>Presupuestos</h2>
+        <p class="text-muted-foreground">Establece y controla tus límites de gasto mensuales.</p>
       </div>
+      <ion-button class="create-budget-button" (click)="openBudgetModal('add')">
+        <ion-icon name="add-outline" slot="start"></ion-icon>
+        Crear Presupuesto
+      </ion-button>
+    </div>
 
-      <div *ngIf="!isLoading" class="budgets-header">
-        <div class="page-title">
-          <h2>Presupuestos</h2>
-          <p class="text-muted-foreground">Establece y controla tus límites de gasto mensuales.</p>
-        </div>
-        <ion-button class="create-budget-button" (click)="openBudgetModal('add')">
-          <ion-icon name="add-outline" slot="start"></ion-icon>
-          Crear Presupuesto
-        </ion-button>
-      </div>
+    <div *ngIf="!isLoading" class="search-bar ion-margin-bottom">
+      <ion-searchbar placeholder="Buscar presupuestos..." (ionInput)="onSearchChange($event)"></ion-searchbar>
+    </div>
 
-      <div *ngIf="!isLoading" class="search-bar ion-margin-bottom">
-        <ion-searchbar placeholder="Buscar presupuestos..." (ionInput)="onSearchChange($event)"></ion-searchbar>
-      </div>
-
-      <div class="budget-cards-container">
-        <ng-container *ngIf="isLoading && selectedAccountId !== null">
-          <ion-card class="budget-card skeleton-budget-card" *ngFor="let i of [1, 2, 3]">
-            <ion-card-header>
-              <div class="flex items-center">
-                <div class="skeleton h-6 w-1/4 mr-2"></div>
-                <div class="skeleton h-6 w-1/2"></div>
-              </div>
-            </ion-card-header>
-            <ion-card-content>
-              <div class="skeleton h-4 w-3/4 mb-2"></div>
-              <div class="skeleton h-4 w-1/2 mb-2"></div>
-              <div class="skeleton h-4 w-2/3 mb-4"></div>
-              <div class="skeleton h-4 w-full mb-2"></div>
-              <div class="skeleton h-3 w-1/2"></div>
-              <div class="skeleton-actions mt-4 flex justify-end gap-2">
-                <div class="skeleton h-9 w-20"></div>
-                <div class="skeleton h-9 w-20"></div>
-              </div>
-            </ion-card-content>
-          </ion-card>
-        </ng-container>
-
-        <ion-card *ngIf="!isLoading && selectedAccountId === null" class="shadow-md border-2 border-dashed border-muted-foreground/30 col-span-full ion-text-center ion-padding">
-          <ion-card-content class="flex flex-col items-center">
-            <img src="https://via.placeholder.com/150x100?text=No+Account" alt="No account selected" style="width: 150px; height: 100px; margin-bottom: 1rem; border-radius: 8px;">
-            <h3 class="text-xl font-semibold text-muted-foreground mb-2">¡Ninguna cuenta seleccionada!</h3>
-            <p class="text-sm text-muted-foreground max-w-xs">
-              Por favor, selecciona una cuenta en el menú lateral para ver y gestionar presupuestos.
-            </p>
+    <div class="budget-cards-container">
+      <ng-container *ngIf="isLoading && selectedAccountId !== null">
+        <ion-card class="budget-card skeleton-budget-card" *ngFor="let i of [1, 2, 3]">
+          <ion-card-header>
+            <div class="flex items-center">
+              <div class="skeleton h-6 w-1/4 mr-2"></div>
+              <div class="skeleton h-6 w-1/2"></div>
+            </div>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="skeleton h-4 w-3/4 mb-2"></div>
+            <div class="skeleton h-4 w-1/2 mb-2"></div>
+            <div class="skeleton h-4 w-2/3 mb-4"></div>
+            <div class="skeleton h-4 w-full mb-2"></div>
+            <div class="skeleton h-3 w-1/2"></div>
+            <div class="skeleton-actions mt-4 flex justify-end gap-2">
+              <div class="skeleton h-9 w-20"></div>
+              <div class="skeleton h-9 w-20"></div>
+            </div>
           </ion-card-content>
         </ion-card>
+      </ng-container>
 
-        <ng-container *ngIf="!isLoading && selectedAccountId !== null && filteredBudgets.length > 0">
-          <ion-card class="budget-card" *ngFor="let budget of filteredBudgets">
-            <ion-card-header>
-              <ion-card-title>
-                <ion-icon [name]="getCategoryIcon(budget.category_id)" class="mr-2"></ion-icon>
-                {{ budget.name || getCategoryNameById(budget.category_id) }}
-              </ion-card-title>
-              <ion-card-subtitle>
-                <ion-icon name="wallet-outline" class="mr-1"></ion-icon> {{ budget.accountName }}
-                <span *ngIf="budget.category_id && budget.name"> | {{ getCategoryNameById(budget.category_id) }}</span>
-              </ion-card-subtitle>
-              <ion-card-subtitle class="ion-text-end date-period">
-                <ion-icon name="calendar-outline" class="mr-1"></ion-icon>
-                {{ formatDatePeriod(budget.start_date, budget.end_date) }}
-              </ion-card-subtitle>
-            </ion-card-header>
-            <ion-card-content>
-              <p>Presupuestado: <strong>{{ budget.amount | currency:'EUR':'symbol':'1.2-2' }}</strong></p>
-            </ion-card-content>
-            <div class="card-actions ion-padding-horizontal ion-padding-bottom flex justify-end gap-2">
-              <ion-button fill="outline" size="small" (click)="openBudgetModal('edit', budget)">
-                <ion-icon name="create-outline" slot="start"></ion-icon>
-                Editar
-              </ion-button>
-              <ion-button color="danger" size="small" (click)="confirmDeleteBudget(budget.id)">
-                <ion-icon name="trash-outline" slot="start"></ion-icon>
-                Eliminar
-              </ion-button>
-            </div>
-          </ion-card>
-        </ng-container>
+      <ion-card *ngIf="!isLoading && selectedAccountId === null" class="shadow-md border-2 border-dashed border-muted-foreground/30 col-span-full ion-text-center ion-padding">
+        <ion-card-content class="flex flex-col items-center">
+          <img src="https://via.placeholder.com/150x100?text=No+Account" alt="No account selected" style="width: 150px; height: 100px; margin-bottom: 1rem; border-radius: 8px;">
+          <h3 class="text-xl font-semibold text-muted-foreground mb-2">¡Ninguna cuenta seleccionada!</h3>
+          <p class="text-sm text-muted-foreground max-w-xs">
+            Por favor, selecciona una cuenta en el menú lateral para ver y gestionar presupuestos.
+          </p>
+        </ion-card-content>
+      </ion-card>
 
-        <div *ngIf="!isLoading && selectedAccountId !== null && filteredBudgets.length === 0" class="empty-state ion-text-center ion-padding">
-          <ion-card class="shadow-md border-2 border-dashed border-muted-foreground/30">
-            <ion-card-content class="flex flex-col items-center">
-              <img src="https://via.placeholder.com/150x100?text=No+Budgets" alt="No budgets yet" style="width: 150px; height: 100px; margin-bottom: 1rem; border-radius: 8px;">
-              <h3 class="text-xl font-semibold text-muted-foreground mb-2">No se han creado presupuestos aún.</h3>
-              <p class="text-sm text-muted-foreground max-w-xs">
-                ¡Empieza creando tu primer presupuesto!
-              </p>
-              <ion-button class="mt-4" (click)="openBudgetModal('add')">
-                <ion-icon name="add-outline" slot="start"></ion-icon>
-                Crear Primer Presupuesto
-              </ion-button>
-            </ion-card-content>
-          </ion-card>
-        </div>
+      <ng-container *ngIf="!isLoading && selectedAccountId !== null && filteredBudgets.length > 0">
+        <ion-card class="budget-card" *ngFor="let budget of filteredBudgets">
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon [name]="getCategoryIcon(budget.category_id)" class="mr-2"></ion-icon>
+              {{ budget.name || getCategoryNameById(budget.category_id) }}
+            </ion-card-title>
+            <ion-card-subtitle>
+              <ion-icon name="wallet-outline" class="mr-1"></ion-icon> {{ budget.accountName }}
+              <span *ngIf="budget.category_id && budget.name"> | {{ getCategoryNameById(budget.category_id) }}</span>
+            </ion-card-subtitle>
+            <ion-card-subtitle class="ion-text-end date-period">
+              <ion-icon name="calendar-outline" class="mr-1"></ion-icon>
+              {{ formatDatePeriod(budget.start_date, budget.end_date) }}
+            </ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <p>Presupuestado: <strong>{{ budget.amount | currency:'EUR':'symbol':'1.2-2' }}</strong></p>
+          </ion-card-content>
+          <div class="card-actions ion-padding-horizontal ion-padding-bottom flex justify-end gap-2">
+            <ion-button fill="outline" size="small" (click)="openBudgetModal('edit', budget)">
+              <ion-icon name="create-outline" slot="start"></ion-icon>
+              Editar
+            </ion-button>
+            <ion-button color="danger" size="small" (click)="confirmDeleteBudget(budget.id)">
+              <ion-icon name="trash-outline" slot="start"></ion-icon>
+              Eliminar
+            </ion-button>
+          </div>
+        </ion-card>
+      </ng-container>
+
+      <div *ngIf="!isLoading && selectedAccountId !== null && filteredBudgets.length === 0" class="empty-state ion-text-center ion-padding">
+        <ion-card class="shadow-md border-2 border-dashed border-muted-foreground/30">
+          <ion-card-content class="flex flex-col items-center">
+            <img src="https://via.placeholder.com/150x100?text=No+Budgets" alt="No budgets yet" style="width: 150px; height: 100px; margin-bottom: 1rem; border-radius: 8px;">
+            <h3 class="text-xl font-semibold text-muted-foreground mb-2">No se han creado presupuestos aún.</h3>
+            <p class="text-sm text-muted-foreground max-w-xs">
+              ¡Empieza creando tu primer presupuesto!
+            </p>
+            <ion-button class="mt-4" (click)="openBudgetModal('add')">
+              <ion-icon name="add-outline" slot="start"></ion-icon>
+              Crear Primer Presupuesto
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
       </div>
     </div>
   </div>
-
   <ion-modal #budgetModal [isOpen]="isModalOpen" (didDismiss)="closeBudgetModal()">
     <ng-template>
       <ion-header class="ion-no-border">
@@ -134,51 +126,51 @@
           <ion-list lines="none" class="form-list">
             <ion-item class="form-item">
               <ion-label position="floating">Nombre</ion-label>
-                <ion-input formControlName="name" type="text"></ion-input>
-                <ion-note color="danger" *ngIf="budgetForm.get('name')?.invalid && (budgetForm.get('name')?.dirty || budgetForm.get('name')?.touched)">
-                  El nombre es requerido.
-                </ion-note>
+              <ion-input formControlName="name" type="text"></ion-input>
+              <ion-note color="danger" *ngIf="budgetForm.get('name')?.invalid && (budgetForm.get('name')?.dirty || budgetForm.get('name')?.touched)">
+                El nombre es requerido.
+              </ion-note>
             </ion-item>
 
             <ion-item class="form-item">
               <ion-label position="floating">Cuenta</ion-label>
-                <ion-select formControlName="account_id" interface="popover" placeholder="Selecciona Cuenta">
-                  <ion-select-option *ngFor="let acc of accounts" [value]="acc.id">{{ acc.nombre }}</ion-select-option>
-                </ion-select>
-                <ion-note color="danger" *ngIf="budgetForm.get('account_id')?.invalid && (budgetForm.get('account_id')?.dirty || budgetForm.get('account_id')?.touched)">
-                  La cuenta es requerida.
-                </ion-note>
+              <ion-select formControlName="account_id" interface="popover" placeholder="Selecciona Cuenta">
+                <ion-select-option *ngFor="let acc of accounts" [value]="acc.id">{{ acc.nombre }}</ion-select-option>
+              </ion-select>
+              <ion-note color="danger" *ngIf="budgetForm.get('account_id')?.invalid && (budgetForm.get('account_id')?.dirty || budgetForm.get('account_id')?.touched)">
+                La cuenta es requerida.
+              </ion-note>
             </ion-item>
 
             <ion-item class="form-item">
               <ion-label position="floating">Categoría (Opcional)</ion-label>
-                <ion-select formControlName="category_id" interface="popover" placeholder="Selecciona Categoría">
-                  <ion-select-option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</ion-select-option>
-                </ion-select>
+              <ion-select formControlName="category_id" interface="popover" placeholder="Selecciona Categoría">
+                <ion-select-option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</ion-select-option>
+              </ion-select>
             </ion-item>
 
             <ion-item class="form-item">
               <ion-label position="floating">Monto Presupuestado (€)</ion-label>
-                <ion-input formControlName="amount" type="number" step="0.01"></ion-input>
-                <ion-note color="danger" *ngIf="budgetForm.get('amount')?.invalid && (budgetForm.get('amount')?.dirty || budgetForm.get('amount')?.touched)">
-                  El monto es requerido y debe ser un número positivo.
-                </ion-note>
+              <ion-input formControlName="amount" type="number" step="0.01"></ion-input>
+              <ion-note color="danger" *ngIf="budgetForm.get('amount')?.invalid && (budgetForm.get('amount')?.dirty || budgetForm.get('amount')?.touched)">
+                El monto es requerido y debe ser un número positivo.
+              </ion-note>
             </ion-item>
 
             <ion-item class="form-item">
               <ion-label position="floating">Fecha Inicio</ion-label>
-                <ion-datetime formControlName="start_date" presentation="date" [showDefaultButtons]="true" displayFormat="MMM DD,yyyy"></ion-datetime>
-                <ion-note color="danger" *ngIf="budgetForm.get('start_date')?.invalid && (budgetForm.get('start_date')?.dirty || budgetForm.get('start_date')?.touched)">
-                  La fecha de inicio es requerida.
-                </ion-note>
+              <ion-datetime formControlName="start_date" presentation="date" [showDefaultButtons]="true" displayFormat="MMM DD,yyyy"></ion-datetime>
+              <ion-note color="danger" *ngIf="budgetForm.get('start_date')?.invalid && (budgetForm.get('start_date')?.dirty || budgetForm.get('start_date')?.touched)">
+                La fecha de inicio es requerida.
+              </ion-note>
             </ion-item>
 
             <ion-item class="form-item">
               <ion-label position="floating">Fecha Fin</ion-label>
-                <ion-datetime formControlName="end_date" presentation="date" [showDefaultButtons]="true" displayFormat="MMM DD,yyyy"></ion-datetime>
-                <ion-note color="danger" *ngIf="budgetForm.get('end_date')?.invalid && (budgetForm.get('end_date')?.dirty || budgetForm.get('end_date')?.touched)">
-                  La fecha de fin es requerida.
-                </ion-note>
+              <ion-datetime formControlName="end_date" presentation="date" [showDefaultButtons]="true" displayFormat="MMM DD,yyyy"></ion-datetime>
+              <ion-note color="danger" *ngIf="budgetForm.get('end_date')?.invalid && (budgetForm.get('end_date')?.dirty || budgetForm.get('end_date')?.touched)">
+                La fecha de fin es requerida.
+              </ion-note>
             </ion-item>
 
           </ion-list>

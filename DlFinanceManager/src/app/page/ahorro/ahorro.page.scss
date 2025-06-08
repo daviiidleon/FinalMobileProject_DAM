@@ -131,15 +131,17 @@ body.dark-theme {
 
 /* --- Dashboard Layout and General Styles --- */
 ion-content {
-  --background: var(--page-background);
+  --background: var(--page-background); /* Set page background */
 }
 
 ion-header {
-  --background: var(--card-background);
-  border-bottom: 1px solid var(--border-color);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+  --background: var(--card-background); /* Header background */
+  border-bottom: 1px solid var(--border-color); /* Subtle header border */
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03); /* Subtle header shadow */
 }
 
+/* ELIMINADO: .dashboard-layout y .first-content */
+/*
 .dashboard-layout {
   display: flex;
   flex-direction: row;
@@ -153,18 +155,26 @@ ion-header {
 
 .first-content {
   width: 15%;
-  background-color: var(--sidebar-background); /* Use the unified sidebar background */
-  color: var(--sidebar-text); /* Use the unified sidebar text color */
+  background-color: transparent;
+  color: var(--sidebar-text);
   @media (max-width: 768px) {
     width: 100%;
   }
 }
+*/
 
 .main-content {
   flex-grow: 1;
   padding: 20px;
   overflow-y: auto;
   box-sizing: border-box;
+  /* Styles for centering the main content within the layout */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* This centers content horizontally */
+  width: 100%; /* Ensure it takes full width to allow centering */
+  max-width: 1200px; /* Add a max-width to keep content from stretching too wide */
+  margin: 0 auto; /* Center the main content block itself */
 }
 
 .goals-header {
@@ -173,6 +183,8 @@ ion-header {
   align-items: center;
   margin-bottom: 20px;
   padding-right: 10px;
+  width: 100%; /* Asegurar que ocupe todo el ancho disponible */
+
 
   .page-title {
     font-size: 24px;
@@ -226,11 +238,14 @@ ion-header {
 .empty-state {
   text-align: center;
   color: var(--secondary-text-color);
-  margin-top: 40px; /* Increased margin-top for more vertical spacing */
+  margin-top: 40px;
   width: 100%; /* Ensure it takes full width to center content */
   border-radius: 8px;
-  padding: 40px 20px; /* Increased padding */
+  padding: 40px 20px;
   box-sizing: border-box;
+  max-width: 1200px; /* Align with main-content max-width */
+  margin-left: auto;
+  margin-right: auto;
 
   h2 {
     font-size: 1.5em;
@@ -241,8 +256,8 @@ ion-header {
   }
 
   p {
-    margin-bottom: 25px; /* Adjusted margin for spacing */
-    font-size: 1em; /* Standard paragraph text size */
+    margin-bottom: 25px;
+    font-size: 1em;
     color: var(--secondary-text-color);
     margin-top: 0;
     max-width: 400px;
@@ -250,17 +265,17 @@ ion-header {
     margin-right: auto;
   }
 
-  .create-first-button { /* Specific class for the "Create First" buttons */
+  .create-first-button {
     --border-radius: 8px;
     font-weight: 600;
     text-transform: none;
     height: auto;
 
-    display: flex; /* Use flexbox for centering content */
+    display: flex;
     align-items: center;
-    justify-content: center; /* Center horizontally */
-    margin: 0 auto; /* Center button horizontally */
-    max-width: 200px; /* Set a max-width for the button */
+    justify-content: center;
+    margin: 0 auto;
+    max-width: 200px;
 
     --background: var(--ion-color-primary);
     --color: var(--ion-color-primary-contrast);
@@ -272,12 +287,13 @@ ion-header {
     ion-icon {
       margin-right: 8px;
       font-size: 18px;
-      --color: var(--ion-color-primary-contrast); /* Ensure icon color is white */
+      --color: var(--ion-color-primary-contrast);
     }
   }
 }
 
 .goals-grid {
+  width: 100%; /* Asegurar que ocupe todo el ancho disponible */
   .goals-card-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -286,7 +302,6 @@ ion-header {
   }
 
   .goal-card {
-    /* Base styles copied from .sugerencia-card for consistency */
     background-color: var(--card-background);
     border-radius: 8px;
     box-shadow: var(--shadow-light);
@@ -300,11 +315,10 @@ ion-header {
     &:hover {
       transform: translateY(-5px);
       box-shadow: var(--shadow-medium);
-    } /* End of base styles */
+    }
   }
 
   .goal-header {
-    /* Styles to match prediction card header */
     display: flex;
     align-items: center;
     margin-bottom: 10px;
@@ -321,10 +335,9 @@ ion-header {
   .goal-body {
     margin-bottom: 20px;
 
-    /* Styles to match prediction card body text */
-    p { /* Styles to match prediction card body text */
-      margin-bottom: 8px; /* Reduced margin */
-      font-size: 14px; /* Match .sugerencia-info text font-size */
+    p {
+      margin-bottom: 8px;
+      font-size: 14px;
       color: var(--main-text-color);
 
       strong {
@@ -333,7 +346,6 @@ ion-header {
     }
 
     .progress-container {
-      /* Styles for visual consistency with prediction cards */
       margin: 15px 0 10px 0;
 
       display: flex;
@@ -364,27 +376,27 @@ ion-header {
   }
 
   .goal-actions {
-    /* Styles to match prediction card actions *//* Styles to match prediction card actions */
     display: flex;
     justify-content: flex-end;
     margin-top: 15px;
     gap: 10px;
-    padding-top: 15px; /* Added padding-top for consistency */
+    padding-top: 15px;
     border-top: 1px dashed var(--border-color);
 
-    ion-button { height: 36px; /* Match .sugerencia-actions button height */
+    ion-button {
+      height: 36px;
       --border-radius: 6px;
-      font-size: 0.9em; /* Match .sugerencia-actions button font-size */
-      font-weight: 600; /* Match .sugerencia-actions button font-weight */
+      font-size: 0.9em;
+      font-weight: 600;
     }
   }
 
   .add-button, .edit-button, ion-button[color="danger"] {
     transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-    font-size: 13px; /* Match .sugerencia-actions button font-size */
-    --border-radius: 5px; /* Match .sugerencia-actions button border-radius */
-    text-transform: none; /* Match .sugerencia-actions button text-transform */
-    padding: 8px 12px; /* Match .sugerencia-actions button padding */
+    font-size: 13px;
+    --border-radius: 5px;
+    text-transform: none;
+    padding: 8px 12px;
   }
 
   .add-button {
@@ -420,42 +432,22 @@ ion-header {
       --background: var(--ion-color-danger-shade);
     }
   }
-
-  /* Styles for the edit button copied from .sugerencia-actions */
-  ion-button.edit-button {
-    --background: transparent;
-    --border-color: var(--ion-color-primary);
-    --color: var(--ion-color-primary);
-    --border-width: 1px;
-    &:hover {
-      --background: rgba(var(--ion-color-primary-rgb), 0.1);
-    }
-  }
-  /* Styles for the danger button copied from .sugerencia-actions */
-  ion-button[color="danger"] {
-    --background: var(--ion-color-danger);
-    --color: var(--ion-color-primary-contrast);
-    box-shadow: var(--shadow-subtle);
-    &:hover {
-      --background: var(--ion-color-danger-shade);
-    }
-  }
 }
 
 
 /* --- Modal specific styles (REVERTED TO PREVIOUS VERSION) --- */
 ion-modal {
   --width: 30%;
-  --height: 74%; // Adjusted to auto to better fit content, but keep max-height
+  --height: 74%;
   --border-radius: 8px;
   --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 
   // Mobile responsiveness for modals
   @media (max-width: 768px) {
-    --width: 95%; // Almost full width on mobile
-    --height: auto; // Let height adjust to content
-    --max-height: 95%; // Ensure it doesn't overflow
-    --border-radius: 12px; // Match overall mobile aesthetic
+    --width: 95%;
+    --height: auto;
+    --max-height: 95%;
+    --border-radius: 12px;
   }
 
   // Adjust for smaller desktop screens if needed, otherwise stick to 30%
@@ -486,10 +478,10 @@ ion-modal {
 
   ion-content {
     --background: var(--page-background);
-    height: 100%; // Essential: Make ion-content take full available height
-    overflow-y: auto; // Essential: Allow scrolling if content exceeds height
-    box-sizing: border-box; // Ensure padding is included in height calculation
-    padding-top: 16px; // Adjust general padding for content area
+    height: 100%;
+    overflow-y: auto;
+    box-sizing: border-box;
+    padding-top: 16px;
     padding-bottom: 16px;
   }
 
@@ -503,7 +495,7 @@ ion-modal {
 
   .form-item {
     --background: var(--form-item-background);
-    border: none; // REMOVED SOLID BORDER from the container
+    border: none;
     border-radius: var(--form-input-border-radius);
     box-shadow: var(--form-item-shadow);
     margin-bottom: 15px;
@@ -517,7 +509,7 @@ ion-modal {
     --padding-top: 8px;
     --padding-bottom: 8px;
     --inner-padding-end: 0;
-    --inner-border-width: 0; // Remove default inner border
+    --inner-border-width: 0;
 
     ion-label {
       font-weight: 500;
@@ -528,9 +520,9 @@ ion-modal {
     // Apply consistent styling to all form controls within an item
     ion-input,
     ion-select {
-      --border-color: transparent; // Make any internal border color transparent
-      --border-width: 0; // Set internal border width to 0
-      border: none; // Fallback for good measure (though Ionic components often use variables)
+      --border-color: transparent;
+      --border-width: 0;
+      border: none;
 
       --padding-top: 0px;
       --padding-bottom: 0px;
@@ -538,47 +530,39 @@ ion-modal {
       --padding-end: 0;
       color: var(--main-text-color);
       font-size: 1.05em;
-      min-height: 44px; /* Ensure a minimum touch target height */
+      min-height: 44px;
     }
 
     // Specific styling for the selected date display span
     .selected-date-display {
       display: block;
       width: 100%;
-      height: 44px; /* Give it a consistent height */
-      line-height: 44px; /* Vertically center the text */
+      height: 44px;
+      line-height: 44px;
       text-align: left;
       padding: 0;
       color: var(--main-text-color);
       font-size: 1.05em;
-      cursor: pointer; /* Indicate it's clickable */
-      // Optionally add background or border if you want it to look like an input
-      // background: var(--ion-color-step-50);
-      // border: 1px solid var(--input-border-color);
-      // border-radius: var(--form-input-border-radius);
+      cursor: pointer;
     }
 
     // Specific styling for embedded ion-datetime
     ion-datetime {
       width: 100%;
-      // Ensure it takes full width within the item
-      --background: var(--form-item-background); // Match item background
-      --border-radius: var(--form-input-border-radius); // Match item border-radius
-      margin-top: 10px; // Give some space below the label/display span
-      box-shadow: var(--shadow-subtle); // Add a subtle shadow if desired
-      padding: 0; // Remove internal padding if ion-item is already handling it
-      // Ensure it renders correctly for month-year presentation
-      &.datetime-month-year { // Note: This class is for month-year, your goals picker is 'date'
+      --background: var(--form-item-background);
+      --border-radius: var(--form-input-border-radius);
+      margin-top: 10px;
+      box-shadow: var(--shadow-subtle);
+      padding: 0;
+      &.datetime-month-year {
         width: 100%;
-        // You might need more specific CSS variables if you want to customize the internal appearance
-        // e.g., --background, --color, --border-color for internal buttons/selectors
       }
     }
 
 
     // Re-adjust floating label for the new setup (label + span)
     ion-label[position="floating"] + .selected-date-display {
-      margin-top: 15px; /* Adjust this value to match your desired spacing */
+      margin-top: 15px;
     }
 
     ion-note[color="danger"] {
@@ -586,7 +570,7 @@ ion-modal {
       padding-left: 16px;
       padding-right: 16px;
       margin-top: 5px;
-      display: block; // Ensure it takes its own line
+      display: block;
     }
   }
 

@@ -3,32 +3,26 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="dashboard-layout">
-    <div class="first-content">
-      <app-side-menu></app-side-menu>
-    </div>
+  <div class="main-content">
+    <div class="page-title">Informes y Reportes</div>
 
-    <div class="main-content">
-      <div class="page-title">Informes y Reportes</div>
+    <div class="report-options-container">
+      <ng-container *ngIf="isLoading">
+        <div class="report-card skeleton-card"></div>
+        <div class="report-card skeleton-card"></div>
+      </ng-container>
 
-      <div class="report-options-container">
-        <ng-container *ngIf="isLoading">
-          <div class="report-card skeleton-card"></div>
-          <div class="report-card skeleton-card"></div>
-        </ng-container>
+      <ng-container *ngIf="!isLoading">
+        <div class="report-card" (click)="onGeneratePdf()" role="button" tabindex="0">
+          <ion-icon name="document-text-outline" color="danger"></ion-icon>
+          <span>Generar informe en PDF</span>
+        </div>
 
-        <ng-container *ngIf="!isLoading">
-          <div class="report-card" (click)="onGeneratePdf()" role="button" tabindex="0">
-            <ion-icon name="document-text-outline" color="danger"></ion-icon>
-            <span>Generar informe en PDF</span>
-          </div>
-
-          <div class="report-card" (click)="onGenerateExcel()" role="button" tabindex="0">
-            <ion-icon name="stats-chart-outline" color="success"></ion-icon>
-            <span>Generar informe en Excel</span>
-          </div>
-        </ng-container>
-      </div>
+        <div class="report-card" (click)="onGenerateExcel()" role="button" tabindex="0">
+          <ion-icon name="stats-chart-outline" color="success"></ion-icon>
+          <span>Generar informe en Excel</span>
+        </div>
+      </ng-container>
     </div>
   </div>
 </ion-content>

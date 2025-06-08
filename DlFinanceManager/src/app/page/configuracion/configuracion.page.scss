@@ -51,17 +51,8 @@ body.dark-theme {
   }
 }
 
-/* --- Dashboard Layout and General Styles (shared with other pages, now inlined) --- */
-ion-content {
-  --background: var(--page-background); /* Set page background */
-}
-
-ion-header {
-  --background: var(--card-background); /* Header background */
-  border-bottom: 1px solid var(--border-color); /* Subtle header border */
-  box-shadow: 0 1px 4px rgba(0,0,0,0.03); /* Subtle header shadow */
-}
-
+/* ELIMINADO: .dashboard-layout y .first-content */
+/*
 .dashboard-layout {
   display: flex;
   flex-direction: row;
@@ -69,26 +60,24 @@ ion-header {
   width: 100%;
   background-color: var(--page-background);
 
-  @media (max-width: 991px) { /* For tablet and mobile, you might hide or change the side menu */
+  @media (max-width: 991px) {
     flex-direction: column;
   }
 }
 
 .first-content {
-  width: 240px; // Adjust as needed for your side menu
+  width: 240px;
   flex-shrink: 0;
-  // 💥💥💥 CORRECCIÓN AQUÍ: ¡CAMBIO APLICADO! 💥💥💥
-  // Cambiamos el fondo de first-content para que sea transparente,
-  // permitiendo que se vea el color de fondo de ion-content.
-  background-color: transparent; /* Changed from var(--sidebar-background) to transparent! */
+  background-color: transparent;
   color: var(--sidebar-text);
 
   @media (max-width: 991px) {
     width: 100%;
-    order: 2; /* Put side menu at the bottom on small screens */
-    display: none; // Or use a different approach for a hamburger menu
+    order: 2;
+    display: none;
   }
 }
+*/
 
 .main-content {
   flex-grow: 1;
@@ -99,7 +88,7 @@ ion-header {
 
   @media (max-width: 767px) { // Mobile
     padding: 16px;
-    order: 1; /* Put main content at the top on small screens */
+    // order: 1; // Ya no es necesario si dashboard-layout se elimina.
   }
 }
 

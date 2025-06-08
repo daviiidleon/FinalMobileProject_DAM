@@ -1,4 +1,4 @@
-// src/app/page/predicciones/predicciones.page.ts
+// src/app/pages/predicciones/predicciones.page.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -11,7 +11,7 @@ import { addIcons } from 'ionicons';
 import { bulbOutline, saveOutline, syncCircleOutline, receiptOutline, walletOutline, analyticsOutline, calculatorOutline, searchCircleOutline, fastFoodOutline, flashOffOutline, schoolOutline, handLeftOutline, chevronForwardOutline, closeCircleOutline, golfOutline, alertCircleOutline, syncOutline, trendingUpOutline } from 'ionicons/icons';
 
 import { HeaderComponent } from '../../component/header/header.component';
-import { SideMenuComponent } from '../../component/side-menu/side-menu.component';
+// ELIMINADO: import { SideMenuComponent } from '../../component/side-menu/side-menu.component';
 // CORRECCIÓN 1: Ruta del servicio ajustada para una carpeta 'services'
 import { PredictionsService, FinancialTip, PersonalizedSuggestion } from '../../services/predictions.service';
 
@@ -21,7 +21,8 @@ import { PredictionsService, FinancialTip, PersonalizedSuggestion } from '../../
   styleUrls: ['./predicciones.page.scss'],
   standalone: true,
   imports: [
-    CommonModule, FormsModule, CurrencyPipe, HeaderComponent, SideMenuComponent,
+    CommonModule, FormsModule, CurrencyPipe, HeaderComponent,
+    // ELIMINADO: SideMenuComponent,
     IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonCardHeader,
     IonCardTitle, IonCardSubtitle, IonCardContent, IonButton, IonIcon,
     IonLabel, IonSpinner, IonProgressBar, IonList, IonItem

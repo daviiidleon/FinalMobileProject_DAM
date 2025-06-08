@@ -23,7 +23,7 @@ import {
 } from '@ionic/angular/standalone';
 
 import { HeaderComponent } from '../../component/header/header.component';
-import { SideMenuComponent } from '../../component/side-menu/side-menu.component';
+// Eliminado: import { SideMenuComponent } from '../../component/side-menu/side-menu.component';
 import { Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { addIcons } from 'ionicons';
@@ -89,7 +89,7 @@ interface BudgetAlert {
     CurrencyPipe,
 
     HeaderComponent,
-    SideMenuComponent,
+    // Eliminado: SideMenuComponent,
   ],
 })
 export class AhorroPage implements OnInit, OnDestroy {

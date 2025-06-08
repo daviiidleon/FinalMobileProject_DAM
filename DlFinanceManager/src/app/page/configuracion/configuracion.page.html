@@ -3,133 +3,127 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="dashboard-layout">
-    <div class="first-content">
-      <app-side-menu></app-side-menu>
+  <div class="main-content">
+    <div class="page-header">
+      <h1 class="page-title">Ajustes</h1>
+      <p class="page-subtitle">Administre las preferencias y configuraciones de su cuenta.</p>
     </div>
 
-    <div class="main-content">
-      <div class="page-header">
-        <h1 class="page-title">Ajustes</h1>
-        <p class="page-subtitle">Administre las preferencias y configuraciones de su cuenta.</p>
-      </div>
-
-      <ion-grid>
-        <ion-row>
-          <ion-col size-xs="12" size-lg="4">
-            <ion-card class="settings-card">
-              <ion-card-content>
-                <div class="profile-header">
-                  <ion-avatar slot="start" class="profile-avatar">
-                    <img [src]="userDisplay.avatarFullUrl" alt="User Avatar" />
-                  </ion-avatar>
-                  <div class="profile-info">
-                    <ion-label class="profile-name">{{ userDisplay.displayName }}</ion-label>
-                    <ion-label class="profile-email">{{ userDisplay.email }}</ion-label>
-                  </div>
+    <ion-grid>
+      <ion-row>
+        <ion-col size-xs="12" size-lg="4">
+          <ion-card class="settings-card">
+            <ion-card-content>
+              <div class="profile-header">
+                <ion-avatar slot="start" class="profile-avatar">
+                  <img [src]="userDisplay.avatarFullUrl" alt="User Avatar" />
+                </ion-avatar>
+                <div class="profile-info">
+                  <ion-label class="profile-name">{{ userDisplay.displayName }}</ion-label>
+                  <ion-label class="profile-email">{{ userDisplay.email }}</ion-label>
                 </div>
-                <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none;" accept="image/*">
-                <ion-button expand="block" fill="outline" color="medium" class="action-button" (click)="changeAvatar()">
-                  Cambiar avatar
-                </ion-button>
-              </ion-card-content>
-            </ion-card>
+              </div>
+              <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none;" accept="image/*">
+              <ion-button expand="block" fill="outline" color="medium" class="action-button" (click)="changeAvatar()">
+                Cambiar avatar
+              </ion-button>
+            </ion-card-content>
+          </ion-card>
 
-            <ion-card class="settings-card">
-              <ion-card-header>
-                <ion-card-title class="card-title-icon">
-                  <ion-icon name="color-palette-outline" slot="start"></ion-icon>
-                  Apariencia
-                </ion-card-title>
-              </ion-card-header>
-              <ion-card-content>
-                <p class="small-text">
-                  La personalización del tema (modo claro/oscuro) se maneja
-                  mediante las preferencias de su sistema operativo/navegador o
-                  mediante un interruptor de tema (no implementado aquí).
-                </p>
-              </ion-card-content>
-            </ion-card>
+          <ion-card class="settings-card">
+            <ion-card-header>
+              <ion-card-title class="card-title-icon">
+                <ion-icon name="color-palette-outline" slot="start"></ion-icon>
+                Apariencia
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <p class="small-text">
+                La personalización del tema (modo claro/oscuro) se maneja
+                mediante las preferencias de su sistema operativo/navegador o
+                mediante un interruptor de tema (no implementado aquí).
+              </p>
+            </ion-card-content>
+          </ion-card>
 
-            <ion-card class="settings-card">
-              <ion-card-header>
-                <ion-card-title class="card-title-icon">
-                  <ion-icon name="notifications-outline" slot="start"></ion-icon>
-                  Notificaciones
-                </ion-card-title>
-              </ion-card-header>
-              <ion-card-content>
-                <p class="small-text">
-                  Los ajustes de notificaciones aún no son configurables.
-                </p>
-              </ion-card-content>
-            </ion-card>
-          </ion-col>
+          <ion-card class="settings-card">
+            <ion-card-header>
+              <ion-card-title class="card-title-icon">
+                <ion-icon name="notifications-outline" slot="start"></ion-icon>
+                Notificaciones
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <p class="small-text">
+                Los ajustes de notificaciones aún no son configurables.
+              </p>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
 
-          <ion-col size-xs="12" size-lg="8">
-            <ion-card class="settings-card">
-              <ion-card-header>
-                <ion-card-title>Información del perfil</ion-card-title>
-                <ion-card-subtitle>Actualice sus datos personales.</ion-card-subtitle>
-              </ion-card-header>
-              <ion-card-content>
-                <ion-item lines="full">
-                  <ion-label position="stacked">Nombre para mostrar</ion-label>
-                  <ion-input [(ngModel)]="userProfile.name" name="userName" placeholder="Su nombre"></ion-input>
-                </ion-item>
-                <ion-item lines="full" class="readonly-item">
-                  <ion-label position="stacked">Dirección de correo electrónico (solo lectura)</ion-label>
-                  <ion-input [(ngModel)]="userProfile.email" name="userEmail" readonly placeholder="su_email@ejemplo.com"></ion-input>
-                </ion-item>
-                <p class="small-text hint-text">
-                  Para cambiar su correo electrónico, comuníquese con el soporte o utilice la sección de
-                  seguridad después de volver a autenticarse (función simplificada).
-                </p>
-                <ion-button expand="block" color="primary" class="action-button" (click)="saveProfile()">
-                  <ion-icon name="save-outline" slot="start"></ion-icon>
-                  Guardar perfil
-                </ion-button>
-              </ion-card-content>
-            </ion-card>
+        <ion-col size-xs="12" size-lg="8">
+          <ion-card class="settings-card">
+            <ion-card-header>
+              <ion-card-title>Información del perfil</ion-card-title>
+              <ion-card-subtitle>Actualice sus datos personales.</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-item lines="full">
+                <ion-label position="stacked">Nombre para mostrar</ion-label>
+                <ion-input [(ngModel)]="userProfile.name" name="userName" placeholder="Su nombre"></ion-input>
+              </ion-item>
+              <ion-item lines="full" class="readonly-item">
+                <ion-label position="stacked">Dirección de correo electrónico (solo lectura)</ion-label>
+                <ion-input [(ngModel)]="userProfile.email" name="userEmail" readonly placeholder="su_email@ejemplo.com"></ion-input>
+              </ion-item>
+              <p class="small-text hint-text">
+                Para cambiar su correo electrónico, comuníquese con el soporte o utilice la sección de
+                seguridad después de volver a autenticarse (función simplificada).
+              </p>
+              <ion-button expand="block" color="primary" class="action-button" (click)="saveProfile()">
+                <ion-icon name="save-outline" slot="start"></ion-icon>
+                Guardar perfil
+              </ion-button>
+            </ion-card-content>
+          </ion-card>
 
-            <ion-card class="settings-card">
-              <ion-card-header>
-                <ion-card-title class="card-title-icon">
-                  <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
-                  Configuración de seguridad
-                </ion-card-title>
-                <ion-card-subtitle>Cambia tu contraseña.</ion-card-subtitle>
-              </ion-card-header>
-              <ion-card-content>
-                <ion-item lines="full">
-                  <ion-label position="stacked">Contraseña actual</ion-label>
-                  <ion-input type="password" placeholder="Su contraseña actual" [(ngModel)]="passwords.current_password" name="currentPassword"></ion-input>
-                </ion-item>
-                <ion-item lines="full">
-                  <ion-label position="stacked">Nueva contraseña</ion-label>
-                  <ion-input type="password" placeholder="Nueva contraseña" [(ngModel)]="passwords.password" name="newPassword"></ion-input>
-                </ion-item>
-                <ion-item lines="full">
-                  <ion-label position="stacked">Confirmar nueva contraseña</ion-label>
-                    <ion-input type="password" placeholder="Confirmar nueva contraseña" [(ngModel)]="passwords.password_confirmation" name="confirmNewPassword"></ion-input>
-                </ion-item>
-                <ion-button expand="block" color="secondary" class="action-button" (click)="updatePassword()">
-                  Actualizar contraseña
-                </ion-button>
-              </ion-card-content>
-            </ion-card>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-          <ion-col size-xs="12" class="ion-text-center">
-            <ion-button color="danger" fill="outline" class="logout-button" (click)="logout()">
-              <ion-icon name="log-out-outline" slot="start"></ion-icon>
-              Cerrar sesión
-            </ion-button>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
+          <ion-card class="settings-card">
+            <ion-card-header>
+              <ion-card-title class="card-title-icon">
+                <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
+                Configuración de seguridad
+              </ion-card-title>
+              <ion-card-subtitle>Cambia tu contraseña.</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-item lines="full">
+                <ion-label position="stacked">Contraseña actual</ion-label>
+                <ion-input type="password" placeholder="Su contraseña actual" [(ngModel)]="passwords.current_password" name="currentPassword"></ion-input>
+              </ion-item>
+              <ion-item lines="full">
+                <ion-label position="stacked">Nueva contraseña</ion-label>
+                <ion-input type="password" placeholder="Nueva contraseña" [(ngModel)]="passwords.password" name="newPassword"></ion-input>
+              </ion-item>
+              <ion-item lines="full">
+                <ion-label position="stacked">Confirmar nueva contraseña</ion-label>
+                  <ion-input type="password" placeholder="Confirmar nueva contraseña" [(ngModel)]="passwords.password_confirmation" name="confirmNewPassword"></ion-input>
+              </ion-item>
+              <ion-button expand="block" color="secondary" class="action-button" (click)="updatePassword()">
+                Actualizar contraseña
+              </ion-button>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col size-xs="12" class="ion-text-center">
+          <ion-button color="danger" fill="outline" class="logout-button" (click)="logout()">
+            <ion-icon name="log-out-outline" slot="start"></ion-icon>
+            Cerrar sesión
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
 
-    </div>
   </div>
 </ion-content>

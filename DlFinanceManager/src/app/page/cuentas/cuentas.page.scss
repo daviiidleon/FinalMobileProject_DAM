@@ -107,17 +107,8 @@ body.dark-theme {
   }
 }
 
-/* --- Dashboard Layout and General Styles (shared with other pages, now inlined) --- */
-ion-content {
-  --background: var(--page-background); /* Set page background */
-}
-
-ion-header {
-  --background: var(--card-background); /* Header background */
-  border-bottom: 1px solid var(--border-color); /* Subtle header border */
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03); /* Subtle header shadow */
-}
-
+/* REMOVED .dashboard-layout and .first-content */
+/*
 .dashboard-layout {
   display: flex;
   flex-direction: row;
@@ -131,12 +122,13 @@ ion-header {
 
 .first-content {
   width: 15%;
-  background-color: var(--sidebar-background); /* Adjusted to match Transactions page's light sidebar */
-  color: var(--sidebar-text); /* Adjusted for dark text on light sidebar */
+  background-color: var(--sidebar-background);
+  color: var(--sidebar-text);
   @media (max-width: 768px) {
     width: 100%;
   }
 }
+*/
 
 .main-content {
   flex-grow: 1;

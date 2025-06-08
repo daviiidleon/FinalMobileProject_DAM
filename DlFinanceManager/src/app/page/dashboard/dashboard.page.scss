@@ -1,12 +1,12 @@
 /* --- Inlined CSS Variables for Dashboard Page --- */
-:host { // Using :host to encapsulate these variables for this component
-  --page-background: #f8f9fa; // Very light grey for ion-content
-  --card-background: #ffffff; // Pure white for cards and distinct sections
-  --border-color: #e9ecef; // Light grey for subtle separation
-  --main-text-color: #343a40; // Dark grey for good contrast
-  --secondary-text-color: #6c757d; // Medium grey for less prominent text
-  --sidebar-background: #222;
-  --sidebar-text: #fff;
+:host {
+  --page-background: #f8f9fa;
+  --card-background: #ffffff;
+  --border-color: #e9ecef;
+  --main-text-color: #343a40;
+  --secondary-text-color: #6c757d;
+  --sidebar-background: #222; /* No es necesario si se usa globalmente */
+  --sidebar-text: #fff;       /* No es necesario si se usa globalmente */
   --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.04);
 
   --ion-color-danger: #dc3545;
@@ -24,7 +24,8 @@ ion-header {
   box-shadow: 0 1px 4px rgba(0,0,0,0.03);
 }
 
-
+/* ELIMINAR ESTO */
+/*
 .dashboard-layout {
   display: flex;
   flex-direction: row;
@@ -44,12 +45,15 @@ ion-header {
     width: 100%;
   }
 }
+*/
 
 .main-content {
   flex-grow: 1;
   padding: 20px;
   overflow-y: auto;
   box-sizing: border-box;
+  // En mobile, el main-content ocupará todo el ancho por defecto.
+  // Puedes añadir media queries si quieres ajustes específicos en diferentes breakpoints.
 }
 
 .page-title {
@@ -185,7 +189,7 @@ ion-header {
   box-sizing: border-box;
   height: auto;
   box-shadow: var(--shadow-light);
-  min-height: 150px; /* Ensure a minimum height */
+  min-height: 150px;
 }
 
 .recent-transactions-placeholder ul,

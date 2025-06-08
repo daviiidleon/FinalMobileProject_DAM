@@ -3,109 +3,102 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="dashboard-layout">
-    <div class="first-content">
-      <app-side-menu></app-side-menu>
-    </div>
-
-    <div class="main-content">
-      <div class="goals-header">
-        <div class="page-title">
-          <h2>Tus Metas de Ahorro</h2>
-          <p>Define tus objetivos financieros y sigue tu progreso.</p>
-        </div>
-
-        <div *ngIf="isLoading" class="goals-actions-top skeleton-actions-top">
-          <div class="skeleton h-10 w-48 create-goal-button"></div>
-        </div>
-
-        <div *ngIf="!isLoading" class="goals-actions-top">
-          <ion-button (click)="openGoalModal('add')">
-            <ion-icon name="add-outline" slot="start"></ion-icon>
-            Crear Nueva Meta
-          </ion-button>
-        </div>
+  <div class="main-content">
+    <div class="goals-header">
+      <div class="page-title">
+        <h2>Tus Metas de Ahorro</h2>
+        <p>Define tus objetivos financieros y sigue tu progreso.</p>
       </div>
 
-      <div class="goals-grid" *ngIf="isLoading">
-        <div class="goals-card-container">
-          <div class="goal-card skeleton-goal-card" *ngFor="let i of [1, 2, 3]">
-            <div class="skeleton h-6 w-3/4 mb-2"></div>
-            <div class="skeleton h-4 w-1/2 mb-2"></div>
-            <div class="skeleton h-4 w-full mb-3"></div>
-            <div class="skeleton h-4 w-2/3 mb-2"></div>
-            <div class="progress-container skeleton-progress-container">
-              <div class="skeleton h-4 w-full"></div>
-              <div class="skeleton h-4 w-1/4 ml-2"></div>
-            </div>
-            <div class="skeleton-actions">
-              <div class="skeleton h-8 w-20"></div>
-              <div class="skeleton h-8 w-20"></div>
-              <div class="skeleton h-8 w-20"></div>
-            </div>
+      <div *ngIf="isLoading" class="goals-actions-top skeleton-actions-top">
+        <div class="skeleton h-10 w-48 create-goal-button"></div>
+      </div>
+
+      <div *ngIf="!isLoading" class="goals-actions-top">
+        <ion-button (click)="openGoalModal('add')">
+          <ion-icon name="add-outline" slot="start"></ion-icon>
+          Crear Nueva Meta
+        </ion-button>
+      </div>
+    </div>
+
+    <div class="goals-grid" *ngIf="isLoading">
+      <div class="goals-card-container">
+        <div class="goal-card skeleton-goal-card" *ngFor="let i of [1, 2, 3]">
+          <div class="skeleton h-6 w-3/4 mb-2"></div>
+          <div class="skeleton h-4 w-1/2 mb-2"></div>
+          <div class="skeleton h-4 w-full mb-3"></div>
+          <div class="skeleton h-4 w-2/3 mb-2"></div>
+          <div class="progress-container skeleton-progress-container">
+            <div class="skeleton h-4 w-full"></div>
+            <div class="skeleton h-4 w-1/4 ml-2"></div>
+          </div>
+          <div class="skeleton-actions">
+            <div class="skeleton h-8 w-20"></div>
+            <div class="skeleton h-8 w-20"></div>
+            <div class="skeleton h-8 w-20"></div>
           </div>
         </div>
       </div>
-
-      <div class="empty-state" *ngIf="!isLoading && selectedAccountId === null">
-        <h2>¡Ninguna cuenta seleccionada!</h2>
-        <p>Por favor, selecciona una cuenta en el menú lateral para ver y gestionar tus metas de ahorro.</p>
-      </div>
-
-      <div class="empty-state" *ngIf="!isLoading && selectedAccountId !== null && objetivos.length === 0">
-        <h2>¡Empieza a planificar tus sueños!</h2>
-        <p>Define tus objetivos financieros y sigue tu progreso.</p>
-        <ion-button class="create-first-button" (click)="openGoalModal('add')">
-          <ion-icon name="add-outline" slot="start"></ion-icon>
-          Crear Primera Meta
-        </ion-button>
-      </div>
-
-      <div class="goals-grid" *ngIf="!isLoading && selectedAccountId !== null && objetivos.length > 0">
-        <div class="goals-card-container">
-          <ng-container *ngFor="let objetivo of objetivos">
-            <div class="goal-card">
-              <div class="goal-header">
-                <h3>{{ objetivo.name }}</h3>
-                <ion-icon name="calendar-outline"></ion-icon>
-                <span *ngIf="objetivo.target_date">{{ formatDateForDisplay(objetivo.target_date) }}</span>
-              </div>
-              <div class="goal-body">
-                <p><strong>Meta:</strong> {{ objetivo.target_amount | currency:'EUR':'symbol':'1.2-2' }}</p>
-                <p><strong>Ahorrado:</strong> {{ objetivo.saved_amount | currency:'EUR':'symbol':'1.2-2' }}</p>
-                <p><strong>Restante:</strong> {{ (objetivo.target_amount - objetivo.saved_amount) | currency:'EUR':'symbol':'1.2-2' }}</p>
-                <div class="progress-container">
-                  <ion-progress-bar [value]="objetivo.progress / 100"></ion-progress-bar>
-                  <span class="progress-percentage">{{ objetivo.progress | number: '1.0-0' }}%</span>
-                </div>
-                <p class="deadline-passed" *ngIf="objetivo.target_date && isDeadlinePassed(objetivo.target_date)">
-                  Plazo Excedido
-                </p>
-                <ion-badge *ngIf="objetivo.is_achieved" color="success" class="mt-2">¡Meta Alcanzada!</ion-badge>
-                <ion-badge *ngIf="!objetivo.is_achieved && objetivo.progress < 100" color="primary" class="mt-2">En Progreso</ion-badge>
-              </div>
-              <div class="goal-actions">
-                <ion-button size="small" class="add-button" (click)="openAddFundsModal(objetivo)">
-                  <ion-icon name="add-circle-outline" slot="icon-only"></ion-icon>
-                  Añadir
-                </ion-button>
-                <ion-button size="small" class="edit-button" (click)="openGoalModal('edit', objetivo)">
-                  <ion-icon name="create-outline" slot="icon-only"></ion-icon>
-                  Editar
-                </ion-button>
-                <ion-button size="small" color="danger" (click)="confirmDeleteGoal(objetivo.id)">
-                  <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
-                  Eliminar
-                </ion-button>
-              </div>
-            </div>
-          </ng-container>
-        </div>
-      </div>
-
     </div>
-  </div>
 
+    <div class="empty-state" *ngIf="!isLoading && selectedAccountId === null">
+      <h2>¡Ninguna cuenta seleccionada!</h2>
+      <p>Por favor, selecciona una cuenta en el menú lateral para ver y gestionar tus metas de ahorro.</p>
+    </div>
+
+    <div class="empty-state" *ngIf="!isLoading && selectedAccountId !== null && objetivos.length === 0">
+      <h2>¡Empieza a planificar tus sueños!</h2>
+      <p>Define tus objetivos financieros y sigue tu progreso.</p>
+      <ion-button class="create-first-button" (click)="openGoalModal('add')">
+        <ion-icon name="add-outline" slot="start"></ion-icon>
+        Crear Primera Meta
+      </ion-button>
+    </div>
+
+    <div class="goals-grid" *ngIf="!isLoading && selectedAccountId !== null && objetivos.length > 0">
+      <div class="goals-card-container">
+        <ng-container *ngFor="let objetivo of objetivos">
+          <div class="goal-card">
+            <div class="goal-header">
+              <h3>{{ objetivo.name }}</h3>
+              <ion-icon name="calendar-outline"></ion-icon>
+              <span *ngIf="objetivo.target_date">{{ formatDateForDisplay(objetivo.target_date) }}</span>
+            </div>
+            <div class="goal-body">
+              <p><strong>Meta:</strong> {{ objetivo.target_amount | currency:'EUR':'symbol':'1.2-2' }}</p>
+              <p><strong>Ahorrado:</strong> {{ objetivo.saved_amount | currency:'EUR':'symbol':'1.2-2' }}</p>
+              <p><strong>Restante:</strong> {{ (objetivo.target_amount - objetivo.saved_amount) | currency:'EUR':'symbol':'1.2-2' }}</p>
+              <div class="progress-container">
+                <ion-progress-bar [value]="objetivo.progress / 100"></ion-progress-bar>
+                <span class="progress-percentage">{{ objetivo.progress | number: '1.0-0' }}%</span>
+              </div>
+              <p class="deadline-passed" *ngIf="objetivo.target_date && isDeadlinePassed(objetivo.target_date)">
+                Plazo Excedido
+              </p>
+              <ion-badge *ngIf="objetivo.is_achieved" color="success" class="mt-2">¡Meta Alcanzada!</ion-badge>
+              <ion-badge *ngIf="!objetivo.is_achieved && objetivo.progress < 100" color="primary" class="mt-2">En Progreso</ion-badge>
+            </div>
+            <div class="goal-actions">
+              <ion-button size="small" class="add-button" (click)="openAddFundsModal(objetivo)">
+                <ion-icon name="add-circle-outline" slot="icon-only"></ion-icon>
+                Añadir
+              </ion-button>
+              <ion-button size="small" class="edit-button" (click)="openGoalModal('edit', objetivo)">
+                <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+                Editar
+              </ion-button>
+              <ion-button size="small" color="danger" (click)="confirmDeleteGoal(objetivo.id)">
+                <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+                Eliminar
+              </ion-button>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+
+  </div>
   <ion-modal #goalModal [isOpen]="isGoalModalOpen" (didDismiss)="closeGoalModal()">
     <ng-template>
       <ion-header class="ion-no-border">
